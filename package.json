@@ -1,0 +1,37 @@
+{
+  "name": "assistant-validations",
+  "version": "0.0.1",
+  "description": "Supports entity validations with the @needs decorator",
+  "scripts": {
+    "test": "jasmine-ts spec/**/*.spec.ts"
+  },
+  "keywords": [
+    "validations",
+    "entities",
+    "assistant.js"
+  ],
+  "peerDependencies": {
+    "assistant-source": "file:../assistant-source"
+  },
+  "devDependencies": {
+    "@types/jasmine": "^2.5.48",
+    "assistant-alexa": "file:../assistant-alexa",
+    "assistant-source": "file:../assistant-source",
+    "debug": "^2.6.8",
+    "gulp": "^3.9.1",
+    "gulp-sourcemaps": "^2.6.0",
+    "gulp-tslint": "^8.1.0",
+    "gulp-typescript": "^3.1.7",
+    "jasmine-ts": "^0.1.3",
+    "reflect-metadata": "^0.1.10",
+    "tslint": "^5.4.0",
+    "typescript": "2.3.4"
+  },
+  "dependencies": {
+    "@types/reflect-metadata": "0.0.5"
+  },
+  "author": "Antonius Ostermann",
+  "license": "ISC",
+  "main": "./lib/assistant-validations.js",
+  "typings": "./dts/assistant-validations.d.ts"
+}
