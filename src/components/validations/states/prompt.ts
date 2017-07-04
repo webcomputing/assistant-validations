@@ -39,19 +39,19 @@ export class PromptState implements stateMachineInterfaces.State {
   }
 
   answerPromptIntent() {
-    this.unserializeHook().then(context => {
+    return this.unserializeHook().then(context => {
       let promptedEntity = this.getEntityConfiguration(context.neededEntity);
 
       if (this.entities.contains(promptedEntity)) {
-        this.sessionFactory().delete("entities:currentPrompt").then(() => {
+        return this.sessionFactory().delete("entities:currentPrompt").then(() => {
           return this.applyStoredEntities();
         }).then(() => {
           this.entities.set(context.neededEntity, this.entities.get(promptedEntity));
           this.entities.set(promptedEntity, undefined);
-          this.machine.redirectTo(context.state, context.intent.replace("GenericIntent", "").replace("Intent", ""));
+          return this.machine.redirectTo(context.state, context.intent.replace("GenericIntent", "").replace("Intent", ""));
         });
       } else {
-        this.machine.handleIntent("unhandledIntent");
+        return this.machine.handleIntent("unhandledIntent");
       }
     });
   }
@@ -101,7 +101,7 @@ export class PromptState implements stateMachineInterfaces.State {
 
   /** Opposite of storeCurrentEntitiesToSession() */
   private applyStoredEntities() {
-    this.sessionFactory().get("entities:currentPrompt:previousEntities").then(serializedEntities => {
+    return this.sessionFactory().get("entities:currentPrompt:previousEntities").then(serializedEntities => {
       return JSON.parse(serializedEntities);
     }).then(unserializedEntities => {
       return Promise.all([unserializedEntities, this.sessionFactory().delete("entities:currentPrompt:previousEntities")]);

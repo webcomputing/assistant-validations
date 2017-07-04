@@ -28,6 +28,11 @@ beforeEach(function() {
           "loadPath": process.cwd() + "/spec/support/mocks/locales/{{lng}}/{{ns}}.json"
         }
       }
+    },
+    "core:unifier": {
+      "entities": {
+        "myEntityType": ["city"]
+      }
     }
   });
 
