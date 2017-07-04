@@ -96,21 +96,12 @@ export class PromptState implements stateMachineInterfaces.State {
 
   /** Stores all entities currently present in entity dictionary into session. */
   private storeCurrentEntitiesToSession() {
-    return this.sessionFactory().set("entities:currentPrompt:previousEntities", JSON.stringify(this.entities.store));
+    this.entities.storeToSession(this.sessionFactory(), "entities:currentPrompt:previousEntities");
   }
 
   /** Opposite of storeCurrentEntitiesToSession() */
-  private applyStoredEntities() {
-    return this.sessionFactory().get("entities:currentPrompt:previousEntities").then(serializedEntities => {
-      return JSON.parse(serializedEntities);
-    }).then(unserializedEntities => {
-      return Promise.all([unserializedEntities, this.sessionFactory().delete("entities:currentPrompt:previousEntities")]);
-    }).then(results => {
-      let unserializedEntities = results[0];
-      if (typeof(unserializedEntities) === "undefined" || unserializedEntities === null) unserializedEntities = {};
-
-      Object.keys(unserializedEntities).forEach(paramKey => this.entities.set(paramKey, unserializedEntities[paramKey]));
-      return undefined;
-    });
+  private async applyStoredEntities() {
+    await this.entities.readFromSession(this.sessionFactory(), true, "entities:currentPrompt:previousEntities");
+    return this.sessionFactory().delete("entities:currentPrompt:previousEntities");
   }
 }
