@@ -1,6 +1,6 @@
 {
   "name": "assistant-validations",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Supports entity validations with the @needs decorator",
   "scripts": {
     "test": "jasmine-ts spec/**/*.spec.ts"
@@ -11,12 +11,12 @@
     "assistant.js"
   ],
   "peerDependencies": {
-    "assistant-source": "file:../assistant-source"
+    "assistant-source": "^0.1.0"
   },
   "devDependencies": {
     "@types/jasmine": "^2.5.48",
-    "assistant-alexa": "file:../assistant-alexa",
-    "assistant-source": "file:../assistant-source",
+    "assistant-alexa": "^0.1.0",
+    "assistant-source": "^0.1.0",
     "debug": "^2.6.8",
     "gulp": "^3.9.1",
     "gulp-sourcemaps": "^2.6.0",
@@ -33,5 +33,8 @@
   "author": "Antonius Ostermann",
   "license": "ISC",
   "main": "./lib/assistant-validations.js",
-  "typings": "./dts/assistant-validations.d.ts"
+  "typings": "./dts/assistant-validations.d.ts",
+  "publishConfig": {
+    "registry": "http://sinopia.verstehe.local:4873"
+  }
 }
