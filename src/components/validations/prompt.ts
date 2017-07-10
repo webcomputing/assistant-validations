@@ -25,7 +25,8 @@ export class Prompt implements PromptInterface {
   switchStateForRetrieval() {
     if (!this.machine.stateExists("PromptState")) throw new Error("Tried to transition to generic 'PromptState', but was not registered. "+
       "Did you register the PromptState out of assistant-validations in your index.ts?");
-    this.machine.redirectTo("PromptState", unifierInterfaces.GenericIntent.Invoke);
+    
+    return this.machine.redirectTo("PromptState", unifierInterfaces.GenericIntent.Invoke);
   }
 
   /** Saves information about new retrieval request into context object
