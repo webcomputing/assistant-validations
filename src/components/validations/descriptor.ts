@@ -1,4 +1,4 @@
-import { ComponentDescriptor, Hooks, Component } from "ioc-container";
+import { ComponentDescriptor, Hooks, Component } from "inversify-components";
 import { stateMachineInterfaces, unifierInterfaces } from "assistant-source";
 
 import { UtteranceTemplateService } from "./utterance-template-service";

@@ -1,6 +1,6 @@
 import { stateMachineInterfaces, unifierInterfaces, servicesInterfaces, i18nInterfaces } from "assistant-source";
 import { injectable, inject } from "inversify";
-import { Component } from "ioc-container";
+import { Component } from "inversify-components";
 
 import { HookContext } from "../interfaces";
 

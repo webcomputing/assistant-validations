@@ -1,4 +1,4 @@
-import { Hooks, Component } from "ioc-container";
+import { Hooks, Component } from "inversify-components";
 import { injectable, inject } from "inversify";
 import { unifierInterfaces, stateMachineInterfaces } from "assistant-source";
 

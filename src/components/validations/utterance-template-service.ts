@@ -1,5 +1,5 @@
 import { injectable, inject } from "inversify";
-import { Component } from "ioc-container";
+import { Component } from "inversify-components";
 import { unifierInterfaces } from "assistant-source";
 
 @injectable()
