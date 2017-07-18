@@ -49,8 +49,9 @@ export class PromptState implements stateMachineInterfaces.State {
         return this.sessionFactory().delete("entities:currentPrompt").then(() => {
           return this.applyStoredEntities();
         }).then(() => {
-          this.entities.set(context.neededEntity, this.entities.get(promptedEntity));
+          let entityValue = this.entities.get(promptedEntity);
           this.entities.set(promptedEntity, undefined);
+          this.entities.set(context.neededEntity, entityValue);
           log("Redirecting to initial state/intent context: %o", context);
           return this.machine.redirectTo(context.state, context.intent.replace("GenericIntent", "").replace("Intent", ""));
         });
