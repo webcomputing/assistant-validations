@@ -32,6 +32,7 @@ export class BeforeIntentHook {
 
     if (this.neededParams.length > 0) {
       let unknownParam = this.neededParams.filter(p => !this.currentRequestHasParam(p))[0];
+      log("Missing entity "+ unknownParam +" in entity store: %o", this.entities.store);
 
       if (typeof(unknownParam) !== "undefined") {
         this.promptFactory(this.method, this.stateName, machine)
