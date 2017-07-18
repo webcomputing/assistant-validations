@@ -3,6 +3,7 @@ import { injectable, inject } from "inversify";
 import { Component } from "inversify-components";
 
 import { HookContext } from "../interfaces";
+import { log } from "../../../global";
 
 @injectable()
 export class PromptState implements stateMachineInterfaces.State {
@@ -34,6 +35,7 @@ export class PromptState implements stateMachineInterfaces.State {
     let context = promises[0];
 
     if (typeof context === "undefined" || context === null ) throw new Error("HookContext must not be undefined!");
+    log("Sending initial prompt message");
     this.responseFactory.createVoiceResponse().prompt(this.i18n.t("." + context.neededEntity));
     return null;
   }
@@ -43,14 +45,17 @@ export class PromptState implements stateMachineInterfaces.State {
       let promptedEntity = this.getEntityConfiguration(context.neededEntity);
 
       if (this.entities.contains(promptedEntity)) {
+        log("Current request contained entitiy");
         return this.sessionFactory().delete("entities:currentPrompt").then(() => {
           return this.applyStoredEntities();
         }).then(() => {
           this.entities.set(context.neededEntity, this.entities.get(promptedEntity));
           this.entities.set(promptedEntity, undefined);
+          log("Redirecting to initial state/intent context: %o", context);
           return this.machine.redirectTo(context.state, context.intent.replace("GenericIntent", "").replace("Intent", ""));
         });
       } else {
+        log("Current request did not contain entitiy, reprompting via unhandledIntent");
         return this.machine.handleIntent("unhandledIntent");
       }
     });

@@ -1,5 +1,6 @@
 import { stateMachineInterfaces, unifierInterfaces, servicesInterfaces } from "assistant-source";
 import { HookContext, Prompt as PromptInterface } from "./interfaces";
+import { log } from "../../global";
 
 export class Prompt implements PromptInterface {
   private machine: stateMachineInterfaces.Transitionable;
@@ -16,6 +17,7 @@ export class Prompt implements PromptInterface {
   }
 
   prompt(entity: string) {
+    log("Prompting for " + entity);
     return this.saveToContext(entity).then(() => {
       return this.switchStateForRetrieval();
     });

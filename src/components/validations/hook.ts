@@ -4,6 +4,7 @@ import { unifierInterfaces, stateMachineInterfaces } from "assistant-source";
 
 import { needsMetadataKey } from "./annotations";
 import { PromptFactory } from "./interfaces";
+import { log } from "../../global";
 
 @injectable()
 export class BeforeIntentHook {
@@ -55,8 +56,10 @@ export class BeforeIntentHook {
   /** Sets this.neededParams based on Reflect.getMetadata result = based from what is stored into @needs(..) */
   private retrieveNeededParamsFromMetadata() {
     if (typeof(this.target[this.method]) === "undefined") return;
-
     let neededParams = Reflect.getMetadata(needsMetadataKey, this.target[this.method]);
+
+    log("Retrieving @needs annotations for " + this.target.constructor.name + " and " + this.method + ":", neededParams);
+
     if (typeof(neededParams) !== "undefined" && neededParams.constructor === Array) {
 
       if ((neededParams as any[]).filter(param => typeof(param) !== "string").length > 0)
