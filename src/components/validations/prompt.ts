@@ -16,19 +16,19 @@ export class Prompt implements PromptInterface {
     this.stateName = stateName;
   }
 
-  prompt(entity: string) {
+  prompt(entity: string, invokeIntent = true) {
     log("Prompting for " + entity);
     return this.saveToContext(entity).then(() => {
-      return this.switchStateForRetrieval();
+      return this.switchStateForRetrieval(invokeIntent);
     });
   }
 
   /** Switches state to prompt state, to retrieve new parameter. */
-  switchStateForRetrieval() {
+  switchStateForRetrieval(invokeIntent = true) {
     if (!this.machine.stateExists("PromptState")) throw new Error("Tried to transition to generic 'PromptState', but was not registered. "+
       "Did you register the PromptState out of assistant-validations in your index.ts?");
     
-    return this.machine.redirectTo("PromptState", unifierInterfaces.GenericIntent.Invoke);
+    return invokeIntent ? this.machine.redirectTo("PromptState", unifierInterfaces.GenericIntent.Invoke) : this.machine.transitionTo("PromptState");
   }
 
   /** Saves information about new retrieval request into context object
