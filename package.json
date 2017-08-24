@@ -1,6 +1,6 @@
 {
   "name": "assistant-validations",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Supports entity validations with the @needs decorator",
   "scripts": {
     "test": "jasmine-ts spec/**/*.spec.ts"

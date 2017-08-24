@@ -53,7 +53,7 @@ export class PromptState implements stateMachineInterfaces.State {
           this.entities.set(promptedEntity, undefined);
           this.entities.set(context.neededEntity, entityValue);
           log("Redirecting to initial state/intent context: %o", context);
-          return this.machine.redirectTo(context.state, context.intent.replace("GenericIntent", "").replace("Intent", ""));
+          return this.machine.redirectTo(context.state, context.intent.replace("Intent", ""));
         });
       } else {
         log("Current request did not contain entitiy, reprompting via unhandledIntent");

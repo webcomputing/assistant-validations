@@ -4,6 +4,7 @@ import { stateMachineInterfaces, unifierInterfaces } from "assistant-source";
 import { UtteranceTemplateService } from "./utterance-template-service";
 import { BeforeIntentHook } from "./hook";
 import { Prompt } from "./prompt";
+import { PromptFactory } from "./interfaces";
 
 export const descriptor: ComponentDescriptor = {
   name: "validations",
@@ -17,7 +18,7 @@ export const descriptor: ComponentDescriptor = {
 
     request: (bindService, lookupService) => {
       // Make prompt service accessible via factory
-      bindService.bindGlobalService("current-prompt-factory").toFactory(context => {
+      bindService.bindGlobalService<PromptFactory>("current-prompt-factory").toFactory(context => {
         return (intent: string, stateName: string, machine: stateMachineInterfaces.Transitionable) => {
           return new Prompt(machine, context.container.get<any>("core:unifier:current-session-factory")(), intent, stateName);
         };
