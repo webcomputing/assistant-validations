@@ -37,34 +37,27 @@ describe("Prompt", function() {
         done();
       });
 
-      describe("using invokeIntent = true", function() {
-        it("transitions to PromptState", async function(done) {
-          await this.prompt.prompt("city");
-          let currentState = await this.currentStateProvider();
-          expect(currentState.name).toEqual("PromptState");
-          done();
-        });
+      it("transitions to PromptState", async function(done) {
+        await this.prompt.prompt("city");
+        let currentState = await this.currentStateProvider();
+        expect(currentState.name).toEqual("PromptState");
+        done();
+      });
 
-        it("calls machine.redirectTo with invokeGenericIntent", async function(done) {
+      describe("using tellInvokeMessage = true", function() {
+        it("calls machine.redirectTo with tellInvokeMessage = true", async function(done) {
           spyOn(this.machine, "redirectTo").and.callThrough();
           await this.prompt.prompt("city");
-          expect(this.machine.redirectTo).toHaveBeenCalledWith("PromptState", unifierInterfaces.GenericIntent.Invoke);
+          expect(this.machine.redirectTo).toHaveBeenCalledWith("PromptState", unifierInterfaces.GenericIntent.Invoke, true);
           done();
         });
       });
 
       describe("using invokeIntent = false", function() {
-        it("transitions to PromptState", async function(done) {
-          await this.prompt.prompt("city");
-          let currentState = await this.currentStateProvider();
-          expect(currentState.name).toEqual("PromptState");
-          done();
-        });
-
-        it("calls machine.transitionTo with invokeGenericIntent", async function(done) {
-          spyOn(this.machine, "transitionTo").and.callThrough();
-          await this.prompt.prompt("city");
-          expect(this.machine.transitionTo).toHaveBeenCalledWith("PromptState");
+        it("calls machine.redirectTo with tellInvokeMessage = false", async function(done) {
+          spyOn(this.machine, "redirectTo").and.callThrough();
+          await this.prompt.prompt("city", false);
+          expect(this.machine.redirectTo).toHaveBeenCalledWith("PromptState", unifierInterfaces.GenericIntent.Invoke, false);
           done();
         });
       });

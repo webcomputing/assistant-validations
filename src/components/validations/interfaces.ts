@@ -18,8 +18,7 @@ export interface PromptFactory {
 export interface Prompt {
   /** Starts prompting for a parameter
    * @param parameter string The parameter to prompt for
-   * @param invokeIntent boolean If set to true (default), uses a 'redirectTo' instead of a 'transitionTo'. 
-   *        This will cause the PromptState.invokeGenericIntent to be called immediately, which will ask for the user with a customizable text for the parameter.
+   * @param tellInvokeMessage boolean If set to true (default), sends response to ask the user for the parameter
    */
-  prompt(parameter: string, invokeIntent?: boolean): Promise<void>;
+  prompt(parameter: string, tellInvokeMessage?: boolean): Promise<void>;
 }

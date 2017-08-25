@@ -30,14 +30,15 @@ export class PromptState implements stateMachineInterfaces.State {
     this.sessionFactory = sessionFactory;
   }
 
-  async invokeGenericIntent() {
+  async invokeGenericIntent(tellInvokeMessage = true) {
     let promises = await Promise.all([this.unserializeHook(), this.storeCurrentEntitiesToSession()]);
     let context = promises[0];
 
-    if (typeof context === "undefined" || context === null ) throw new Error("HookContext must not be undefined!");
-    log("Sending initial prompt message");
-    this.responseFactory.createVoiceResponse().prompt(this.i18n.t("." + context.neededEntity));
-    return null;
+    if (tellInvokeMessage) {
+      if (typeof context === "undefined" || context === null ) throw new Error("HookContext must not be undefined!");
+      log("Sending initial prompt message");
+      this.responseFactory.createVoiceResponse().prompt(this.i18n.t("." + context.neededEntity));
+    }
   }
 
   answerPromptIntent() {
