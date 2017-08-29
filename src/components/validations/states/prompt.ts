@@ -31,7 +31,7 @@ export class PromptState extends BaseState implements stateMachineInterfaces.Sta
     this.sessionFactory = sessionFactory;
   }
 
-  async invokeGenericIntent(tellInvokeMessage = true) {
+  async invokeGenericIntent(machine: stateMachineInterfaces.Transitionable, tellInvokeMessage = true) {
     let promises = await Promise.all([this.unserializeHook(), this.storeCurrentEntitiesToSession()]);
     let context = promises[0];
 
