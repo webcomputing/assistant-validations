@@ -1,4 +1,4 @@
-import { stateMachineInterfaces, unifierInterfaces, servicesInterfaces, i18nInterfaces } from "assistant-source";
+import { stateMachineInterfaces, unifierInterfaces, servicesInterfaces, i18nInterfaces, BaseState } from "assistant-source";
 import { injectable, inject } from "inversify";
 import { Component } from "inversify-components";
 
@@ -6,9 +6,9 @@ import { HookContext } from "../interfaces";
 import { log } from "../../../global";
 
 @injectable()
-export class PromptState implements stateMachineInterfaces.State {
-  private i18n: i18nInterfaces.TranslateHelper;
-  private responseFactory: unifierInterfaces.ResponseFactory;
+export class PromptState extends BaseState implements stateMachineInterfaces.State {
+  i18n: i18nInterfaces.TranslateHelper;
+  responseFactory: unifierInterfaces.ResponseFactory;
   private entities: unifierInterfaces.EntityDictionary;
   private machine: stateMachineInterfaces.StateMachine;
   private sessionFactory: () => servicesInterfaces.Session;
@@ -22,6 +22,7 @@ export class PromptState implements stateMachineInterfaces.State {
     @inject("core:unifier:current-session-factory") sessionFactory: () => servicesInterfaces.Session,
     @inject("core:unifier:user-entity-mappings") mappings: unifierInterfaces.GeneratorEntityMapping
   ) {
+    super(responseFactory, i18n);
     this.i18n = i18n;
     this.responseFactory = responseFactory;
     this.entities = entityDictionary;
@@ -75,7 +76,7 @@ export class PromptState implements stateMachineInterfaces.State {
    * Checks if entity is contained in this request, although it is unhandledIntent. 
    * If so, redirects to answerPromptIntent instead of reprompting 
   */
-  async unhandledIntent(machine: stateMachineInterfaces.Transitionable) {
+  async unhandledGenericIntent(machine: stateMachineInterfaces.Transitionable) {
     let context = await this.unserializeHook();
     let promptedEntity = this.getEntityConfiguration(context.neededEntity);
     if (this.entities.contains(promptedEntity)) {

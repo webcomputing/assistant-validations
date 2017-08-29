@@ -55,6 +55,18 @@ describe("PromptState", function() {
     });
   });
 
+  describe("unansweredGenericIntent", function() {
+    beforeEach(async function(done) {
+      this.responseHandler = await this.callIntent(unifierInterfaces.GenericIntent.Unanswered);
+      done();
+    });
+
+    it("returns an empty response", function() {
+      expect(this.responseHandler.voiceMessage).toEqual("");
+      expect(this.responseHandler.endSession).toBeTruthy();
+    });
+  });
+
   describe("helpGenericIntent", function() {
     beforeEach(async function(done) {
       this.responseHandler = await this.callIntent(unifierInterfaces.GenericIntent.Help);
