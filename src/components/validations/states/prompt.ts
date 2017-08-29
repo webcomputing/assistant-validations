@@ -71,8 +71,22 @@ export class PromptState implements stateMachineInterfaces.State {
     this.responseFactory.createVoiceResponse().endSessionWith(this.i18n.t());
   }
 
-  unhandledIntent() {
-    return this.unserializeAndPrompt();
+  /* 
+   * Checks if entity is contained in this request, although it is unhandledIntent. 
+   * If so, redirects to answerPromptIntent instead of reprompting 
+  */
+  async unhandledIntent(machine: stateMachineInterfaces.Transitionable) {
+    let context = await this.unserializeHook();
+    let promptedEntity = this.getEntityConfiguration(context.neededEntity);
+    if (this.entities.contains(promptedEntity)) {
+      return machine.handleIntent("answerPrompt");
+    } else {
+      return this.unserializeAndPrompt();
+    }
+  }
+
+  stopGenericIntent(machine: stateMachineInterfaces.Transitionable) {
+    return machine.handleIntent(unifierInterfaces.GenericIntent.Cancel);
   }
 
   private unserializeAndPrompt() {

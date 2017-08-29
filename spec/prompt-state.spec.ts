@@ -43,6 +43,18 @@ describe("PromptState", function() {
     });
   });
 
+  describe("stopGenericIntent", function() {
+    beforeEach(async function(done) {
+      this.responseHandler = await this.callIntent(unifierInterfaces.GenericIntent.Stop);
+      done();
+    });
+
+    it("returns general cancel text", function() {
+      expect(this.responseHandler.voiceMessage).toEqual("See you!");
+      expect(this.responseHandler.endSession).toBeTruthy();
+    });
+  });
+
   describe("helpGenericIntent", function() {
     beforeEach(async function(done) {
       this.responseHandler = await this.callIntent(unifierInterfaces.GenericIntent.Help);
@@ -56,15 +68,7 @@ describe("PromptState", function() {
   });
 
   describe("unhandledIntent", function() {
-    beforeEach(async function(done) {
-      this.responseHandler = await this.callIntent("not-existing");
-      done();
-    });
-
-    it("returns default prompt text", function() {
-      expect(this.responseHandler.voiceMessage).toEqual("Prompt for city");
-      expect(this.responseHandler.endSession).toBeFalsy();
-    });
+    answerPromptBehaviour("notExisting");
   });
 
   describe("invokeGenericIntent", function() {
@@ -106,9 +110,13 @@ describe("PromptState", function() {
   });
 
   describe("answerPromptIntent", function() {
+    answerPromptBehaviour("answerPrompt");
+  });
+
+  function answerPromptBehaviour(intentName: unifierInterfaces.intent) {
     describe("with the prompted entity given", function() {
       beforeEach(async function(done) {
-        this.responseHandler = await this.callIntent("answerPrompt", false, true, "PromptState", {"myEntityType": "Münster"});
+        this.responseHandler = await this.callIntent(intentName, false, true, "PromptState", {"myEntityType": "Münster"});
         await this.currentSession.set("entities:currentPrompt:previousEntities", JSON.stringify(defaultEntities));
         this.entityDictionary = this.container.inversifyInstance.get("core:unifier:current-entity-dictionary");
         await this.specHelper.runMachine("PromptState");
@@ -127,7 +135,7 @@ describe("PromptState", function() {
 
     describe("with the prompted entity not given", function() {
       beforeEach(async function(done) {
-        this.responseHandler = await this.callIntent("answerPrompt");
+        this.responseHandler = await this.callIntent(intentName);
         done();
       });
 
@@ -136,5 +144,5 @@ describe("PromptState", function() {
         expect(this.responseHandler.endSession).toBeFalsy();
       });
     });
-  });
+  }
 });
