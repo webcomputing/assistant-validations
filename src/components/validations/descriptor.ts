@@ -19,8 +19,8 @@ export const descriptor: ComponentDescriptor = {
     request: (bindService, lookupService) => {
       // Make prompt service accessible via factory
       bindService.bindGlobalService<PromptFactory>("current-prompt-factory").toFactory(context => {
-        return (intent: string, stateName: string, machine: stateMachineInterfaces.Transitionable) => {
-          return new Prompt(machine, context.container.get<any>("core:unifier:current-session-factory")(), intent, stateName);
+        return (intent: string, stateName: string, machine: stateMachineInterfaces.Transitionable, promptStateName = "PromptState") => {
+          return new Prompt(machine, context.container.get<any>("core:unifier:current-session-factory")(), intent, stateName, promptStateName);
         };
       });
 

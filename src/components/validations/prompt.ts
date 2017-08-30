@@ -8,12 +8,16 @@ export class Prompt implements PromptInterface {
   private intent: string;
   private stateName: string;
 
-  constructor(machine: stateMachineInterfaces.Transitionable, session: servicesInterfaces.Session, intent: string, stateName: string) {
+  promptStateName: string;
+
+  constructor(machine: stateMachineInterfaces.Transitionable, session: servicesInterfaces.Session, intent: string, stateName: string, promptStateName = "PromptState") {
     this.machine = machine;
     this.session = session;
 
     this.intent = intent;
     this.stateName = stateName;
+
+    this.promptStateName = promptStateName;
   }
 
   prompt(entity: string, tellInvokeMessage = true) {
@@ -25,10 +29,10 @@ export class Prompt implements PromptInterface {
 
   /** Switches state to prompt state, to retrieve new parameter. */
   switchStateForRetrieval(tellInvokeMessage = true) {
-    if (!this.machine.stateExists("PromptState")) throw new Error("Tried to transition to generic 'PromptState', but was not registered. "+
+    if (this.promptStateName === "PromptState" && !this.machine.stateExists("PromptState")) throw new Error("Tried to transition to generic 'PromptState', but was not registered. "+
       "Did you register the PromptState out of assistant-validations in your index.ts?");
     
-    return this.machine.redirectTo("PromptState", unifierInterfaces.GenericIntent.Invoke, tellInvokeMessage);
+    return this.machine.redirectTo(this.promptStateName, unifierInterfaces.GenericIntent.Invoke, tellInvokeMessage);
   }
 
   /** Saves information about new retrieval request into context object

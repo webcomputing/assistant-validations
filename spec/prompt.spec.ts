@@ -5,10 +5,10 @@ describe("Prompt", function() {
   const state = "MainState";
 
   beforeEach(function() {
-    this.preparePrompt = async () => {
+    this.preparePrompt = async (promptStateName?: string) => {
       await this.alexaHelper.pretendIntentCalled("test", false);
       this.machine = this.container.inversifyInstance.get("core:state-machine:current-state-machine");
-      this.prompt = this.container.inversifyInstance.get("validations:current-prompt-factory")(intent, state, this.machine);
+      this.prompt = this.container.inversifyInstance.get("validations:current-prompt-factory")(intent, state, this.machine, promptStateName);
       this.currentStateProvider = this.container.inversifyInstance.get("core:state-machine:current-state-provider");
     }
   });
@@ -78,6 +78,21 @@ describe("Prompt", function() {
           expect(true).toBeTruthy();
         }
 
+        done();
+      });
+    });
+
+    describe("with promptStateName set to 'MyPromptState'", function() {
+      beforeEach(async function(done) {
+        this.prepareWithStates();
+        await this.preparePrompt("MyPromptState");
+        done();
+      });
+
+      it("transitions to MyPromptState instead", async function(done) {
+        await this.prompt.prompt("city");
+        let currentState = await this.currentStateProvider();
+        expect(currentState.name).toEqual("MyPromptState");
         done();
       });
     });

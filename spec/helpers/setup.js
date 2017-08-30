@@ -5,6 +5,7 @@ let ownComponent = require("../../src/components/validations/descriptor");
 
 let mainState = require("../support/mocks/states/main").MainState;
 let promptState = require("../../src/components/validations/states/prompt").PromptState;
+let myPromptState = require("../support/mocks/states/my-prompt").MyPromptState;
 
 
 beforeEach(function() {
@@ -17,7 +18,8 @@ beforeEach(function() {
   this.prepareWithStates = () => {
     this.specHelper.prepare([
       mainState,
-      promptState
+      promptState,
+      myPromptState
     ]);
   }
 

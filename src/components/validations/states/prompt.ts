@@ -9,10 +9,10 @@ import { log } from "../../../global";
 export class PromptState extends BaseState implements stateMachineInterfaces.State {
   i18n: i18nInterfaces.TranslateHelper;
   responseFactory: unifierInterfaces.ResponseFactory;
-  private entities: unifierInterfaces.EntityDictionary;
-  private machine: stateMachineInterfaces.StateMachine;
-  private sessionFactory: () => servicesInterfaces.Session;
-  private mappings: unifierInterfaces.GeneratorEntityMapping;
+  entities: unifierInterfaces.EntityDictionary;
+  machine: stateMachineInterfaces.StateMachine;
+  sessionFactory: () => servicesInterfaces.Session;
+  mappings: unifierInterfaces.GeneratorEntityMapping;
 
   constructor(
     @inject("core:i18n:current-translate-helper") i18n: i18nInterfaces.TranslateHelper,

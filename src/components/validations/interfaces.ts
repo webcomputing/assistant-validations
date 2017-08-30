@@ -11,8 +11,9 @@ export interface PromptFactory {
    * @param intent Name of the current intent
    * @param stateName Name of the current state
    * @param machine Reference to Transitionable object
+   * @param promptStateName (optional) Name of prompt state to transition to, defaults to "PromptState"
    */
-  (intent: string, stateName: string, machine: stateMachineInterfaces.Transitionable): Prompt;
+  (intent: string, stateName: string, machine: stateMachineInterfaces.Transitionable, promptStateName?: string): Prompt;
 }
 
 export interface Prompt {
