@@ -10,7 +10,7 @@ export class Prompt implements PromptInterface {
 
   promptStateName: string;
 
-  constructor(machine: stateMachineInterfaces.Transitionable, session: servicesInterfaces.Session, intent: string, stateName: string, promptStateName = "PromptState") {
+  constructor(machine: stateMachineInterfaces.Transitionable, session: servicesInterfaces.Session, intent: string, stateName: string, promptStateName: string) {
     this.machine = machine;
     this.session = session;
 

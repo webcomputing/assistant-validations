@@ -96,5 +96,26 @@ describe("Prompt", function() {
         done();
       });
     });
+
+    describe("with changed configuration", function() {
+      beforeEach(async function(done) {
+        this.assistantJs.addConfiguration({
+          "validations": {
+            "defaultPromptState": "MyPromptState"
+          }
+        });
+
+        this.prepareWithStates();
+        await this.preparePrompt();
+        done();
+      });
+
+      it("transitions to configured prompt state instead", async function(done) {
+        await this.prompt.prompt("city");
+        let currentState = await this.currentStateProvider();
+        expect(currentState.name).toEqual("MyPromptState");
+        done();
+      });
+    });
   });
 });

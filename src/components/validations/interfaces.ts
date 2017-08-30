@@ -23,3 +23,11 @@ export interface Prompt {
    */
   prompt(parameter: string, tellInvokeMessage?: boolean): Promise<void>;
 }
+
+export interface OptionalConfiguration {
+  defaultPromptState?: string;
+}
+
+export interface Configuration extends OptionalConfiguration {
+
+}
