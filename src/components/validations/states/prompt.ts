@@ -31,6 +31,11 @@ export class PromptState extends BaseState implements stateMachineInterfaces.Sta
     this.sessionFactory = sessionFactory;
   }
 
+  /**
+   * Called as an state entrance from promptFactory.
+   * @param machine Transitionable interface 
+   * @param tellInvokeMessage If set to true, the invoke prompt message will be returned to user
+   */
   async invokeGenericIntent(machine: stateMachineInterfaces.Transitionable, tellInvokeMessage = true) {
     let promises = await Promise.all([this.unserializeHook(), this.storeCurrentEntitiesToSession()]);
     let context = promises[0];
@@ -42,18 +47,20 @@ export class PromptState extends BaseState implements stateMachineInterfaces.Sta
     }
   }
 
+  /**
+   * Intent to be called if there is an answer. Uses entityIsContained and switchEntityStorage to check if
+   * an entity is given and to store the new entity into entity store
+   */
   answerPromptIntent() {
     return this.unserializeHook().then(context => {
-      let promptedEntity = this.getEntityConfiguration(context.neededEntity);
+      let promptedEntity = this.getEntityType(context.neededEntity);
 
-      if (this.entities.contains(promptedEntity)) {
+      if (this.entityIsContained(promptedEntity)) {
         log("Current request contained entitiy");
         return this.sessionFactory().delete("entities:currentPrompt").then(() => {
           return this.applyStoredEntities();
         }).then(() => {
-          let entityValue = this.entities.get(promptedEntity);
-          this.entities.set(promptedEntity, undefined);
-          this.entities.set(context.neededEntity, entityValue);
+          this.switchEntityStorage(promptedEntity, context.neededEntity);          
           log("Redirecting to initial state/intent context: %o", context);
           return this.machine.redirectTo(context.state, context.intent.replace("Intent", ""));
         });
@@ -62,6 +69,25 @@ export class PromptState extends BaseState implements stateMachineInterfaces.Sta
         return this.machine.handleIntent("unhandledIntent");
       }
     });
+  }
+
+  /** 
+   * Checks if a named entity is contained in the current request 
+   * @param entityType Type of entity which is stored in the hook context, derived from your config/components.ts
+  */
+  entityIsContained(entityType: string) {
+    return this.entities.contains(entityType);
+  }
+
+  /**
+   * Changes the key of stored entity item: From this.entities.get("entityType") to this.entities.get("entityName")
+   * @param entityType Type of entity, which is the current key in this.entities
+   * @param entityName Name of entity, which is the new key in this.entities
+  */
+  switchEntityStorage(entityType: string, entityName: string) {
+    let entityValue = this.entities.get(entityType);
+    this.entities.set(entityType, undefined);
+    this.entities.set(entityName, entityValue);
   }
 
   helpGenericIntent() {
@@ -78,8 +104,8 @@ export class PromptState extends BaseState implements stateMachineInterfaces.Sta
   */
   async unhandledGenericIntent(machine: stateMachineInterfaces.Transitionable) {
     let context = await this.unserializeHook();
-    let promptedEntity = this.getEntityConfiguration(context.neededEntity);
-    if (this.entities.contains(promptedEntity)) {
+    let promptedEntity = this.getEntityType(context.neededEntity);
+    if (this.entityIsContained(promptedEntity)) {
       return machine.handleIntent("answerPrompt");
     } else {
       return this.unserializeAndPrompt();
@@ -90,7 +116,10 @@ export class PromptState extends BaseState implements stateMachineInterfaces.Sta
     return machine.handleIntent(unifierInterfaces.GenericIntent.Cancel);
   }
 
-  private unserializeAndPrompt() {
+  /**
+   * Unserializes hook context and prompts for the entity
+   */
+  unserializeAndPrompt() {
     return this.unserializeHook().then(context => {
       if (typeof(context) === "undefined" || typeof(context.intent) === "undefined") {
         this.responseFactory.createVoiceResponse().prompt(this.i18n.t());
@@ -102,27 +131,34 @@ export class PromptState extends BaseState implements stateMachineInterfaces.Sta
     });
   }
 
-  private getEntityConfiguration(name: string): string {
+  /**
+   * Returns entity type by its name
+   * @param name name of entity
+   */
+  getEntityType(name: string): string {
     let searchedEntity: string | undefined = this.mappings[name];
 
     if (searchedEntity === undefined)
-      throw new Error("Could not find entity configuration for " + name);
+      throw new Error("Could not find entity configuration for " + name + ". Did you register it's entity type in your config/components.ts?");
     return searchedEntity;
   }
 
-  private unserializeHook(): Promise<HookContext> {
+  /**
+   * Unserializes hook context
+   */
+  unserializeHook(): Promise<HookContext> {
     return this.sessionFactory().get("entities:currentPrompt").then(serializedHook => {
       return JSON.parse(serializedHook) as HookContext;
     });
   }
 
   /** Stores all entities currently present in entity dictionary into session. */
-  private storeCurrentEntitiesToSession() {
+  storeCurrentEntitiesToSession() {
     this.entities.storeToSession(this.sessionFactory(), "entities:currentPrompt:previousEntities");
   }
 
   /** Opposite of storeCurrentEntitiesToSession() */
-  private async applyStoredEntities() {
+  async applyStoredEntities() {
     await this.entities.readFromSession(this.sessionFactory(), true, "entities:currentPrompt:previousEntities");
     return this.sessionFactory().delete("entities:currentPrompt:previousEntities");
   }
