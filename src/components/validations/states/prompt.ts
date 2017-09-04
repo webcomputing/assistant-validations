@@ -40,8 +40,14 @@ export class PromptState extends BaseState implements stateMachineInterfaces.Sta
     let promises = await Promise.all([this.unserializeHook(), this.storeCurrentEntitiesToSession()]);
     let context = promises[0];
 
+    if (typeof context === "undefined" || context === null ) throw new Error("HookContext must not be undefined!");
+
+    // Check if entity is contained; if so, redirect to answerPromptIntent directly
+    if (this.entityIsContained(this.getEntityType(context.neededEntity))) {
+      return machine.handleIntent("answerPrompt");
+    }
+
     if (tellInvokeMessage) {
-      if (typeof context === "undefined" || context === null ) throw new Error("HookContext must not be undefined!");
       log("Sending initial prompt message");
       this.responseFactory.createVoiceResponse().prompt(this.i18n.t("." + context.neededEntity));
     }
