@@ -62,7 +62,7 @@ export class PromptState extends BaseState implements stateMachineInterfaces.Sta
       let promptedEntity = this.getEntityType(context.neededEntity);
 
       if (this.entityIsContained(promptedEntity)) {
-        log("Current request contained entitiy");
+        log("Current request contained entity");
         return this.sessionFactory().delete("entities:currentPrompt").then(() => {
           return this.applyStoredEntities();
         }).then(() => {
@@ -71,7 +71,7 @@ export class PromptState extends BaseState implements stateMachineInterfaces.Sta
           return this.machine.redirectTo(context.state, context.intent.replace("Intent", ""));
         });
       } else {
-        log("Current request did not contain entitiy, reprompting via unhandledIntent");
+        log("Current request did not contain entity, reprompting via unhandledIntent");
         return this.machine.handleIntent("unhandledIntent");
       }
     });

@@ -21,7 +21,7 @@ describe("UtteranceTemplateService", function() {
   });
 
   describe("getUtteranceFor", function() {
-    it("responds with prompting utterance for each entitiy", function() {
+    it("responds with prompting utterance for each entity", function() {
       expect(templateService.getUtterancesFor("de")).toEqual({
         "answerPromptIntent": ["{{number}}", "{{givenName}}"]
       });

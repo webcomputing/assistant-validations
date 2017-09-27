@@ -8,11 +8,19 @@
   "keywords": [
     "validations",
     "entities",
-    "assistant.js"
+    "AssistantJS"
   ],
   "peerDependencies": {
     "assistant-source": "^0.1.0"
   },
+  "homepage": "http://www.assistantjs.org",
+  "bugs": "https://github.com/webcomputing/assistant-validations/issues",
+  "author": "Antonius Ostermann <ostermann.antonius@gmail.com> (http://www.antonius-ostermann.de)",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/webcomputing/assistant-validations/"
+  },
+  "license": "SEE LICENSE IN <LICENSE>",
   "devDependencies": {
     "@types/jasmine": "^2.5.48",
     "assistant-alexa": "^0.1.0",
@@ -30,8 +38,6 @@
   "dependencies": {
     "@types/reflect-metadata": "0.0.5"
   },
-  "author": "Antonius Ostermann",
-  "license": "ISC",
   "main": "./lib/assistant-validations.js",
   "typings": "./dts/assistant-validations.d.ts",
   "publishConfig": {

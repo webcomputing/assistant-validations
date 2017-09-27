@@ -135,7 +135,7 @@ describe("PromptState", function() {
         done()
       });
 
-      it("puts needed entitiy in entitiy dictionary", function() {
+      it("puts needed entity in entity dictionary", function() {
         expect(this.entityDictionary.get("city")).toEqual("Münster");
       });
     
