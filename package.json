@@ -1,6 +1,6 @@
 {
   "name": "assistant-validations",
-  "version": "0.1.14",
+  "version": "0.1.0",
   "description": "Supports entity validations with the @needs decorator",
   "scripts": {
     "test": "jasmine-ts spec/**/*.spec.ts"
@@ -39,8 +39,5 @@
     "@types/reflect-metadata": "0.0.5"
   },
   "main": "./lib/assistant-validations.js",
-  "typings": "./dts/assistant-validations.d.ts",
-  "publishConfig": {
-    "registry": "http://sinopia.verstehe.local:4873"
-  }
+  "typings": "./dts/assistant-validations.d.ts"
 }
