@@ -5,10 +5,10 @@ describe("Prompt", function() {
   const state = "MainState";
 
   beforeEach(function() {
-    this.preparePrompt = async (promptStateName?: string) => {
+    this.preparePrompt = async (promptStateName?: string, additionalArguments = []) => {
       await this.alexaHelper.pretendIntentCalled("test", false);
       this.machine = this.container.inversifyInstance.get("core:state-machine:current-state-machine");
-      this.prompt = this.container.inversifyInstance.get("validations:current-prompt-factory")(intent, state, this.machine, promptStateName);
+      this.prompt = this.container.inversifyInstance.get("validations:current-prompt-factory")(intent, state, this.machine, promptStateName, additionalArguments);
       this.currentStateProvider = this.container.inversifyInstance.get("core:state-machine:current-state-provider");
     }
   });
@@ -25,10 +25,28 @@ describe("Prompt", function() {
       expect(JSON.parse(context)).toEqual({
         "intent": intent,
         "state": state,
-        "neededEntity": "city"
+        "neededEntity": "city",
+        "redirectArguments": []
       });
       done();
     });
+
+    describe("with additional redirect arguments", function() {
+      beforeEach(async function(done) {
+        this.prepareWithStates();
+        await this.preparePrompt(undefined, ["additionalArg1", "additionalArg2"]);
+        done();
+      });
+
+      it("stores additional arguments in hook context", async function(done) {
+        spyOn(this.prompt, "switchStateForRetrieval");
+        await this.prompt.prompt("city");
+        
+        let context = await this.prompt.session.get("entities:currentPrompt");
+        expect(JSON.parse(context).redirectArguments).toEqual(["additionalArg1", "additionalArg2"]);
+        done();
+      });
+    })
 
     describe("with PromptState configured", function() {
       beforeEach(async function(done) {

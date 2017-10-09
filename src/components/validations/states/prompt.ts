@@ -68,7 +68,7 @@ export class PromptState extends BaseState implements stateMachineInterfaces.Sta
         }).then(() => {
           this.switchEntityStorage(promptedEntity, context.neededEntity);          
           log("Redirecting to initial state/intent context: %o", context);
-          return this.machine.redirectTo(context.state, context.intent.replace("Intent", ""));
+          return this.machine.redirectTo(context.state, context.intent.replace("Intent", ""), ...context.redirectArguments);
         });
       } else {
         log("Current request did not contain entity, reprompting via unhandledIntent");

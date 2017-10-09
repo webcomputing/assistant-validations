@@ -8,9 +8,10 @@ export class Prompt implements PromptInterface {
   private intent: string;
   private stateName: string;
 
-  promptStateName: string;
+  private promptStateName: string;
+  private redirectArguments: any[];
 
-  constructor(machine: stateMachineInterfaces.Transitionable, session: servicesInterfaces.Session, intent: string, stateName: string, promptStateName: string) {
+  constructor(machine: stateMachineInterfaces.Transitionable, session: servicesInterfaces.Session, intent: string, stateName: string, promptStateName: string, redirectArguments: any[] = []) {
     this.machine = machine;
     this.session = session;
 
@@ -18,6 +19,7 @@ export class Prompt implements PromptInterface {
     this.stateName = stateName;
 
     this.promptStateName = promptStateName;
+    this.redirectArguments = redirectArguments;
   }
 
   prompt(entity: string, tellInvokeMessage = true) {
@@ -44,7 +46,8 @@ export class Prompt implements PromptInterface {
     let context: HookContext =  {
       intent: this.intent,
       state: this.stateName,
-      neededEntity: entity
+      neededEntity: entity,
+      redirectArguments: this.redirectArguments
     };
 
     return this.session.set("entities:currentPrompt", JSON.stringify(context));
