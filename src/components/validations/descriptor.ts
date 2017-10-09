@@ -24,13 +24,13 @@ export const descriptor: ComponentDescriptor = {
     request: (bindService, lookupService) => {
       // Make prompt service accessible via factory
       bindService.bindGlobalService<PromptFactory>("current-prompt-factory").toFactory(context => {
-        return (intent: string, stateName: string, machine: stateMachineInterfaces.Transitionable, promptStateName?: string) => {
+        return (intent: string, stateName: string, machine: stateMachineInterfaces.Transitionable, promptStateName?: string, additionalArguments: any[] = []) => {
           if (typeof promptStateName === "undefined") {
             // Grab default promptState by Configuration
             promptStateName = (context.container.get<Component>("meta:component//validations").configuration as Configuration).defaultPromptState as string;
           }
 
-          return new Prompt(machine, context.container.get<any>("core:unifier:current-session-factory")(), intent, stateName, promptStateName);
+          return new Prompt(machine, context.container.get<any>("core:unifier:current-session-factory")(), intent, stateName, promptStateName, additionalArguments);
         };
       });
 
