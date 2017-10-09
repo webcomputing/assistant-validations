@@ -23,7 +23,7 @@ export class BeforeIntentHook {
     this.promptFactory = promptFactory;
   }
 
-  execute: Hooks.Hook = (success, failure, mode, state, stateName, intent, machine) => {
+  execute: Hooks.Hook = (success, failure, mode, state, stateName, intent, machine, ...args: any[]) => {
     this.target = state;
     this.stateName = stateName;
     this.method = intent;
@@ -35,7 +35,7 @@ export class BeforeIntentHook {
       log("Missing entity "+ unknownParam +" in entity store: %o", this.entities.store);
 
       if (typeof(unknownParam) !== "undefined") {
-        this.promptFactory(this.method, this.stateName, machine)
+        this.promptFactory(this.method, this.stateName, machine, undefined, args)
           .prompt(unknownParam)
           .catch(reason => { failure(unknownParam); throw new Error(reason); })
           .then(() => failure(unknownParam));
