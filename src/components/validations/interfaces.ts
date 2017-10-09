@@ -4,6 +4,7 @@ export interface HookContext {
   intent: string;
   state: string;
   neededEntity: string;
+  redirectArguments: any[];
 }
 
 export interface PromptFactory {
@@ -12,8 +13,9 @@ export interface PromptFactory {
    * @param stateName Name of the current state
    * @param machine Reference to Transitionable object
    * @param promptStateName (optional) Name of prompt state to transition to, defaults to "PromptState"
+   * @param redirectArguments (optional) Additional arguments to pass to the current state and intent
    */
-  (intent: string, stateName: string, machine: stateMachineInterfaces.Transitionable, promptStateName?: string): Prompt;
+  (intent: string, stateName: string, machine: stateMachineInterfaces.Transitionable, promptStateName?: string, redirectArguments?: any[]): Prompt;
 }
 
 export interface Prompt {

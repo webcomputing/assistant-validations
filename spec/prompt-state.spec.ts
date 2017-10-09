@@ -8,7 +8,8 @@ describe("PromptState", function() {
   const hookContext = {
     "intent": "testIntent",
     "state": "MainState",
-    "neededEntity": "city"
+    "neededEntity": "city",
+    "redirectArguments": ["a1", "b2"]
   };
 
   beforeEach(function() {
@@ -130,7 +131,12 @@ describe("PromptState", function() {
       beforeEach(async function(done) {
         this.responseHandler = await this.callIntent(intentName, false, true, "PromptState", {"myEntityType": "Münster"});
         await this.currentSession.set("entities:currentPrompt:previousEntities", JSON.stringify(defaultEntities));
+
         this.entityDictionary = this.container.inversifyInstance.get("core:unifier:current-entity-dictionary");
+        this.stateMachine = this.container.inversifyInstance.get("core:state-machine:current-state-machine");
+
+        spyOn(this.stateMachine, "handleIntent").and.callThrough();
+
         await this.specHelper.runMachine("PromptState");
         done()
       });
@@ -142,6 +148,10 @@ describe("PromptState", function() {
       it("puts saved entities in entity dictionary", function() {
         expect(this.entityDictionary.get("myEntity")).toEqual("myValue");
         expect(this.entityDictionary.get("myEntity2")).toEqual("myValue2");
+      });
+
+      it("redirects to state/intent stored in hook context", function() {
+        expect(this.stateMachine.handleIntent).toHaveBeenCalledWith("test", ...hookContext.redirectArguments);
       });
     });
 
