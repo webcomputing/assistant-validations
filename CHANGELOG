@@ -1,3 +1,8 @@
+version 0.2.0
+- adds readme
+- adds all possible arguments to intent methods
+- removes logging if @needs was not used 
+
 version 0.1.1
 - bugfix: now passes additional arguments to redirect call
 
