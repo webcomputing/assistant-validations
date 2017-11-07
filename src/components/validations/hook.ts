@@ -59,9 +59,9 @@ export class BeforeIntentHook {
     if (typeof(this.target[this.method]) === "undefined") return;
     let neededParams = Reflect.getMetadata(needsMetadataKey, this.target[this.method]);
 
-    log("Retrieving @needs annotations for " + this.target.constructor.name + " and " + this.method + ":", neededParams);
-
     if (typeof(neededParams) !== "undefined" && neededParams.constructor === Array) {
+
+      log("Retrieving @needs annotations for " + this.target.constructor.name + " and " + this.method + ":", neededParams);
 
       if ((neededParams as any[]).filter(param => typeof(param) !== "string").length > 0)
         throw new TypeError("Only strings are allowed as parameter identifiers!");

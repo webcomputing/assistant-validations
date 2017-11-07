@@ -36,7 +36,7 @@ export class PromptState extends BaseState implements stateMachineInterfaces.Sta
    * @param machine Transitionable interface 
    * @param tellInvokeMessage If set to true, the invoke prompt message will be returned to user
    */
-  async invokeGenericIntent(machine: stateMachineInterfaces.Transitionable, tellInvokeMessage = true) {
+  async invokeGenericIntent(machine: stateMachineInterfaces.Transitionable, tellInvokeMessage = true, ...additionalArgs: any[]) {
     let promises = await Promise.all([this.unserializeHook(), this.storeCurrentEntitiesToSession()]);
     let context = promises[0];
 
@@ -57,8 +57,10 @@ export class PromptState extends BaseState implements stateMachineInterfaces.Sta
    * Intent to be called if there is an answer. Uses entityIsContained and switchEntityStorage to check if
    * an entity is given and to store the new entity into entity store
    */
-  answerPromptIntent() {
+  answerPromptIntent(machine: stateMachineInterfaces.Transitionable, ...additionalArgs: any[]) {
     return this.unserializeHook().then(context => {
+      if (typeof context === "undefined" || context === null ) throw new Error("HookContext must not be undefined!");
+
       let promptedEntity = this.getEntityType(context.neededEntity);
 
       if (this.entityIsContained(promptedEntity)) {
@@ -96,11 +98,11 @@ export class PromptState extends BaseState implements stateMachineInterfaces.Sta
     this.entities.set(entityName, entityValue);
   }
 
-  helpGenericIntent() {
+  helpGenericIntent(machine: stateMachineInterfaces.Transitionable, ...additionalArgs: any[]) {
     return this.unserializeAndPrompt();
   }
 
-  cancelGenericIntent() {
+  cancelGenericIntent(machine: stateMachineInterfaces.Transitionable, ...additionalArgs: any[]) {
     this.responseFactory.createVoiceResponse().endSessionWith(this.i18n.t());
   }
 
@@ -108,8 +110,9 @@ export class PromptState extends BaseState implements stateMachineInterfaces.Sta
    * Checks if entity is contained in this request, although it is unhandledIntent. 
    * If so, redirects to answerPromptIntent instead of reprompting 
   */
-  async unhandledGenericIntent(machine: stateMachineInterfaces.Transitionable) {
+  async unhandledGenericIntent(machine: stateMachineInterfaces.Transitionable, ...additionalArgs: any[]) {
     let context = await this.unserializeHook();
+    if (typeof context === "undefined" || context === null ) throw new Error("HookContext must not be undefined!");
     let promptedEntity = this.getEntityType(context.neededEntity);
     if (this.entityIsContained(promptedEntity)) {
       return machine.handleIntent("answerPrompt");
@@ -118,7 +121,7 @@ export class PromptState extends BaseState implements stateMachineInterfaces.Sta
     }
   }
 
-  stopGenericIntent(machine: stateMachineInterfaces.Transitionable) {
+  stopGenericIntent(machine: stateMachineInterfaces.Transitionable, ...additionalArgs: any[]) {
     return machine.handleIntent(unifierInterfaces.GenericIntent.Cancel);
   }
 
