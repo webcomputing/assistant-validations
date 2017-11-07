@@ -59,6 +59,8 @@ export class PromptState extends BaseState implements stateMachineInterfaces.Sta
    */
   answerPromptIntent() {
     return this.unserializeHook().then(context => {
+      if (typeof context === "undefined" || context === null ) throw new Error("HookContext must not be undefined!");
+
       let promptedEntity = this.getEntityType(context.neededEntity);
 
       if (this.entityIsContained(promptedEntity)) {
@@ -110,6 +112,7 @@ export class PromptState extends BaseState implements stateMachineInterfaces.Sta
   */
   async unhandledGenericIntent(machine: stateMachineInterfaces.Transitionable) {
     let context = await this.unserializeHook();
+    if (typeof context === "undefined" || context === null ) throw new Error("HookContext must not be undefined!");
     let promptedEntity = this.getEntityType(context.neededEntity);
     if (this.entityIsContained(promptedEntity)) {
       return machine.handleIntent("answerPrompt");
