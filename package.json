@@ -11,7 +11,7 @@
     "AssistantJS"
   ],
   "peerDependencies": {
-    "assistant-source": "^0.1.0"
+    "assistant-source": ">= 0.1.0"
   },
   "homepage": "http://www.assistantjs.org",
   "bugs": "https://github.com/webcomputing/assistant-validations/issues",
