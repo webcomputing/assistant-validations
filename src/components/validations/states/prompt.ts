@@ -10,7 +10,6 @@ export class PromptState extends BaseState implements stateMachineInterfaces.Sta
   i18n: i18nInterfaces.TranslateHelper;
   responseFactory: unifierInterfaces.ResponseFactory;
   entities: unifierInterfaces.EntityDictionary;
-  machine: stateMachineInterfaces.StateMachine;
   sessionFactory: () => servicesInterfaces.Session;
   mappings: unifierInterfaces.GeneratorEntityMapping;
 
@@ -18,7 +17,6 @@ export class PromptState extends BaseState implements stateMachineInterfaces.Sta
     @inject("core:i18n:current-translate-helper") i18n: i18nInterfaces.TranslateHelper,
     @inject("core:unifier:current-response-factory") responseFactory: unifierInterfaces.ResponseFactory,
     @inject("core:unifier:current-entity-dictionary") entityDictionary: unifierInterfaces.EntityDictionary,
-    @inject("core:state-machine:current-state-machine") machine: stateMachineInterfaces.StateMachine,
     @inject("core:unifier:current-session-factory") sessionFactory: () => servicesInterfaces.Session,
     @inject("core:unifier:user-entity-mappings") mappings: unifierInterfaces.GeneratorEntityMapping
   ) {
@@ -26,7 +24,6 @@ export class PromptState extends BaseState implements stateMachineInterfaces.Sta
     this.i18n = i18n;
     this.responseFactory = responseFactory;
     this.entities = entityDictionary;
-    this.machine = machine;
     this.mappings = mappings;
     this.sessionFactory = sessionFactory;
   }
@@ -70,11 +67,11 @@ export class PromptState extends BaseState implements stateMachineInterfaces.Sta
         }).then(() => {
           this.switchEntityStorage(promptedEntity, context.neededEntity);          
           log("Redirecting to initial state/intent context: %o", context);
-          return this.machine.redirectTo(context.state, context.intent.replace("Intent", ""), ...context.redirectArguments);
+          return machine.redirectTo(context.state, context.intent.replace("Intent", ""), ...context.redirectArguments);
         });
       } else {
         log("Current request did not contain entity, reprompting via unhandledIntent");
-        return this.machine.handleIntent("unhandledIntent");
+        return machine.handleIntent("unhandledIntent");
       }
     });
   }
