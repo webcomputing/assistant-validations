@@ -3,7 +3,7 @@ import { injectable, inject } from "inversify";
 import { EntityDictionary, State, Hooks } from "assistant-source";
 
 import { needsMetadataKey } from "./annotations";
-import { PromptFactory } from "./interfaces";
+import { PromptFactory } from "./public-interfaces";
 import { log } from "../../global";
 
 @injectable()

@@ -4,13 +4,14 @@ import { Transitionable, PlatformGenerator } from "assistant-source";
 import { UtteranceTemplateService } from "./utterance-template-service";
 import { BeforeIntentHook } from "./hook";
 import { Prompt } from "./prompt";
-import { PromptFactory, Configuration } from "./interfaces";
+import { PromptFactory } from "./public-interfaces";
+import { Configuration } from "./private-interfaces";
 
-export const defaultConfiguration: Configuration = {
+export const defaultConfiguration: Configuration.Defaults = {
   defaultPromptState: "PromptState"
 }
 
-export const descriptor: ComponentDescriptor = {
+export const descriptor: ComponentDescriptor<Configuration.Defaults> = {
   name: "validations",
   defaultConfiguration: defaultConfiguration,
   bindings: {
@@ -27,7 +28,7 @@ export const descriptor: ComponentDescriptor = {
         return (intent: string, stateName: string, machine: Transitionable, promptStateName?: string, additionalArguments: any[] = []) => {
           if (typeof promptStateName === "undefined") {
             // Grab default promptState by Configuration
-            promptStateName = (context.container.get<Component>("meta:component//validations").configuration as Configuration).defaultPromptState as string;
+            promptStateName = context.container.get<Component<Configuration.Runtime>>("meta:component//validations").configuration.defaultPromptState;
           }
 
           return new Prompt(machine, context.container.get<any>("core:unifier:current-session-factory")(), intent, stateName, promptStateName, additionalArguments);

@@ -1,4 +1,5 @@
 import { Transitionable } from "assistant-source";
+import { Configuration } from './private-interfaces';
 
 export interface HookContext {
   intent: string;
@@ -26,10 +27,10 @@ export interface Prompt {
   prompt(parameter: string, tellInvokeMessage?: boolean): Promise<void>;
 }
 
-export interface OptionalConfiguration {
-  defaultPromptState?: string;
-}
+/** Configuration of validations component */
+export interface ValidationsConfiguration extends Partial<Configuration.Defaults>, Configuration.Required {};
 
-export interface Configuration extends OptionalConfiguration {
-
+/** Property describing the configuration of the validations component */
+export interface ValidationsConfigurationAttribute {
+  "validations"?: ValidationsConfiguration;
 }

@@ -2,7 +2,7 @@ import { State, BaseState, TranslateHelper, ResponseFactory, EntityDictionary, S
 import { injectable, inject } from "inversify";
 import { Component } from "inversify-components";
 
-import { HookContext } from "../interfaces";
+import { HookContext } from "../public-interfaces";
 import { log } from "../../../global";
 
 @injectable()

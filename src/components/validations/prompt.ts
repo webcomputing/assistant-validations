@@ -1,5 +1,5 @@
 import { GenericIntent, Transitionable, Session } from "assistant-source";
-import { HookContext, Prompt as PromptInterface } from "./interfaces";
+import { HookContext, Prompt as PromptInterface } from "./public-interfaces";
 import { log } from "../../global";
 
 export class Prompt implements PromptInterface {
