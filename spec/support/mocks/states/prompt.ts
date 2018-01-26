@@ -2,7 +2,7 @@ import { BaseState, State, EntityDictionary, CurrentSessionFactory, PlatformGene
 import { PromptStateMixinRequirements, PromptStateMixin } from "../../../../src/assistant-validations";
 import { injectable, inject } from "inversify";
 
-export class PromptStateRequirements extends BaseState implements PromptStateMixinRequirements {
+class PromptStateRequirements extends BaseState implements PromptStateMixinRequirements {
   constructor(
     stateSetupSet: State.SetupSet,
     public entities: EntityDictionary,
