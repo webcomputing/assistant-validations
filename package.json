@@ -11,7 +11,7 @@
     "AssistantJS"
   ],
   "peerDependencies": {
-    "assistant-source": "../assistant-source/assistant-source-0.3.0.tgz"
+    "assistant-source": "^0.3.0"
   },
   "homepage": "http://www.assistantjs.org",
   "bugs": "https://github.com/webcomputing/assistant-validations/issues",
@@ -23,8 +23,8 @@
   "license": "SEE LICENSE IN <LICENSE>",
   "devDependencies": {
     "@types/jasmine": "^2.8.5",
-    "assistant-alexa": "^0.2.0",
-    "assistant-source": "../assistant-source/assistant-source-0.3.0.tgz",
+    "assistant-alexa": "^0.3.0",
+    "assistant-source": "^0.3.0",
     "gulp": "^3.9.1",
     "gulp-sourcemaps": "^2.6.4",
     "gulp-tslint": "^8.1.2",
