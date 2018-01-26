@@ -1,17 +1,17 @@
-import { stateMachineInterfaces, unifierInterfaces, servicesInterfaces } from "assistant-source";
+import { GenericIntent, Transitionable, Session } from "assistant-source";
 import { HookContext, Prompt as PromptInterface } from "./interfaces";
 import { log } from "../../global";
 
 export class Prompt implements PromptInterface {
-  private machine: stateMachineInterfaces.Transitionable;
-  private session: servicesInterfaces.Session;
+  private machine: Transitionable;
+  private session: Session;
   private intent: string;
   private stateName: string;
 
   private promptStateName: string;
   private redirectArguments: any[];
 
-  constructor(machine: stateMachineInterfaces.Transitionable, session: servicesInterfaces.Session, intent: string, stateName: string, promptStateName: string, redirectArguments: any[] = []) {
+  constructor(machine: Transitionable, session: Session, intent: string, stateName: string, promptStateName: string, redirectArguments: any[] = []) {
     this.machine = machine;
     this.session = session;
 
@@ -34,7 +34,7 @@ export class Prompt implements PromptInterface {
     if (this.promptStateName === "PromptState" && !this.machine.stateExists("PromptState")) throw new Error("Tried to transition to generic 'PromptState', but was not registered. "+
       "Did you register the PromptState out of assistant-validations in your index.ts?");
     
-    return this.machine.redirectTo(this.promptStateName, unifierInterfaces.GenericIntent.Invoke, tellInvokeMessage);
+    return this.machine.redirectTo(this.promptStateName, GenericIntent.Invoke, tellInvokeMessage);
   }
 
   /** Saves information about new retrieval request into context object

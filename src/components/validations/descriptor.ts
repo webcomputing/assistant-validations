@@ -1,5 +1,5 @@
 import { ComponentDescriptor, Hooks, Component } from "inversify-components";
-import { stateMachineInterfaces, unifierInterfaces } from "assistant-source";
+import { Transitionable, PlatformGenerator } from "assistant-source";
 
 import { UtteranceTemplateService } from "./utterance-template-service";
 import { BeforeIntentHook } from "./hook";
@@ -16,7 +16,7 @@ export const descriptor: ComponentDescriptor = {
   bindings: {
     root: (bindService, lookupService) => {
       // Bind own utterance service to corresponding conversation extension
-      bindService.bindExtension<unifierInterfaces.GeneratorUtteranceTemplateService>(
+      bindService.bindExtension<PlatformGenerator.UtteranceTemplateService>(
         lookupService.lookup("core:unifier").getInterface("utteranceTemplateService")
       ).to(UtteranceTemplateService);
     },
@@ -24,7 +24,7 @@ export const descriptor: ComponentDescriptor = {
     request: (bindService, lookupService) => {
       // Make prompt service accessible via factory
       bindService.bindGlobalService<PromptFactory>("current-prompt-factory").toFactory(context => {
-        return (intent: string, stateName: string, machine: stateMachineInterfaces.Transitionable, promptStateName?: string, additionalArguments: any[] = []) => {
+        return (intent: string, stateName: string, machine: Transitionable, promptStateName?: string, additionalArguments: any[] = []) => {
           if (typeof promptStateName === "undefined") {
             // Grab default promptState by Configuration
             promptStateName = (context.container.get<Component>("meta:component//validations").configuration as Configuration).defaultPromptState as string;

@@ -1,6 +1,6 @@
 import { Hooks, Component } from "inversify-components";
 import { injectable, inject } from "inversify";
-import { unifierInterfaces, stateMachineInterfaces } from "assistant-source";
+import { EntityDictionary, State } from "assistant-source";
 
 import { needsMetadataKey } from "./annotations";
 import { PromptFactory } from "./interfaces";
@@ -8,20 +8,15 @@ import { log } from "../../global";
 
 @injectable()
 export class BeforeIntentHook {
-  private entities: unifierInterfaces.EntityDictionary;
-  private promptFactory: PromptFactory;
-  private target: stateMachineInterfaces.State;
+  private target: State.Required;
   private stateName: string;
   private method: string;
   private neededParams: string[] = [];
 
   constructor(
-    @inject("core:unifier:current-entity-dictionary") entities: unifierInterfaces.EntityDictionary,
-    @inject("validations:current-prompt-factory") promptFactory: PromptFactory
-  ) {
-    this.entities = entities;
-    this.promptFactory = promptFactory;
-  }
+    @inject("core:unifier:current-entity-dictionary") private entities: EntityDictionary,
+    @inject("validations:current-prompt-factory") private promptFactory: PromptFactory
+  ) { }
 
   execute: Hooks.Hook = (success, failure, mode, state, stateName, intent, machine, ...args: any[]) => {
     this.target = state;

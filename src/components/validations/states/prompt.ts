@@ -1,4 +1,4 @@
-import { stateMachineInterfaces, unifierInterfaces, servicesInterfaces, i18nInterfaces, BaseState } from "assistant-source";
+import { State, BaseState, TranslateHelper, ResponseFactory, EntityDictionary, Session, PlatformGenerator, injectionNames, Transitionable, GenericIntent } from "assistant-source";
 import { injectable, inject } from "inversify";
 import { Component } from "inversify-components";
 
@@ -6,23 +6,18 @@ import { HookContext } from "../interfaces";
 import { log } from "../../../global";
 
 @injectable()
-export class PromptState extends BaseState implements stateMachineInterfaces.State {
-  i18n: i18nInterfaces.TranslateHelper;
-  responseFactory: unifierInterfaces.ResponseFactory;
-  entities: unifierInterfaces.EntityDictionary;
-  sessionFactory: () => servicesInterfaces.Session;
-  mappings: unifierInterfaces.GeneratorEntityMapping;
+export class PromptState extends BaseState implements State.Required {
+  entities: EntityDictionary;
+  sessionFactory: () => Session;
+  mappings: PlatformGenerator.EntityMapping;
 
   constructor(
-    @inject("core:i18n:current-translate-helper") i18n: i18nInterfaces.TranslateHelper,
-    @inject("core:unifier:current-response-factory") responseFactory: unifierInterfaces.ResponseFactory,
-    @inject("core:unifier:current-entity-dictionary") entityDictionary: unifierInterfaces.EntityDictionary,
-    @inject("core:unifier:current-session-factory") sessionFactory: () => servicesInterfaces.Session,
-    @inject("core:unifier:user-entity-mappings") mappings: unifierInterfaces.GeneratorEntityMapping
+    @inject(injectionNames.current.stateSetupSet) stateSetupSet: State.SetupSet,
+    @inject("core:unifier:current-entity-dictionary") entityDictionary: EntityDictionary,
+    @inject("core:unifier:current-session-factory") sessionFactory: () => Session,
+    @inject("core:unifier:user-entity-mappings") mappings: PlatformGenerator.EntityMapping
   ) {
-    super(responseFactory, i18n);
-    this.i18n = i18n;
-    this.responseFactory = responseFactory;
+    super(stateSetupSet);
     this.entities = entityDictionary;
     this.mappings = mappings;
     this.sessionFactory = sessionFactory;
@@ -33,7 +28,7 @@ export class PromptState extends BaseState implements stateMachineInterfaces.Sta
    * @param machine Transitionable interface 
    * @param tellInvokeMessage If set to true, the invoke prompt message will be returned to user
    */
-  async invokeGenericIntent(machine: stateMachineInterfaces.Transitionable, tellInvokeMessage = true, ...additionalArgs: any[]) {
+  async invokeGenericIntent(machine: Transitionable, tellInvokeMessage = true, ...additionalArgs: any[]) {
     let promises = await Promise.all([this.unserializeHook(), this.storeCurrentEntitiesToSession()]);
     let context = promises[0];
 
@@ -46,7 +41,7 @@ export class PromptState extends BaseState implements stateMachineInterfaces.Sta
 
     if (tellInvokeMessage) {
       log("Sending initial prompt message");
-      this.responseFactory.createVoiceResponse().prompt(this.i18n.t("." + context.neededEntity));
+      this.responseFactory.createVoiceResponse().prompt(this.translateHelper.t("." + context.neededEntity));
     }
   }
 
@@ -54,7 +49,7 @@ export class PromptState extends BaseState implements stateMachineInterfaces.Sta
    * Intent to be called if there is an answer. Uses entityIsContained and switchEntityStorage to check if
    * an entity is given and to store the new entity into entity store
    */
-  answerPromptIntent(machine: stateMachineInterfaces.Transitionable, ...additionalArgs: any[]) {
+  answerPromptIntent(machine: Transitionable, ...additionalArgs: any[]) {
     return this.unserializeHook().then(context => {
       if (typeof context === "undefined" || context === null ) throw new Error("HookContext must not be undefined!");
 
@@ -95,19 +90,19 @@ export class PromptState extends BaseState implements stateMachineInterfaces.Sta
     this.entities.set(entityName, entityValue);
   }
 
-  helpGenericIntent(machine: stateMachineInterfaces.Transitionable, ...additionalArgs: any[]) {
+  helpGenericIntent(machine: Transitionable, ...additionalArgs: any[]) {
     return this.unserializeAndPrompt();
   }
 
-  cancelGenericIntent(machine: stateMachineInterfaces.Transitionable, ...additionalArgs: any[]) {
-    this.responseFactory.createVoiceResponse().endSessionWith(this.i18n.t());
+  cancelGenericIntent(machine: Transitionable, ...additionalArgs: any[]) {
+    this.responseFactory.createVoiceResponse().endSessionWith(this.translateHelper.t());
   }
 
   /* 
    * Checks if entity is contained in this request, although it is unhandledIntent. 
    * If so, redirects to answerPromptIntent instead of reprompting 
   */
-  async unhandledGenericIntent(machine: stateMachineInterfaces.Transitionable, ...additionalArgs: any[]) {
+  async unhandledGenericIntent(machine: Transitionable, ...additionalArgs: any[]) {
     let context = await this.unserializeHook();
     if (typeof context === "undefined" || context === null ) throw new Error("HookContext must not be undefined!");
     let promptedEntity = this.getEntityType(context.neededEntity);
@@ -118,8 +113,8 @@ export class PromptState extends BaseState implements stateMachineInterfaces.Sta
     }
   }
 
-  stopGenericIntent(machine: stateMachineInterfaces.Transitionable, ...additionalArgs: any[]) {
-    return machine.handleIntent(unifierInterfaces.GenericIntent.Cancel);
+  stopGenericIntent(machine: Transitionable, ...additionalArgs: any[]) {
+    return machine.handleIntent(GenericIntent.Cancel);
   }
 
   /**
@@ -128,12 +123,12 @@ export class PromptState extends BaseState implements stateMachineInterfaces.Sta
   unserializeAndPrompt() {
     return this.unserializeHook().then(context => {
       if (typeof(context) === "undefined" || typeof(context.intent) === "undefined") {
-        this.responseFactory.createVoiceResponse().prompt(this.i18n.t());
+        this.responseFactory.createVoiceResponse().prompt(this.translateHelper.t());
       } else {
-        this.responseFactory.createVoiceResponse().prompt(this.i18n.t("." + context.neededEntity));
+        this.responseFactory.createVoiceResponse().prompt(this.translateHelper.t("." + context.neededEntity));
       }
     }).catch(reason => {
-      this.responseFactory.createVoiceResponse().prompt(this.i18n.t());
+      this.responseFactory.createVoiceResponse().prompt(this.translateHelper.t());
     });
   }
 
