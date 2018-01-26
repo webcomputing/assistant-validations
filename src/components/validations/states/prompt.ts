@@ -1,26 +1,19 @@
-import { State, BaseState, TranslateHelper, ResponseFactory, EntityDictionary, Session, PlatformGenerator, injectionNames, Transitionable, GenericIntent } from "assistant-source";
+import { State, BaseState, TranslateHelper, ResponseFactory, EntityDictionary, Session, PlatformGenerator, injectionNames, Transitionable, GenericIntent, CurrentSessionFactory, Logger } from "assistant-source";
 import { injectable, inject } from "inversify";
 import { Component } from "inversify-components";
 
 import { HookContext } from "../public-interfaces";
-import { log } from "../../../global";
 
 @injectable()
 export class PromptState extends BaseState implements State.Required {
-  entities: EntityDictionary;
-  sessionFactory: () => Session;
-  mappings: PlatformGenerator.EntityMapping;
 
   constructor(
     @inject(injectionNames.current.stateSetupSet) stateSetupSet: State.SetupSet,
-    @inject("core:unifier:current-entity-dictionary") entityDictionary: EntityDictionary,
-    @inject("core:unifier:current-session-factory") sessionFactory: () => Session,
-    @inject("core:unifier:user-entity-mappings") mappings: PlatformGenerator.EntityMapping
+    @inject(injectionNames.current.entityDictionary) private entities: EntityDictionary,
+    @inject(injectionNames.current.sessionFactory) private sessionFactory: CurrentSessionFactory,
+    @inject("core:unifier:user-entity-mappings") private mappings: PlatformGenerator.EntityMapping
   ) {
     super(stateSetupSet);
-    this.entities = entityDictionary;
-    this.mappings = mappings;
-    this.sessionFactory = sessionFactory;
   }
 
   /**
@@ -40,7 +33,7 @@ export class PromptState extends BaseState implements State.Required {
     }
 
     if (tellInvokeMessage) {
-      log("Sending initial prompt message");
+      this.logger.debug("Sending initial prompt message");
       this.responseFactory.createVoiceResponse().prompt(this.translateHelper.t("." + context.neededEntity));
     }
   }
@@ -56,16 +49,16 @@ export class PromptState extends BaseState implements State.Required {
       let promptedEntity = this.getEntityType(context.neededEntity);
 
       if (this.entityIsContained(promptedEntity)) {
-        log("Current request contained entity");
+        this.logger.debug("Current request contained entity");
         return this.sessionFactory().delete("entities:currentPrompt").then(() => {
           return this.applyStoredEntities();
         }).then(() => {
           this.switchEntityStorage(promptedEntity, context.neededEntity);          
-          log("Redirecting to initial state/intent context: %o", context);
+          this.logger.debug(`Redirecting to initially called ${context.state}#${context.intent}`);
           return machine.redirectTo(context.state, context.intent.replace("Intent", ""), ...context.redirectArguments);
         });
       } else {
-        log("Current request did not contain entity, reprompting via unhandledIntent");
+        this.logger.debug("Current request did not contain entity, reprompting via unhandledIntent");
         return machine.handleIntent("unhandledIntent");
       }
     });

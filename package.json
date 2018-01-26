@@ -25,7 +25,6 @@
     "@types/jasmine": "^2.8.5",
     "assistant-alexa": "^0.2.0",
     "assistant-source": "../assistant-source/assistant-source-0.3.0.tgz",
-    "debug": "^3.1.0",
     "gulp": "^3.9.1",
     "gulp-sourcemaps": "^2.6.4",
     "gulp-tslint": "^8.1.2",

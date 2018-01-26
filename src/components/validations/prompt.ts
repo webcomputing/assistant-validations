@@ -1,29 +1,17 @@
 import { GenericIntent, Transitionable, Session } from "assistant-source";
 import { HookContext, Prompt as PromptInterface } from "./public-interfaces";
-import { log } from "../../global";
 
 export class Prompt implements PromptInterface {
-  private machine: Transitionable;
-  private session: Session;
-  private intent: string;
-  private stateName: string;
-
-  private promptStateName: string;
-  private redirectArguments: any[];
-
-  constructor(machine: Transitionable, session: Session, intent: string, stateName: string, promptStateName: string, redirectArguments: any[] = []) {
-    this.machine = machine;
-    this.session = session;
-
-    this.intent = intent;
-    this.stateName = stateName;
-
-    this.promptStateName = promptStateName;
-    this.redirectArguments = redirectArguments;
+  constructor(
+    private machine: Transitionable, 
+    private session: Session, 
+    private intent: string, 
+    private stateName: string, 
+    private promptStateName: string, 
+    private redirectArguments: any[] = []) {
   }
 
   prompt(entity: string, tellInvokeMessage = true) {
-    log("Prompting for " + entity);
     return this.saveToContext(entity).then(() => {
       return this.switchStateForRetrieval(tellInvokeMessage);
     });

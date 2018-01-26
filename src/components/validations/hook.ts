@@ -1,10 +1,9 @@
 import { Component } from "inversify-components";
 import { injectable, inject } from "inversify";
-import { EntityDictionary, State, Hooks } from "assistant-source";
+import { EntityDictionary, State, Hooks, injectionNames, Logger } from "assistant-source";
 
 import { needsMetadataKey } from "./annotations";
-import { PromptFactory } from "./public-interfaces";
-import { log } from "../../global";
+import { PromptFactory, injectionNames as ownInjectionNames } from "./public-interfaces";
 
 @injectable()
 export class BeforeIntentHook {
@@ -14,8 +13,9 @@ export class BeforeIntentHook {
   private neededParams: string[] = [];
 
   constructor(
-    @inject("core:unifier:current-entity-dictionary") private entities: EntityDictionary,
-    @inject("validations:current-prompt-factory") private promptFactory: PromptFactory
+    @inject(injectionNames.current.entityDictionary) private entities: EntityDictionary,
+    @inject(ownInjectionNames.current.promptFactory) private promptFactory: PromptFactory,
+    @inject(injectionNames.current.logger) private logger: Logger
   ) { }
 
   execute: Hooks.BeforeIntentHook = async (mode, state, stateName, intent, machine, ...args: any[]) => {
@@ -27,7 +27,7 @@ export class BeforeIntentHook {
 
     if (this.neededParams.length > 0) {
       let unknownParam = this.neededParams.filter(p => !this.currentRequestHasParam(p))[0];
-      log("Missing entity "+ unknownParam +" in entity store: %o", this.entities.store);
+      this.logger.info("Missing required entity "+ unknownParam +" in current entity store");
 
       if (typeof(unknownParam) !== "undefined") {
         await this.promptFactory(this.method, this.stateName, machine, undefined, args).prompt(unknownParam);
@@ -50,9 +50,9 @@ export class BeforeIntentHook {
     if (typeof(this.target[this.method]) === "undefined") return;
     let neededParams = Reflect.getMetadata(needsMetadataKey, this.target[this.method]);
 
-    if (typeof(neededParams) !== "undefined" && neededParams.constructor === Array) {
+    if (typeof neededParams !== "undefined" && neededParams.constructor === Array) {
 
-      log("Retrieving @needs annotations for " + this.target.constructor.name + " and " + this.method + ":", neededParams);
+      this.logger.debug("Retrieving @needs annotations for " + this.target.constructor.name + " and " + this.method + ":");
 
       if ((neededParams as any[]).filter(param => typeof(param) !== "string").length > 0)
         throw new TypeError("Only strings are allowed as parameter identifiers!");
