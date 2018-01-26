@@ -1,6 +1,6 @@
-import { Hooks, Component } from "inversify-components";
+import { Component } from "inversify-components";
 import { injectable, inject } from "inversify";
-import { EntityDictionary, State } from "assistant-source";
+import { EntityDictionary, State, Hooks } from "assistant-source";
 
 import { needsMetadataKey } from "./annotations";
 import { PromptFactory } from "./interfaces";
@@ -18,7 +18,7 @@ export class BeforeIntentHook {
     @inject("validations:current-prompt-factory") private promptFactory: PromptFactory
   ) { }
 
-  execute: Hooks.Hook = (success, failure, mode, state, stateName, intent, machine, ...args: any[]) => {
+  execute: Hooks.BeforeIntentHook = async (mode, state, stateName, intent, machine, ...args: any[]) => {
     this.target = state;
     this.stateName = stateName;
     this.method = intent;
@@ -30,16 +30,12 @@ export class BeforeIntentHook {
       log("Missing entity "+ unknownParam +" in entity store: %o", this.entities.store);
 
       if (typeof(unknownParam) !== "undefined") {
-        this.promptFactory(this.method, this.stateName, machine, undefined, args)
-          .prompt(unknownParam)
-          .catch(reason => { failure(unknownParam); throw new Error(reason); })
-          .then(() => failure(unknownParam));
-        return ; // Dont execute the success() below, but wait for saveToContext to finish and respond with catch() or then() then.
+        await this.promptFactory(this.method, this.stateName, machine, undefined, args).prompt(unknownParam);
+        return false;
       }
     }
 
-    // In all alternative cases, continue processing
-    success();
+    return true;
   }
 
   /** Checks if current request already has the given parameter
