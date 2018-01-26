@@ -1,11 +1,11 @@
 require("reflect-metadata");
-let assistantJsCore = require("assistant-source");
-let alexa = require("assistant-alexa");
-let ownComponent = require("../../src/components/validations/descriptor");
+const assistantJsCore = require("assistant-source");
+const alexa = require("assistant-alexa");
+const ownComponent = require("../../src/components/validations/descriptor");
 
-let mainState = require("../support/mocks/states/main").MainState;
-let promptState = require("../../src/components/validations/states/prompt").PromptState;
-let myPromptState = require("../support/mocks/states/my-prompt").MyPromptState;
+const mainState = require("../support/mocks/states/main").MainState;
+const promptState = require("../support/mocks/states/prompt").PromptState;
+const myPromptState = require("../support/mocks/states/my-prompt").MyPromptState;
 
 
 beforeEach(function() {
