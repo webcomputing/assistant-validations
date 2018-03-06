@@ -11,3 +11,6 @@ export namespace Configuration {
   /** Available configuration settings in a runtime application */
   export interface Runtime extends Defaults, Required {};
 }
+
+/** Name of component */
+export const COMPONENT_NAME = "validations";

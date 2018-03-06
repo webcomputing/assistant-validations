@@ -6,7 +6,7 @@ import { injectable, inject } from "inversify";
 import { Component } from "inversify-components";
 
 import { HookContext, PromptStateMixinRequirements, PromptStateMixinInstance } from "./public-interfaces";
-import { COMPONENT_NAME } from "./name";
+import { COMPONENT_NAME } from "./private-interfaces";
 
 export function PromptStateMixin<T extends Constructor<BaseState & PromptStateMixinRequirements>>(superState: T): Constructor<PromptStateMixinInstance> & T {
   return class extends superState {

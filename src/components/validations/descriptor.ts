@@ -5,8 +5,7 @@ import { UtteranceTemplateService } from "./utterance-template-service";
 import { BeforeIntentHook } from "./hook";
 import { Prompt } from "./prompt";
 import { PromptFactory } from "./public-interfaces";
-import { Configuration } from "./private-interfaces";
-import { COMPONENT_NAME } from "./name";
+import { Configuration, COMPONENT_NAME } from "./private-interfaces";
 
 export const defaultConfiguration: Configuration.Defaults = {
   defaultPromptState: "PromptState"

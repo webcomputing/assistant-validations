@@ -3,8 +3,8 @@ import { injectable, inject } from "inversify";
 import { EntityDictionary, State, Hooks, injectionNames, Logger, ComponentSpecificLoggerFactory } from "assistant-source";
 
 import { needsMetadataKey } from "./annotations";
-import { COMPONENT_NAME } from "./name";
 import { PromptFactory, injectionNames as ownInjectionNames } from "./public-interfaces";
+import { COMPONENT_NAME } from "./private-interfaces";
 
 @injectable()
 export class BeforeIntentHook {
