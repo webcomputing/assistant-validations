@@ -1,8 +1,9 @@
 import { Component } from "inversify-components";
 import { injectable, inject } from "inversify";
-import { EntityDictionary, State, Hooks, injectionNames, Logger } from "assistant-source";
+import { EntityDictionary, State, Hooks, injectionNames, Logger, ComponentSpecificLoggerFactory } from "assistant-source";
 
 import { needsMetadataKey } from "./annotations";
+import { COMPONENT_NAME } from "./name";
 import { PromptFactory, injectionNames as ownInjectionNames } from "./public-interfaces";
 
 @injectable()
@@ -11,12 +12,15 @@ export class BeforeIntentHook {
   private stateName: string;
   private method: string;
   private neededParams: string[] = [];
+  private logger: Logger;
 
   constructor(
     @inject(injectionNames.current.entityDictionary) private entities: EntityDictionary,
     @inject(ownInjectionNames.current.promptFactory) private promptFactory: PromptFactory,
-    @inject(injectionNames.current.logger) private logger: Logger
-  ) { }
+    @inject(injectionNames.componentSpecificLoggerFactory) loggerFactory: ComponentSpecificLoggerFactory
+  ) { 
+    this.logger = loggerFactory(COMPONENT_NAME);
+  }
 
   execute: Hooks.BeforeIntentHook = async (mode, state, stateName, intent, machine, ...args: any[]) => {
     this.target = state;
@@ -27,9 +31,9 @@ export class BeforeIntentHook {
 
     if (this.neededParams.length > 0) {
       let unknownParam = this.neededParams.filter(p => !this.currentRequestHasParam(p))[0];
-      this.logger.info("Missing required entity "+ unknownParam +" in current entity store");
 
       if (typeof(unknownParam) !== "undefined") {
+        this.logger.info("Missing required entity "+ unknownParam +" in current entity store");
         await this.promptFactory(this.method, this.stateName, machine, undefined, args).prompt(unknownParam);
         return false;
       }

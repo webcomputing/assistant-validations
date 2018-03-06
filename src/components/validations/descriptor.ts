@@ -6,13 +6,14 @@ import { BeforeIntentHook } from "./hook";
 import { Prompt } from "./prompt";
 import { PromptFactory } from "./public-interfaces";
 import { Configuration } from "./private-interfaces";
+import { COMPONENT_NAME } from "./name";
 
 export const defaultConfiguration: Configuration.Defaults = {
   defaultPromptState: "PromptState"
 }
 
 export const descriptor: ComponentDescriptor<Configuration.Defaults> = {
-  name: "validations",
+  name: COMPONENT_NAME,
   defaultConfiguration: defaultConfiguration,
   bindings: {
     root: (bindService, lookupService) => {

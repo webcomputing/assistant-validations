@@ -6,6 +6,7 @@ import { injectable, inject } from "inversify";
 import { Component } from "inversify-components";
 
 import { HookContext, PromptStateMixinRequirements, PromptStateMixinInstance } from "./public-interfaces";
+import { COMPONENT_NAME } from "./name";
 
 export function PromptStateMixin<T extends Constructor<BaseState & PromptStateMixinRequirements>>(superState: T): Constructor<PromptStateMixinInstance> & T {
   return class extends superState {
@@ -21,7 +22,7 @@ export function PromptStateMixin<T extends Constructor<BaseState & PromptStateMi
       }
 
       if (tellInvokeMessage) {
-        this.logger.debug("Sending initial prompt message");
+        this.logger.debug("Sending initial prompt message", this.getLoggerOptions());
         this.responseFactory.createVoiceResponse().prompt(this.translateHelper.t("." + context.neededEntity));
       }
     }
@@ -37,16 +38,16 @@ export function PromptStateMixin<T extends Constructor<BaseState & PromptStateMi
         let promptedEntity = this.getEntityType(context.neededEntity);
 
         if (this.entityIsContained(promptedEntity)) {
-          this.logger.debug("Current request contained entity");
+          this.logger.debug("Current request contained entity", this.getLoggerOptions());
           return this.sessionFactory().delete("entities:currentPrompt").then(() => {
             return this.applyStoredEntities();
           }).then(() => {
             this.switchEntityStorage(promptedEntity, context.neededEntity);          
-            this.logger.debug(`Redirecting to initially called ${context.state}#${context.intent}`);
+            this.logger.debug(`Redirecting to initially called ${context.state}#${context.intent}`, this.getLoggerOptions());
             return machine.redirectTo(context.state, context.intent.replace("Intent", ""), ...context.redirectArguments);
           });
         } else {
-          this.logger.debug("Current request did not contain entity, reprompting via unhandledIntent");
+          this.logger.debug("Current request did not contain entity, reprompting via unhandledIntent", this.getLoggerOptions());
           return machine.handleIntent("unhandledIntent");
         }
       });
@@ -144,6 +145,10 @@ export function PromptStateMixin<T extends Constructor<BaseState & PromptStateMi
     async applyStoredEntities() {
       await this.entities.readFromSession(this.sessionFactory(), true, "entities:currentPrompt:previousEntities");
       return this.sessionFactory().delete("entities:currentPrompt:previousEntities");
+    }
+
+    private getLoggerOptions() {
+      return { component: COMPONENT_NAME };
     }
   }
 }
