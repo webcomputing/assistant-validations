@@ -22,7 +22,7 @@ export function PromptStateMixin<T extends Constructor<BaseState & PromptStateMi
       }
 
       if (tellInvokeMessage) {
-        this.logger.debug("Sending initial prompt message", this.getLoggerOptions());
+        this.logger.debug(this.getLoggerOptions(), "Sending initial prompt message");
         this.responseFactory.createVoiceResponse().prompt(this.translateHelper.t("." + context.neededEntity));
       }
     }
@@ -38,16 +38,16 @@ export function PromptStateMixin<T extends Constructor<BaseState & PromptStateMi
         let promptedEntity = this.getEntityType(context.neededEntity);
 
         if (this.entityIsContained(promptedEntity)) {
-          this.logger.debug("Current request contained entity", this.getLoggerOptions());
+          this.logger.debug(this.getLoggerOptions(), "Current request contained entity");
           return this.sessionFactory().delete("entities:currentPrompt").then(() => {
             return this.applyStoredEntities();
           }).then(() => {
             this.switchEntityStorage(promptedEntity, context.neededEntity);          
-            this.logger.debug(`Redirecting to initially called ${context.state}#${context.intent}`, this.getLoggerOptions());
+            this.logger.debug(this.getLoggerOptions(), `Redirecting to initially called ${context.state}#${context.intent}`);
             return machine.redirectTo(context.state, context.intent.replace("Intent", ""), ...context.redirectArguments);
           });
         } else {
-          this.logger.debug("Current request did not contain entity, reprompting via unhandledIntent", this.getLoggerOptions());
+          this.logger.debug(this.getLoggerOptions(), "Current request did not contain entity, reprompting via unhandledIntent");
           return machine.handleIntent("unhandledIntent");
         }
       });
