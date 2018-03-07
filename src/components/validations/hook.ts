@@ -1,29 +1,28 @@
-import { Hooks, Component } from "inversify-components";
+import { Component } from "inversify-components";
 import { injectable, inject } from "inversify";
-import { unifierInterfaces, stateMachineInterfaces } from "assistant-source";
+import { EntityDictionary, State, Hooks, injectionNames, Logger, ComponentSpecificLoggerFactory } from "assistant-source";
 
 import { needsMetadataKey } from "./annotations";
-import { PromptFactory } from "./interfaces";
-import { log } from "../../global";
+import { PromptFactory, injectionNames as ownInjectionNames } from "./public-interfaces";
+import { COMPONENT_NAME } from "./private-interfaces";
 
 @injectable()
 export class BeforeIntentHook {
-  private entities: unifierInterfaces.EntityDictionary;
-  private promptFactory: PromptFactory;
-  private target: stateMachineInterfaces.State;
+  private target: State.Required;
   private stateName: string;
   private method: string;
   private neededParams: string[] = [];
+  private logger: Logger;
 
   constructor(
-    @inject("core:unifier:current-entity-dictionary") entities: unifierInterfaces.EntityDictionary,
-    @inject("validations:current-prompt-factory") promptFactory: PromptFactory
-  ) {
-    this.entities = entities;
-    this.promptFactory = promptFactory;
+    @inject(injectionNames.current.entityDictionary) private entities: EntityDictionary,
+    @inject(ownInjectionNames.current.promptFactory) private promptFactory: PromptFactory,
+    @inject(injectionNames.componentSpecificLoggerFactory) loggerFactory: ComponentSpecificLoggerFactory
+  ) { 
+    this.logger = loggerFactory(COMPONENT_NAME);
   }
 
-  execute: Hooks.Hook = (success, failure, mode, state, stateName, intent, machine, ...args: any[]) => {
+  execute: Hooks.BeforeIntentHook = async (mode, state, stateName, intent, machine, ...args: any[]) => {
     this.target = state;
     this.stateName = stateName;
     this.method = intent;
@@ -32,19 +31,15 @@ export class BeforeIntentHook {
 
     if (this.neededParams.length > 0) {
       let unknownParam = this.neededParams.filter(p => !this.currentRequestHasParam(p))[0];
-      log("Missing entity "+ unknownParam +" in entity store: %o", this.entities.store);
 
       if (typeof(unknownParam) !== "undefined") {
-        this.promptFactory(this.method, this.stateName, machine, undefined, args)
-          .prompt(unknownParam)
-          .catch(reason => { failure(unknownParam); throw new Error(reason); })
-          .then(() => failure(unknownParam));
-        return ; // Dont execute the success() below, but wait for saveToContext to finish and respond with catch() or then() then.
+        this.logger.info("Missing required entity "+ unknownParam +" in current entity store");
+        await this.promptFactory(this.method, this.stateName, machine, undefined, args).prompt(unknownParam);
+        return false;
       }
     }
 
-    // In all alternative cases, continue processing
-    success();
+    return true;
   }
 
   /** Checks if current request already has the given parameter
@@ -59,9 +54,9 @@ export class BeforeIntentHook {
     if (typeof(this.target[this.method]) === "undefined") return;
     let neededParams = Reflect.getMetadata(needsMetadataKey, this.target[this.method]);
 
-    if (typeof(neededParams) !== "undefined" && neededParams.constructor === Array) {
+    if (typeof neededParams !== "undefined" && neededParams.constructor === Array) {
 
-      log("Retrieving @needs annotations for " + this.target.constructor.name + " and " + this.method + ":", neededParams);
+      this.logger.debug("Retrieving @needs annotations for " + this.target.constructor.name + " and " + this.method + ":");
 
       if ((neededParams as any[]).filter(param => typeof(param) !== "string").length > 0)
         throw new TypeError("Only strings are allowed as parameter identifiers!");

@@ -1,3 +1,10 @@
+version 0.3.0
+- makes assistant-validations compatible to assistant-source 0.3.0
+- changes configuration interface structure
+- switches to bunyan for logging, adds comopnent-specific logging
+- removes deprecated interfaces (rootInterfaces, ...)
+- removes importable PromptState in favor of a PromptStateMixin which has to be applied to one of your own states. As a result, your inheritance structure remains intact.
+
 version 0.2.0
 - adds readme
 - adds all possible arguments to intent methods

@@ -1,4 +1,4 @@
-import { unifierInterfaces } from "assistant-source";
+import { intent, GenericIntent } from "assistant-source";
 
 describe("PromptState", function() {
   const defaultEntities = {
@@ -34,7 +34,7 @@ describe("PromptState", function() {
 
   describe("cancelGenericIntent", function() {
     beforeEach(async function(done) {
-      this.responseHandler = await this.callIntent(unifierInterfaces.GenericIntent.Cancel);
+      this.responseHandler = await this.callIntent(GenericIntent.Cancel);
       done();
     });
 
@@ -46,7 +46,7 @@ describe("PromptState", function() {
 
   describe("stopGenericIntent", function() {
     beforeEach(async function(done) {
-      this.responseHandler = await this.callIntent(unifierInterfaces.GenericIntent.Stop);
+      this.responseHandler = await this.callIntent(GenericIntent.Stop);
       done();
     });
 
@@ -58,7 +58,7 @@ describe("PromptState", function() {
 
   describe("unansweredGenericIntent", function() {
     beforeEach(async function(done) {
-      this.responseHandler = await this.callIntent(unifierInterfaces.GenericIntent.Unanswered);
+      this.responseHandler = await this.callIntent(GenericIntent.Unanswered);
       done();
     });
 
@@ -70,7 +70,7 @@ describe("PromptState", function() {
 
   describe("helpGenericIntent", function() {
     beforeEach(async function(done) {
-      this.responseHandler = await this.callIntent(unifierInterfaces.GenericIntent.Help);
+      this.responseHandler = await this.callIntent(GenericIntent.Help);
       done();
     });
 
@@ -86,7 +86,7 @@ describe("PromptState", function() {
 
   describe("invokeGenericIntent", function() {
     beforeEach(async function(done) {
-      this.responseHandler = await this.callIntent(unifierInterfaces.GenericIntent.Invoke, false, false);
+      this.responseHandler = await this.callIntent(GenericIntent.Invoke, false, false);
       done();
     });
 
@@ -126,7 +126,7 @@ describe("PromptState", function() {
     answerPromptBehaviour("answerPrompt");
   });
 
-  function answerPromptBehaviour(intentName: unifierInterfaces.intent) {
+  function answerPromptBehaviour(intentName: intent) {
     describe("with the prompted entity given", function() {
       beforeEach(async function(done) {
         this.responseHandler = await this.callIntent(intentName, false, true, "PromptState", {"myEntityType": "Münster"});

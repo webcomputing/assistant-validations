@@ -1,4 +1,4 @@
-import { unifierInterfaces } from "assistant-source";
+import { GenericIntent } from "assistant-source";
 
 describe("Prompt", function() {
   const intent = "testIntent";
@@ -66,7 +66,7 @@ describe("Prompt", function() {
         it("calls machine.redirectTo with tellInvokeMessage = true", async function(done) {
           spyOn(this.machine, "redirectTo").and.callThrough();
           await this.prompt.prompt("city");
-          expect(this.machine.redirectTo).toHaveBeenCalledWith("PromptState", unifierInterfaces.GenericIntent.Invoke, true);
+          expect(this.machine.redirectTo).toHaveBeenCalledWith("PromptState", GenericIntent.Invoke, true);
           done();
         });
       });
@@ -75,7 +75,7 @@ describe("Prompt", function() {
         it("calls machine.redirectTo with tellInvokeMessage = false", async function(done) {
           spyOn(this.machine, "redirectTo").and.callThrough();
           await this.prompt.prompt("city", false);
-          expect(this.machine.redirectTo).toHaveBeenCalledWith("PromptState", unifierInterfaces.GenericIntent.Invoke, false);
+          expect(this.machine.redirectTo).toHaveBeenCalledWith("PromptState", GenericIntent.Invoke, false);
           done();
         });
       });
