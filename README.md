@@ -13,7 +13,7 @@ assistantJs.registerComponent(validationsDescriptor);
 In addition, you also have to set up the PromptState which is called every time an entity is missing. To do so, you can use our `PromptStateMixin`:
 
 ```typescript
-import { injectable, inject } from "inversify";
+import { injectable, inject, unmanaged } from "inversify";
 import { State, EntityDictionary, CurrentSessionFactory, PlatformGenerator, injectionNames } from "assistant-source";
 import { PromptStateMixinRequirements, PromptStateMixin } from "assistant-validations";
 import { ApplicationState } from "./application";
@@ -22,12 +22,13 @@ import { ApplicationState } from "./application";
  * This small class is needed to apply the PromptStateMixin since TypeScript does not allow type-specific constructor mixins.
  * Just add it to your regular class hierarchy.
  */
+@injectable()
 class PromptStateRequirements extends ApplicationState implements PromptStateMixinRequirements {
   constructor(
-    stateSetupSet: State.SetupSet,
-    public entities: EntityDictionary,
-    public sessionFactory: CurrentSessionFactory,
-    public mappings: PlatformGenerator.EntityMapping
+    @unmanaged() stateSetupSet: State.SetupSet,
+    @unmanaged() public entities: EntityDictionary,
+    @unmanaged() public sessionFactory: CurrentSessionFactory,
+    @unmanaged() public mappings: PlatformGenerator.EntityMapping
   ) {
     super(stateSetupSet);
   }
