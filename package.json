@@ -1,6 +1,6 @@
 {
   "name": "assistant-validations",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Supports entity validations with the @needs decorator",
   "scripts": {
     "test": "jasmine-ts spec/**/*.spec.ts"
@@ -11,7 +11,7 @@
     "AssistantJS"
   ],
   "peerDependencies": {
-    "assistant-source": "^0.3.0"
+    "assistant-source": "^0.4.0"
   },
   "homepage": "http://www.assistantjs.org",
   "bugs": "https://github.com/webcomputing/assistant-validations/issues",
@@ -24,16 +24,16 @@
   "devDependencies": {
     "@types/jasmine": "^2.8.8",
     "@types/reflect-metadata": "0.0.5",
-    "assistant-alexa": "^0.3.1",
-    "assistant-source": "^0.3.0",
+    "assistant-alexa": "internal",
+    "assistant-source": "internal",
     "gulp": "^3.9.1",
     "gulp-sourcemaps": "^2.6.4",
     "gulp-tslint": "^8.1.2",
     "gulp-typescript": "3.2.4",
     "jasmine-ts": "^0.2.1",
     "reflect-metadata": "^0.1.12",
-    "tslint": "^5.10.0",
-    "typescript": "^2.9.2"
+    "tslint": "^5.9.1",
+    "typescript": "~2.9.2"
   },
   "main": "./lib/assistant-validations.js",
   "typings": "./dts/assistant-validations.d.ts"
