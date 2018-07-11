@@ -1,19 +1,14 @@
-import { stateMachineInterfaces } from "assistant-source";
-import { needs } from "../../../../src/components/validations/annotations";
+// tslint:disable:no-empty
 import { injectable } from "inversify";
+import { needs } from "../../../../src/components/validations/annotations";
 
 @injectable()
 export class MainState {
-
   @needs("city")
-  testIntent() {
-  }
+  public testIntent() {}
 
   @needs("city", "amount")
-  testManyIntent() {
-  }
+  public testManyIntent() {}
 
-  noEntitiesIntent() {
-    
-  }
+  public noEntitiesIntent() {}
 }

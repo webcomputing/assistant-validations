@@ -8,9 +8,15 @@ describe("Prompt", function() {
     this.preparePrompt = async (promptStateName?: string, additionalArguments = []) => {
       await this.alexaHelper.pretendIntentCalled("test", false);
       this.machine = this.container.inversifyInstance.get("core:state-machine:current-state-machine");
-      this.prompt = this.container.inversifyInstance.get("validations:current-prompt-factory")(intent, state, this.machine, promptStateName, additionalArguments);
+      this.prompt = this.container.inversifyInstance.get("validations:current-prompt-factory")(
+        intent,
+        state,
+        this.machine,
+        promptStateName,
+        additionalArguments
+      );
       this.currentStateProvider = this.container.inversifyInstance.get("core:state-machine:current-state-provider");
-    }
+    };
   });
 
   describe("prompt()", function() {
@@ -20,13 +26,13 @@ describe("Prompt", function() {
 
       spyOn(this.prompt, "switchStateForRetrieval");
       await this.prompt.prompt("city");
-      
-      let context = await this.prompt.session.get("entities:currentPrompt");
+
+      const context = await this.prompt.session.get("entities:currentPrompt");
       expect(JSON.parse(context)).toEqual({
-        "intent": intent,
-        "state": state,
-        "neededEntity": "city",
-        "redirectArguments": []
+        intent,
+        state,
+        neededEntity: "city",
+        redirectArguments: [],
       });
       done();
     });
@@ -41,12 +47,12 @@ describe("Prompt", function() {
       it("stores additional arguments in hook context", async function(done) {
         spyOn(this.prompt, "switchStateForRetrieval");
         await this.prompt.prompt("city");
-        
-        let context = await this.prompt.session.get("entities:currentPrompt");
+
+        const context = await this.prompt.session.get("entities:currentPrompt");
         expect(JSON.parse(context).redirectArguments).toEqual(["additionalArg1", "additionalArg2"]);
         done();
       });
-    })
+    });
 
     describe("with PromptState configured", function() {
       beforeEach(async function(done) {
@@ -57,7 +63,7 @@ describe("Prompt", function() {
 
       it("transitions to PromptState", async function(done) {
         await this.prompt.prompt("city");
-        let currentState = await this.currentStateProvider();
+        const currentState = await this.currentStateProvider();
         expect(currentState.name).toEqual("PromptState");
         done();
       });
@@ -92,7 +98,7 @@ describe("Prompt", function() {
         try {
           await this.prompt.prompt("city");
           expect(true).toBeFalsy();
-        } catch(e) {
+        } catch (e) {
           expect(true).toBeTruthy();
         }
 
@@ -109,7 +115,7 @@ describe("Prompt", function() {
 
       it("transitions to MyPromptState instead", async function(done) {
         await this.prompt.prompt("city");
-        let currentState = await this.currentStateProvider();
+        const currentState = await this.currentStateProvider();
         expect(currentState.name).toEqual("MyPromptState");
         done();
       });
@@ -118,9 +124,9 @@ describe("Prompt", function() {
     describe("with changed configuration", function() {
       beforeEach(async function(done) {
         this.assistantJs.addConfiguration({
-          "validations": {
-            "defaultPromptState": "MyPromptState"
-          }
+          validations: {
+            defaultPromptState: "MyPromptState",
+          },
         });
 
         this.prepareWithStates();
@@ -130,7 +136,7 @@ describe("Prompt", function() {
 
       it("transitions to configured prompt state instead", async function(done) {
         await this.prompt.prompt("city");
-        let currentState = await this.currentStateProvider();
+        const currentState = await this.currentStateProvider();
         expect(currentState.name).toEqual("MyPromptState");
         done();
       });
