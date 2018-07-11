@@ -1,35 +1,35 @@
-import { intent, GenericIntent } from "assistant-source";
+import { GenericIntent, injectionNames, intent as IntentType } from "assistant-source";
 
 describe("PromptState", function() {
   const defaultEntities = {
-    "myEntity": "myValue",
-    "myEntity2": "myValue2"
-  }
+    myEntity: "myValue",
+    myEntity2: "myValue2",
+  };
   const hookContext = {
-    "intent": "testIntent",
-    "state": "MainState",
-    "neededEntity": "city",
-    "redirectArguments": ["a1", "b2"]
+    intent: "testIntent",
+    state: "MainState",
+    neededEntity: "city",
+    redirectArguments: ["a1", "b2"],
   };
 
   beforeEach(function() {
     this.prepareWithStates();
 
     this.callIntent = async (intent, callMachine = true, setContext = true, state = "PromptState", entities: any = undefined) => {
-      entities = typeof entities === "undefined" ? defaultEntities : entities;
-      let responseHandle = await this.alexaHelper.pretendIntentCalled(intent, false, { entities: entities });
+      const currentEntities = typeof entities === "undefined" ? defaultEntities : entities;
+      const responseHandle = await this.alexaHelper.pretendIntentCalled(intent, false, { currentEntities });
 
-      this.currentSession = this.container.inversifyInstance.get("core:unifier:current-session-factory")();
+      this.currentSession = this.container.inversifyInstance.get(injectionNames.current.sessionFactory)();
 
       if (setContext) await this.setHookContext();
       if (callMachine) await this.specHelper.runMachine(state);
       return responseHandle;
-    }
+    };
 
     this.setHookContext = () => {
-      let session = this.container.inversifyInstance.get("core:unifier:current-session-factory")();
+      const session = this.container.inversifyInstance.get(injectionNames.current.sessionFactory)();
       return session.set("entities:currentPrompt", JSON.stringify(hookContext));
-    }
+    };
   });
 
   describe("cancelGenericIntent", function() {
@@ -103,7 +103,7 @@ describe("PromptState", function() {
       });
 
       it("stores current entities to session", async function(done) {
-        let storedEntities = await this.currentSession.get("entities:currentPrompt:previousEntities");
+        const storedEntities = await this.currentSession.get("entities:currentPrompt:previousEntities");
         expect(JSON.parse(storedEntities).myEntity).toEqual("myValue");
         done();
       });
@@ -114,11 +114,11 @@ describe("PromptState", function() {
         try {
           await this.specHelper.runMachine("PromptState");
           expect(false).toBeTruthy();
-        } catch(e) {
+        } catch (e) {
           expect(false).toBeFalsy();
         }
         done();
-      })
+      });
     });
   });
 
@@ -126,10 +126,10 @@ describe("PromptState", function() {
     answerPromptBehaviour("answerPrompt");
   });
 
-  function answerPromptBehaviour(intentName: intent) {
+  function answerPromptBehaviour(intentName: IntentType) {
     describe("with the prompted entity given", function() {
       beforeEach(async function(done) {
-        this.responseHandler = await this.callIntent(intentName, false, true, "PromptState", {"myEntityType": "Münster"});
+        this.responseHandler = await this.callIntent(intentName, false, true, "PromptState", { myEntityType: "Münster" });
         await this.currentSession.set("entities:currentPrompt:previousEntities", JSON.stringify(defaultEntities));
 
         this.entityDictionary = this.container.inversifyInstance.get("core:unifier:current-entity-dictionary");
@@ -138,13 +138,13 @@ describe("PromptState", function() {
         spyOn(this.stateMachine, "handleIntent").and.callThrough();
 
         await this.specHelper.runMachine("PromptState");
-        done()
+        done();
       });
 
       it("puts needed entity in entity dictionary", function() {
         expect(this.entityDictionary.get("city")).toEqual("Münster");
       });
-    
+
       it("puts saved entities in entity dictionary", function() {
         expect(this.entityDictionary.get("myEntity")).toEqual("myValue");
         expect(this.entityDictionary.get("myEntity2")).toEqual("myValue2");

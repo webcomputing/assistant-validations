@@ -1,6 +1,7 @@
-import { BaseState, State, EntityDictionary, CurrentSessionFactory, PlatformGenerator, injectionNames } from "assistant-source";
-import { PromptStateMixinRequirements, PromptStateMixin } from "../../../../src/assistant-validations";
-import { injectable, inject } from "inversify";
+// tslint:disable:max-classes-per-file
+import { BaseState, CurrentSessionFactory, EntityDictionary, injectionNames, PlatformGenerator, State } from "assistant-source";
+import { inject, injectable } from "inversify";
+import { PromptStateMixin, PromptStateMixinRequirements } from "../../../../src/assistant-validations";
 
 class PromptStateRequirements extends BaseState implements PromptStateMixinRequirements {
   constructor(

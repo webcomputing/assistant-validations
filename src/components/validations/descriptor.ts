@@ -1,45 +1,53 @@
-import { ComponentDescriptor, Hooks, Component } from "inversify-components";
-import { Transitionable, PlatformGenerator } from "assistant-source";
+import { injectionNames, PlatformGenerator, Transitionable } from "assistant-source";
+import { Component, ComponentDescriptor, Hooks } from "inversify-components";
 
-import { UtteranceTemplateService } from "./utterance-template-service";
 import { BeforeIntentHook } from "./hook";
+import { COMPONENT_NAME, Configuration } from "./private-interfaces";
 import { Prompt } from "./prompt";
 import { PromptFactory } from "./public-interfaces";
-import { Configuration, COMPONENT_NAME } from "./private-interfaces";
+import { UtteranceTemplateService } from "./utterance-template-service";
 
 export const defaultConfiguration: Configuration.Defaults = {
-  defaultPromptState: "PromptState"
-}
+  defaultPromptState: "PromptState",
+};
 
 export const descriptor: ComponentDescriptor<Configuration.Defaults> = {
+  defaultConfiguration,
   name: COMPONENT_NAME,
-  defaultConfiguration: defaultConfiguration,
   bindings: {
     root: (bindService, lookupService) => {
       // Bind own utterance service to corresponding conversation extension
-      bindService.bindExtension<PlatformGenerator.UtteranceTemplateService>(
-        lookupService.lookup("core:unifier").getInterface("utteranceTemplateService")
-      ).to(UtteranceTemplateService);
+      bindService
+        .bindExtension<PlatformGenerator.UtteranceTemplateService>(lookupService.lookup("core:unifier").getInterface("utteranceTemplateService"))
+        .to(UtteranceTemplateService);
     },
 
     request: (bindService, lookupService) => {
       // Make prompt service accessible via factory
       bindService.bindGlobalService<PromptFactory>("current-prompt-factory").toFactory(context => {
         return (intent: string, stateName: string, machine: Transitionable, promptStateName?: string, additionalArguments: any[] = []) => {
-          if (typeof promptStateName === "undefined") {
-            // Grab default promptState by Configuration
-            promptStateName = context.container.get<Component<Configuration.Runtime>>("meta:component//validations").configuration.defaultPromptState;
-          }
+          // Grab default promptState by Configuration
+          const currentpromptStateName =
+            typeof promptStateName === "undefined"
+              ? context.container.get<Component<Configuration.Runtime>>("meta:component//validations").configuration.defaultPromptState
+              : promptStateName;
 
-          return new Prompt(machine, context.container.get<any>("core:unifier:current-session-factory")(), intent, stateName, promptStateName, additionalArguments);
+          return new Prompt(
+            machine,
+            context.container.get<any>(injectionNames.current.sessionFactory)(),
+            intent,
+            stateName,
+            currentpromptStateName,
+            additionalArguments
+          );
         };
       });
 
       // Register hook function as method of a class
       bindService.bindLocalServiceToSelf(BeforeIntentHook);
       bindService.bindExtension<Hooks.Hook>(lookupService.lookup("core:state-machine").getInterface("beforeIntent")).toDynamicValue(context => {
-        return context.container.get<BeforeIntentHook>(BeforeIntentHook).execute;
+        return context.container.get<BeforeIntentHook>(BeforeIntentHook).execute as Hooks.Hook;
       });
-    }
-  }
+    },
+  },
 };
