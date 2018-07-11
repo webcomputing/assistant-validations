@@ -137,8 +137,7 @@ export function PromptStateMixin<T extends Constructor<BaseState & PromptStateMi
             return JSON.parse(serializedHook) as HookContext;
           }
 
-          // tslint:disable-next-line:no-object-literal-type-assertion
-          return {} as HookContext;
+          throw new Error("HookContext cannot be undefined.");
         });
     }
 

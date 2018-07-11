@@ -2,7 +2,7 @@ import { PromptStateMixin } from "../../../../src/components/validations/prompt-
 import { PromptState } from "./prompt";
 
 export class MyPromptState extends PromptStateMixin(PromptState) {
-  /** Always return true */
+  /** Always return false */
   public entityIsContained(entityType: string) {
     return false;
   }
