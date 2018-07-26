@@ -1,9 +1,9 @@
-import { BaseState, Constructor, GenericIntent, Transitionable } from "assistant-source";
+import { BaseState, BasicAnswerTypes, BasicHandler, Constructor, GenericIntent, Transitionable } from "assistant-source";
 
 import { COMPONENT_NAME } from "./private-interfaces";
 import { HookContext, PromptStateMixinInstance, PromptStateMixinRequirements } from "./public-interfaces";
 
-export function PromptStateMixin<T extends Constructor<BaseState & PromptStateMixinRequirements>>(superState: T): Constructor<PromptStateMixinInstance> & T {
+export function PromptStateMixin<T extends Constructor<BaseState<BasicAnswerTypes, BasicHandler<BasicAnswerTypes>> & PromptStateMixinRequirements>>(superState: T): Constructor<PromptStateMixinInstance> & T {
   return class extends superState {
     public async invokeGenericIntent(machine: Transitionable, tellInvokeMessage = true, ...additionalArgs: any[]) {
       const promises = await Promise.all([this.unserializeHook(), this.storeCurrentEntitiesToSession()]);
@@ -18,7 +18,7 @@ export function PromptStateMixin<T extends Constructor<BaseState & PromptStateMi
 
       if (tellInvokeMessage) {
         this.logger.debug(this.getLoggerOptions(), "Sending initial prompt message");
-        this.responseFactory.createVoiceResponse().prompt(this.translateHelper.t("." + context.neededEntity));
+        this.responseHandler.prompt(this.translateHelper.t("." + context.neededEntity));
       }
     }
 
@@ -74,7 +74,7 @@ export function PromptStateMixin<T extends Constructor<BaseState & PromptStateMi
     }
 
     public cancelGenericIntent(machine: Transitionable, ...additionalArgs: any[]) {
-      this.responseFactory.createVoiceResponse().endSessionWith(this.translateHelper.t());
+      this.endSessionWith(this.translateHelper.t());
       return Promise.resolve();
     }
 
@@ -103,13 +103,13 @@ export function PromptStateMixin<T extends Constructor<BaseState & PromptStateMi
       return this.unserializeHook()
         .then(context => {
           if (typeof context === "undefined" || typeof context.intent === "undefined") {
-            this.responseFactory.createVoiceResponse().prompt(this.translateHelper.t());
+            this.responseHandler.prompt(this.translateHelper.t());
           } else {
-            this.responseFactory.createVoiceResponse().prompt(this.translateHelper.t("." + context.neededEntity));
+            this.responseHandler.prompt(this.translateHelper.t("." + context.neededEntity));
           }
         })
         .catch(reason => {
-          this.responseFactory.createVoiceResponse().prompt(this.translateHelper.t());
+          this.responseHandler.prompt(this.translateHelper.t());
         });
     }
 
