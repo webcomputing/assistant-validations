@@ -1,9 +1,11 @@
-import { BaseState, BasicAnswerTypes, BasicHandler, Constructor, GenericIntent, Transitionable } from "assistant-source";
+import { BaseState, BasicAnswerTypes, BasicHandable, Constructor, GenericIntent, Transitionable } from "assistant-source";
 
 import { COMPONENT_NAME } from "./private-interfaces";
 import { HookContext, PromptStateMixinInstance, PromptStateMixinRequirements } from "./public-interfaces";
 
-export function PromptStateMixin<T extends Constructor<BaseState<BasicAnswerTypes, BasicHandler<BasicAnswerTypes>> & PromptStateMixinRequirements>>(superState: T): Constructor<PromptStateMixinInstance> & T {
+export function PromptStateMixin<T extends Constructor<BaseState<BasicAnswerTypes, BasicHandable<BasicAnswerTypes>> & PromptStateMixinRequirements>>(
+  superState: T
+): Constructor<PromptStateMixinInstance> & T {
   return class extends superState {
     public async invokeGenericIntent(machine: Transitionable, tellInvokeMessage = true, ...additionalArgs: any[]) {
       const promises = await Promise.all([this.unserializeHook(), this.storeCurrentEntitiesToSession()]);
