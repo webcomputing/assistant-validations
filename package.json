@@ -3,7 +3,8 @@
   "version": "0.4.0",
   "description": "Supports entity validations with the @needs decorator",
   "scripts": {
-    "test": "gulp test"
+    "test": "gulp test",
+    "coverage": "gulp test-coverage"
   },
   "keywords": ["validations", "entities", "AssistantJS"],
   "peerDependencies": {
