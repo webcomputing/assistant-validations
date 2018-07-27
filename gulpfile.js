@@ -10,7 +10,7 @@ const gulp = require("gulp"),
   fs = require("fs");
 
 /**
- * This gulpfile is currently configured for AssistantJS applications. A few things you possibly want to change:
+ * This gulpfile is configured for AssistantJS applications by default. A few things you possibly want to change:
  * 1) If you are building a library, you have to add "build-dts" to the array of the default task
  * 2) If you are building a library, you possibly want to emit js files into a folder called "lib" instead of "js".
  *    To do so, just change the "outFolder" configuration in your tsconfig.
@@ -46,9 +46,11 @@ function runJasmine(file) {
 }
 
 /** Default task: Cleans build files, executes linter, builds project. Is executed automatically if using "gulp". Does not emit sourcefiles, good for deployment. */
-gulp.task("default", ["lint", "build-dts", "build-sources", "test-coverage"]);
+gulp.task("default", ["lint", "build-sources", "build-dts", "test-coverage"]);
 
-/** Cleans project: Removes build folders ("js", "lib", "dts", ".nyc_output") */
+gulp.task("build", ["build-sources", "build-dts"]);
+
+/** Cleans project: Removes build folders ("lib", "dts", ".nyc_output") */
 gulp.task("clean", function() {
   return gulp.src(["js", "lib", "dts", ".nyc_output", "coverage"], { read: false }).pipe(clean());
 });
@@ -162,6 +164,7 @@ const tsDtsProject = tsc.createProject("tsconfig.json", {
   noResolve: false,
   typescript: require("typescript"),
 });
+
 gulp.task("build-dts", ["clean"], function() {
   return gulp
     .src(SOURCES)

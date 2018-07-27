@@ -3,13 +3,9 @@
   "version": "0.4.0",
   "description": "Supports entity validations with the @needs decorator",
   "scripts": {
-    "test": "jasmine-ts spec/**/*.spec.ts"
+    "test": "gulp test"
   },
-  "keywords": [
-    "validations",
-    "entities",
-    "AssistantJS"
-  ],
+  "keywords": ["validations", "entities", "AssistantJS"],
   "peerDependencies": {
     "assistant-source": "^0.4.0",
     "inversify": "4.1.1",
