@@ -1,8 +1,15 @@
+import { injectionNames } from "assistant-source";
 import { BeforeIntentHook } from "../src/components/validations/hook";
-import { Prompt } from "../src/components/validations/prompt";
+import { ThisContext } from "./this-context";
+
+interface CurrentThisContext extends ThisContext {
+  stateMachine: any;
+  hook: BeforeIntentHook;
+  promptedParam: any;
+}
 
 describe("hook", function() {
-  beforeEach(function() {
+  beforeEach(async function(this: CurrentThisContext) {
     this.prepareWithStates();
   });
 
@@ -32,63 +39,58 @@ describe("hook", function() {
     const additionalExtraction = { entities: { city: "Münster" } };
 
     describe("with all entities present", function() {
-      beforeEach(async function(done) {
-        await this.alexaHelper.pretendIntentCalled("test", false, additionalExtraction);
+      beforeEach(async function(this: CurrentThisContext) {
+        await this.alexaSpecHelper.pretendIntentCalled("test", false, additionalExtraction);
         await prepareMock(this);
-        done();
       });
 
-      it("does nothing", function() {
-        expect(this.hook.promptFactory).not.toHaveBeenCalled();
+      it("does nothing", async function(this: CurrentThisContext) {
+        expect((this.hook as any).promptFactory).not.toHaveBeenCalled();
       });
     });
 
     describe("with one entity missing", function() {
-      beforeEach(async function(done) {
-        await this.alexaHelper.pretendIntentCalled("testMany", false, additionalExtraction);
-        done();
+      beforeEach(async function(this: CurrentThisContext) {
+        await this.alexaSpecHelper.pretendIntentCalled("testMany", false, additionalExtraction);
       });
 
       describe("as platform intent call", function() {
-        beforeEach(async function(done) {
+        beforeEach(async function(this: CurrentThisContext) {
           await prepareMock(this);
-          done();
         });
 
-        it("calls prompt factory with given arguments", function() {
-          this.stateMachine = this.container.inversifyInstance.get("core:state-machine:current-state-machine");
-          expect(this.hook.promptFactory).toHaveBeenCalledWith("testManyIntent", "MainState", this.stateMachine, undefined, []);
+        it("calls prompt factory with given arguments", async function(this: CurrentThisContext) {
+          this.stateMachine = this.container.inversifyInstance.get(injectionNames.current.stateMachine);
+          expect((this.hook as any).promptFactory).toHaveBeenCalledWith("testManyIntent", "MainState", this.stateMachine, undefined, []);
         });
 
-        it("prompts the needed entity", function() {
+        it("prompts the needed entity", async function(this: CurrentThisContext) {
           expect(this.promptedParam).toEqual("amount");
         });
       });
 
       describe("as state machine transition with additional arguments", function() {
-        beforeEach(async function(done) {
+        beforeEach(async function(this: CurrentThisContext) {
           await prepareMock(this, false);
-          this.stateMachine = this.container.inversifyInstance.get("core:state-machine:current-state-machine");
+          this.stateMachine = this.container.inversifyInstance.get(injectionNames.current.stateMachine);
           await this.stateMachine.handleIntent("testMany", "arg1", "arg2");
-          done();
         });
 
-        it("passes the additional arguments to promptFactory", function() {
-          expect(this.hook.promptFactory).toHaveBeenCalledWith("testManyIntent", "MainState", this.stateMachine, undefined, ["arg1", "arg2"]);
+        it("passes the additional arguments to promptFactory", async function(this: CurrentThisContext) {
+          expect((this.hook as any).promptFactory).toHaveBeenCalledWith("testManyIntent", "MainState", this.stateMachine, undefined, ["arg1", "arg2"]);
         });
       });
     });
   });
 
   describe("with no entities configured", function() {
-    beforeEach(async function(done) {
-      await this.alexaHelper.pretendIntentCalled("noEntities", false);
+    beforeEach(async function(this: CurrentThisContext) {
+      await this.alexaSpecHelper.pretendIntentCalled("noEntities", false);
       await prepareMock(this);
-      done();
     });
 
-    it("does nothing", function() {
-      expect(this.hook.promptFactory).not.toHaveBeenCalled();
+    it("does nothing", async function(this: CurrentThisContext) {
+      expect((this.hook as any).promptFactory).not.toHaveBeenCalled();
     });
   });
 });
