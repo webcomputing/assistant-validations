@@ -8,7 +8,7 @@ const promptState = require("../support/mocks/states/prompt").PromptState;
 const myPromptState = require("../support/mocks/states/my-prompt").MyPromptState;
 
 beforeEach(function() {
-  this.specHelper = new assistantJsCore.SpecSetup();
+  this.specHelper = new assistantJsCore.SpecHelper();
 
   this.assistantJs = this.specHelper.setup;
   this.assistantJs.registerComponent(alexa.descriptor);
@@ -35,5 +35,5 @@ beforeEach(function() {
 
   this.container = this.assistantJs.container;
 
-  this.alexaHelper = new alexa.SpecHelper(this.specHelper);
+  this.alexaSpecHelper = new alexa.AlexaSpecHelper(this.specHelper);
 });

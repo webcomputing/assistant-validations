@@ -3,18 +3,10 @@
   "version": "0.4.0",
   "description": "Supports entity validations with the @needs decorator",
   "scripts": {
-    "test": "jasmine-ts spec/**/*.spec.ts"
+    "test": "gulp test",
+    "coverage": "gulp test-coverage"
   },
-  "keywords": [
-    "validations",
-    "entities",
-    "AssistantJS"
-  ],
-  "peerDependencies": {
-    "assistant-source": "^0.4.0",
-    "inversify": "4.1.1",
-    "inversify-components": "^0.4.0"
-  },
+  "keywords": ["validations", "entities", "AssistantJS"],
   "homepage": "http://www.assistantjs.org",
   "bugs": "https://github.com/webcomputing/assistant-validations/issues",
   "author": "Antonius Ostermann <ostermann.antonius@gmail.com> (http://www.antonius-ostermann.de)",
@@ -23,6 +15,11 @@
     "url": "https://github.com/webcomputing/assistant-validations/"
   },
   "license": "SEE LICENSE IN <LICENSE>",
+  "peerDependencies": {
+    "assistant-source": "^0.4.0",
+    "inversify": "4.1.1",
+    "inversify-components": "^0.4.0"
+  },
   "devDependencies": {
     "@types/jasmine": "^2.8.8",
     "@types/reflect-metadata": "0.0.5",
