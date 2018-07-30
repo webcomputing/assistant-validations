@@ -13,7 +13,7 @@ describe("hook", function() {
     this.prepareWithStates();
   });
 
-  const prepareMock = (instance, runMachine = true) => {
+  const prepareMock = (instance: CurrentThisContext, runMachine = true) => {
     instance.container.inversifyInstance
       .rebind(BeforeIntentHook)
       .to(BeforeIntentHook)
@@ -21,7 +21,7 @@ describe("hook", function() {
 
     instance.hook = instance.container.inversifyInstance.get(BeforeIntentHook);
     instance.promptedParam = null;
-    spyOn(instance.hook, "promptFactory").and.returnValue({
+    spyOn(instance.hook as any, "promptFactory").and.returnValue({
       prompt: p =>
         new Promise((resolve, reject) => {
           instance.promptedParam = p;
@@ -30,7 +30,7 @@ describe("hook", function() {
     });
 
     if (runMachine) {
-      return instance.alexaHelper.specSetup.runMachine() as Promise<void>;
+      return instance.alexaSpecHelper.specSetup.runMachine() as Promise<void>;
     }
     return Promise.resolve();
   };

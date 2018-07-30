@@ -30,7 +30,7 @@ describe("PromptState", function() {
 
     this.callIntent = async (intent, callMachine = true, setContext = true, state = "PromptState", entities: any = undefined) => {
       const currentEntities = typeof entities === "undefined" ? defaultEntities : entities;
-      const responseHandle = await this.alexaSpecHelper.pretendIntentCalled(intent, false, { entities: currentEntities });
+      const responseHandler = await this.alexaSpecHelper.pretendIntentCalled(intent, false, { entities: currentEntities });
 
       this.currentSession = this.container.inversifyInstance.get<() => Session>(injectionNames.current.sessionFactory)();
 
@@ -41,7 +41,7 @@ describe("PromptState", function() {
       if (callMachine) {
         await this.specHelper.runMachine(state);
       }
-      return responseHandle;
+      return responseHandler;
     };
 
     this.setHookContext = () => {
@@ -81,7 +81,8 @@ describe("PromptState", function() {
     });
 
     it("returns an empty response", async function(this: CurrentThisContext) {
-      expect(this.responseHandlerResults.voiceMessage!.text).toEqual("");
+      expect(this.responseHandlerResults.voiceMessage).not.toBeUndefined();
+      expect(this.responseHandlerResults.voiceMessage!.text).toBe("");
       expect(this.responseHandlerResults.shouldSessionEnd).toBeTruthy();
     });
   });

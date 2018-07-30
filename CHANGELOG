@@ -1,3 +1,6 @@
+version 0.4.0
+- changes for new ResponseHandler with assistant-source 0.4.0
+
 version 0.3.0
 - makes assistant-validations compatible to assistant-source 0.3.0
 - changes configuration interface structure
