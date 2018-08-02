@@ -1,16 +1,23 @@
 // tslint:disable-next-line:no-implicit-dependencies
 import { AlexaSpecificHandable, AlexaSpecificTypes } from "assistant-alexa";
-import { EntityDictionary, GenericIntent, injectionNames, intent as IntentType, Session } from "assistant-source";
+import { CurrentSessionFactory, EntityDictionary, GenericIntent, injectionNames, intent as Intent, Session, Transitionable } from "assistant-source";
 import { ThisContext } from "./this-context";
 
 interface CurrentThisContext extends ThisContext {
   currentSession: Session;
   responseHandler: AlexaSpecificHandable<AlexaSpecificTypes>;
-  stateMachine: any;
+  stateMachine: Transitionable;
   entityDictionary: EntityDictionary;
   responseHandlerResults: Partial<AlexaSpecificTypes>;
   setHookContext(): Promise<void>;
-  callIntent(intent: any, callMachine?: boolean, setContext?: boolean, state?: string, entities?: any): Promise<AlexaSpecificHandable<AlexaSpecificTypes>>;
+  callIntent(
+    intent: Intent,
+    callMachine?: boolean,
+    setContext?: boolean,
+    state?: string,
+    getResults?: boolean,
+    entities?: any
+  ): Promise<AlexaSpecificHandable<AlexaSpecificTypes>>;
 }
 
 describe("PromptState", function() {
@@ -28,11 +35,11 @@ describe("PromptState", function() {
   beforeEach(async function(this: CurrentThisContext) {
     this.prepareWithStates();
 
-    this.callIntent = async (intent, callMachine = true, setContext = true, state = "PromptState", entities: any = undefined) => {
+    this.callIntent = async (intent, callMachine = true, setContext = true, state = "PromptState", getResults: boolean = true, entities: any = undefined) => {
       const currentEntities = typeof entities === "undefined" ? defaultEntities : entities;
       const responseHandler = await this.alexaSpecHelper.pretendIntentCalled(intent, false, { entities: currentEntities });
 
-      this.currentSession = this.container.inversifyInstance.get<() => Session>(injectionNames.current.sessionFactory)();
+      this.currentSession = this.container.inversifyInstance.get<CurrentSessionFactory>(injectionNames.current.sessionFactory)();
 
       if (setContext) {
         await this.setHookContext();
@@ -41,11 +48,16 @@ describe("PromptState", function() {
       if (callMachine) {
         await this.specHelper.runMachine(state);
       }
+
+      if (getResults) {
+        this.responseHandlerResults = this.specHelper.getResponseResults();
+      }
+
       return responseHandler;
     };
 
     this.setHookContext = () => {
-      const session = this.container.inversifyInstance.get<() => Session>(injectionNames.current.sessionFactory)();
+      const session = this.container.inversifyInstance.get<CurrentSessionFactory>(injectionNames.current.sessionFactory)();
       return session.set("entities:currentPrompt", JSON.stringify(hookContext));
     };
   });
@@ -53,7 +65,6 @@ describe("PromptState", function() {
   describe("cancelGenericIntent", function() {
     beforeEach(async function(this: CurrentThisContext) {
       this.responseHandler = await this.callIntent(GenericIntent.Cancel);
-      this.responseHandlerResults = this.specHelper.getResponseResults();
     });
 
     it("returns general cancel text", async function(this: CurrentThisContext) {
@@ -65,7 +76,6 @@ describe("PromptState", function() {
   describe("stopGenericIntent", function() {
     beforeEach(async function(this: CurrentThisContext) {
       this.responseHandler = await this.callIntent(GenericIntent.Stop);
-      this.responseHandlerResults = this.specHelper.getResponseResults();
     });
 
     it("returns general cancel text", async function(this: CurrentThisContext) {
@@ -77,7 +87,6 @@ describe("PromptState", function() {
   describe("unansweredGenericIntent", async function(this: CurrentThisContext) {
     beforeEach(async function(this: CurrentThisContext) {
       this.responseHandler = await this.callIntent(GenericIntent.Unanswered);
-      this.responseHandlerResults = this.specHelper.getResponseResults();
     });
 
     it("returns an empty response", async function(this: CurrentThisContext) {
@@ -90,7 +99,6 @@ describe("PromptState", function() {
   describe("helpGenericIntent", async function(this: CurrentThisContext) {
     beforeEach(async function(this: CurrentThisContext) {
       this.responseHandler = await this.callIntent(GenericIntent.Help);
-      this.responseHandlerResults = this.specHelper.getResponseResults();
     });
 
     it("returns specific help text", async function(this: CurrentThisContext) {
@@ -104,15 +112,9 @@ describe("PromptState", function() {
   });
 
   describe("invokeGenericIntent", function() {
-    beforeEach(async function(this: CurrentThisContext) {
-      this.responseHandler = await this.callIntent(GenericIntent.Invoke, false, false);
-    });
-
     describe("with defined hook context", async function(this: CurrentThisContext) {
       beforeEach(async function(this: CurrentThisContext) {
-        await this.setHookContext();
-        await this.specHelper.runMachine("PromptState");
-        this.responseHandlerResults = this.specHelper.getResponseResults();
+        this.responseHandler = await this.callIntent(GenericIntent.Invoke, true, true, "PromptState");
       });
 
       it("returns the invoke text as prompt", async function(this: CurrentThisContext) {
@@ -129,7 +131,7 @@ describe("PromptState", function() {
     describe("with no hook context defined", function() {
       it("throws an exception", async function(this: CurrentThisContext) {
         try {
-          await this.specHelper.runMachine("PromptState");
+          await this.callIntent(GenericIntent.Invoke, true, false, "PromptState");
           fail("run machine has to throw an error");
         } catch (e) {
           expect(false).toBeFalsy();
@@ -142,10 +144,10 @@ describe("PromptState", function() {
     answerPromptBehaviour("answerPrompt");
   });
 
-  function answerPromptBehaviour(intentName: IntentType) {
+  function answerPromptBehaviour(intentName: Intent) {
     describe("with the prompted entity given", function() {
       beforeEach(async function(this: CurrentThisContext) {
-        this.responseHandler = await this.callIntent(intentName, false, true, "PromptState", { myEntityType: "Münster" });
+        this.responseHandler = await this.callIntent(intentName, false, true, "PromptState", false, { myEntityType: "Münster" });
         await this.currentSession.set("entities:currentPrompt:previousEntities", JSON.stringify(defaultEntities));
 
         this.entityDictionary = this.container.inversifyInstance.get(injectionNames.current.entityDictionary);
@@ -174,7 +176,6 @@ describe("PromptState", function() {
     describe("with the prompted entity not given", function() {
       beforeEach(async function(this: CurrentThisContext) {
         this.responseHandler = await this.callIntent(intentName);
-        this.responseHandlerResults = this.specHelper.getResponseResults();
       });
 
       it("returns unhandledIntent result", async function(this: CurrentThisContext) {

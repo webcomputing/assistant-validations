@@ -1,9 +1,9 @@
-import { injectionNames } from "assistant-source";
+import { injectionNames, Transitionable } from "assistant-source";
 import { BeforeIntentHook } from "../src/components/validations/hook";
 import { ThisContext } from "./this-context";
 
 interface CurrentThisContext extends ThisContext {
-  stateMachine: any;
+  stateMachine: Transitionable;
   hook: BeforeIntentHook;
   promptedParam: any;
 }

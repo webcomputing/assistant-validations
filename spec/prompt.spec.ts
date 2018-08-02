@@ -1,11 +1,12 @@
-import { GenericIntent, State, Transitionable } from "assistant-source";
-import { Prompt } from "../src/components/validations/prompt";
+import { GenericIntent, injectionNames, State, Transitionable } from "assistant-source";
+import { Prompt as PromptImpl } from "../src/components/validations/prompt";
+import { Prompt, PromptFactory } from "../src/components/validations/public-interfaces";
 import { ThisContext } from "./this-context";
 
 interface CurrentThisContext extends ThisContext {
   machine: any;
   prompt: Prompt;
-  currentStateProvider(): { instance: State.Required; name: string };
+  currentStateProvider: State.CurrentProvider;
   preparePrompt(promptStateName?: string, additionalArguments?: any[]): Promise<void>;
 }
 
@@ -16,13 +17,15 @@ describe("Prompt", function() {
   beforeEach(async function(this: CurrentThisContext) {
     this.preparePrompt = async (promptStateName?: string, additionalArguments = []) => {
       await this.alexaSpecHelper.pretendIntentCalled("test", false);
-      this.machine = this.container.inversifyInstance.get("core:state-machine:current-state-machine");
-      this.prompt = this.container.inversifyInstance.get<
-        (intent: string, stateName: string, machine: Transitionable, promptStateName?: string, additionalArguments?: any[]) => Prompt
-      >("validations:current-prompt-factory")(intent, state, this.machine, promptStateName, additionalArguments);
-      this.currentStateProvider = this.container.inversifyInstance.get<() => { instance: State.Required; name: string }>(
-        "core:state-machine:current-state-provider"
+      this.machine = this.container.inversifyInstance.get(injectionNames.current.stateMachine);
+      this.prompt = this.container.inversifyInstance.get<PromptFactory>("validations:current-prompt-factory")(
+        intent,
+        state,
+        this.machine,
+        promptStateName,
+        additionalArguments
       );
+      this.currentStateProvider = this.container.inversifyInstance.get<State.CurrentProvider>(injectionNames.current.stateProvider);
     };
   });
 
@@ -31,7 +34,7 @@ describe("Prompt", function() {
       this.prepareWithStates();
       await this.preparePrompt();
 
-      spyOn(this.prompt, "switchStateForRetrieval");
+      spyOn(this.prompt as PromptImpl, "switchStateForRetrieval");
       await this.prompt.prompt("city");
 
       const context = await (this.prompt as any).session.get("entities:currentPrompt");
@@ -50,7 +53,7 @@ describe("Prompt", function() {
       });
 
       it("stores additional arguments in hook context", async function(this: CurrentThisContext) {
-        spyOn(this.prompt, "switchStateForRetrieval");
+        spyOn(this.prompt as PromptImpl, "switchStateForRetrieval");
         await this.prompt.prompt("city");
 
         const context = await (this.prompt as any).session.get("entities:currentPrompt");
