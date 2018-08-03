@@ -1,4 +1,3 @@
-// tslint:disable-next-line:no-implicit-dependencies
 import { AlexaSpecHelper } from "assistant-alexa";
 import { AssistantJSSetup, SpecHelper } from "assistant-source";
 import { Container } from "inversify-components";

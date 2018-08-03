@@ -10,6 +10,5 @@
     "noImplicitThis": false,
     "outDir": "lib",
     "skipLibCheck": true
-  },
-  "exclude": ["node_modules"]
+  }
 }

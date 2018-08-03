@@ -15,6 +15,14 @@ export interface HookContext {
   redirectArguments: any[];
 }
 
+/**
+ * Creates a prompt. Needed to prompt for a parameter.
+ * @param intent Name of the current intent
+ * @param stateName Name of the current state
+ * @param machine Reference to Transitionable object
+ * @param promptStateName (optional) Name of prompt state to transition to, defaults to "PromptState"
+ * @param redirectArguments (optional) Additional arguments to pass to the current state and intent
+ */
 export type PromptFactory = (intent: string, stateName: string, machine: Transitionable, promptStateName?: string, redirectArguments?: any[]) => Prompt;
 
 export interface Prompt {
