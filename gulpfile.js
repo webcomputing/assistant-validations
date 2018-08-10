@@ -37,7 +37,7 @@ function runJasmine(file) {
 }
 
 /** Default task: Cleans build files, executes linter, builds project. Is executed automatically if using "gulp". Does not emit sourcefiles, good for deployment. */
-gulp.task("default", ["lint", "build-sources", "test-coverage"]);
+gulp.task("default", ["lint", "build", "test-coverage"]);
 
 gulp.task("build", ["build-sources", "build-dts"]);
 

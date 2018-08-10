@@ -7,3 +7,4 @@ gulpfile.js
 tsconfig.json
 .gitignore
 *.tgz
+.nyc_output
