@@ -1,7 +1,7 @@
 ## assistant-validations
 
 assistant-validations is an [AssistantJS][1] component which gives you an easy way to validate entities in your voice application. Install assistant-validations with
-`npm install assistant-validations --save` and add it as an dependency to your `index.ts`:
+`npm install assistant-validations --save` and add it as a dependency to your `index.ts`:
 
 ```typescript
 import { descriptor as validationsDescriptor } from "assistant-validations";
@@ -60,7 +60,7 @@ If you don't call your state PromptState, you will have to change the value of `
 
 ### Usage
 
-assistant-validations gives you the `@need` decorator to define which entities you need for a specific intent or state. For example, if you need the entity `target` in your `MainState` (as introduced in the [second chapter of the AssistantJS's viedeo tutorial][2]):
+assistant-validations gives you the `@need` decorator to define which entities you need for a specific intent or state. For example, if you need the entity `target` in your `MainState` (as introduced in the [second chapter of the AssistantJS's video tutorial][2]):
 
 ```typescript
 import { ApplicationState } from "./application";
