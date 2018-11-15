@@ -1,4 +1,14 @@
-import { BaseState, BasicAnswerTypes, BasicHandable, Constructor, GenericIntent, Transitionable } from "assistant-source";
+import {
+  BaseState,
+  BasicAnswerTypes,
+  BasicHandable,
+  Constructor,
+  featureIsAvailable,
+  GenericIntent,
+  OptionalHandlerFeatures,
+  SuggestionChipsMixin,
+  Transitionable,
+} from "assistant-source";
 
 import { COMPONENT_NAME } from "./private-interfaces";
 import { HookContext, PromptStateMixinInstance, PromptStateMixinRequirements } from "./public-interfaces";
@@ -20,6 +30,7 @@ export function PromptStateMixin<T extends Constructor<BaseState<BasicAnswerType
 
       if (tellInvokeMessage) {
         this.logger.debug(this.getLoggerOptions(), "Sending initial prompt message");
+        await this.setSuggestionChipsIfPresent(context.neededEntity);
         this.responseHandler.prompt(this.translateHelper.t("." + context.neededEntity));
       }
     }
@@ -101,18 +112,36 @@ export function PromptStateMixin<T extends Constructor<BaseState<BasicAnswerType
     /**
      * Unserializes hook context and prompts for the entity
      */
-    public unserializeAndPrompt() {
-      return this.unserializeHook()
-        .then(context => {
-          if (typeof context === "undefined" || typeof context.intent === "undefined") {
-            this.responseHandler.prompt(this.translateHelper.t());
-          } else {
-            this.responseHandler.prompt(this.translateHelper.t("." + context.neededEntity));
-          }
-        })
-        .catch(reason => {
+    public async unserializeAndPrompt() {
+      try {
+        const context = await this.unserializeHook();
+        if (typeof context === "undefined" || typeof context.intent === "undefined") {
           this.responseHandler.prompt(this.translateHelper.t());
-        });
+          await this.setSuggestionChipsIfPresent();
+        } else {
+          this.responseHandler.prompt(this.translateHelper.t("." + context.neededEntity));
+          await this.setSuggestionChipsIfPresent(context.neededEntity);
+        }
+      } catch (reason) {
+        this.responseHandler.prompt(this.translateHelper.t());
+        await this.setSuggestionChipsIfPresent();
+      }
+    }
+
+    /** Sets suggestion chips if we got a translation for it */
+    public async setSuggestionChipsIfPresent(neededEntitiy?: string): Promise<void> {
+      const lookupString = typeof neededEntitiy === "string" ? `.suggestionChips.${neededEntitiy}` : ".suggestionChips";
+
+      // Allow having no suggestion chips at all -> catch error
+      try {
+        if (featureIsAvailable(this.responseHandler, OptionalHandlerFeatures.FeatureChecker.SuggestionChips)) {
+          (this.responseHandler as SuggestionChipsMixin<BasicAnswerTypes>).setSuggestionChips(await this.translateHelper.getAllAlternatives(lookupString));
+        } else {
+          this.logger.debug(`Current response handler doesn't support suggestion chips, so not setting any for entity = ${neededEntitiy}`);
+        }
+      } catch {
+        this.logger.debug(`Didn't find any suggestion chips for entity = ${neededEntitiy}, so not setting any`);
+      }
     }
 
     /**

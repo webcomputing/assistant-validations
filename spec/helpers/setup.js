@@ -1,6 +1,7 @@
 require("reflect-metadata");
 const assistantJsCore = require("assistant-source");
-const alexa = require("assistant-alexa");
+const google = require("assistant-google");
+const apiai = require("assistant-apiai");
 const ownComponent = require("../../src/components/validations/descriptor");
 
 const mainState = require("../support/mocks/states/main").MainState;
@@ -11,7 +12,8 @@ beforeEach(function() {
   this.specHelper = new assistantJsCore.SpecHelper();
 
   this.assistantJs = this.specHelper.setup;
-  this.assistantJs.registerComponent(alexa.descriptor);
+  this.assistantJs.registerComponent(google.descriptor);
+  this.assistantJs.registerComponent(apiai.descriptor);
   this.assistantJs.registerComponent(ownComponent.descriptor);
 
   this.prepareWithStates = () => {
@@ -28,12 +30,12 @@ beforeEach(function() {
     },
     "core:unifier": {
       entities: {
-        myEntityType: ["city"],
+        myEntityType: ["city", "country"],
       },
     },
   });
 
   this.container = this.assistantJs.container;
 
-  this.alexaSpecHelper = new alexa.AlexaSpecHelper(this.specHelper);
+  this.googleSpecHelper = new google.GoogleSpecHelper(this.specHelper);
 });

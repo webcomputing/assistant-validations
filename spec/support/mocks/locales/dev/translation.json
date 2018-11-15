@@ -6,9 +6,16 @@
   },
   "promptState": {
     "city": "Prompt for city",
+    "country": "Prompt for country",
     "helpGenericIntent": {
       "city": "Help for city",
       "amount": "Help for amount"
+    },
+    "suggestionChips": {
+      "city": [
+        "Münster",
+        "München"
+      ]
     }
   },
   "myPromptState": {

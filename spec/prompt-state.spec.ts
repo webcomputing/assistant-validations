@@ -1,14 +1,14 @@
 // tslint:disable-next-line:no-implicit-dependencies
-import { AlexaSpecificHandable, AlexaSpecificTypes } from "assistant-alexa";
+import { GoogleSpecificHandable, GoogleSpecificTypes } from "assistant-google";
 import { CurrentSessionFactory, EntityDictionary, GenericIntent, injectionNames, intent as Intent, Session, Transitionable } from "assistant-source";
 import { ThisContext } from "./this-context";
 
 interface CurrentThisContext extends ThisContext {
   currentSession: Session;
-  responseHandler: AlexaSpecificHandable<AlexaSpecificTypes>;
+  responseHandler: GoogleSpecificHandable<GoogleSpecificTypes>;
   stateMachine: Transitionable;
   entityDictionary: EntityDictionary;
-  responseHandlerResults: Partial<AlexaSpecificTypes>;
+  responseHandlerResults: Partial<GoogleSpecificTypes>;
   setHookContext(): Promise<void>;
   callIntent(
     intent: Intent,
@@ -17,7 +17,7 @@ interface CurrentThisContext extends ThisContext {
     state?: string,
     getResults?: boolean,
     entities?: any
-  ): Promise<AlexaSpecificHandable<AlexaSpecificTypes>>;
+  ): Promise<GoogleSpecificHandable<GoogleSpecificTypes>>;
 }
 
 describe("PromptState", function() {
@@ -37,7 +37,7 @@ describe("PromptState", function() {
 
     this.callIntent = async (intent, callMachine = true, setContext = true, state = "PromptState", getResults: boolean = true, entities: any = undefined) => {
       const currentEntities = typeof entities === "undefined" ? defaultEntities : entities;
-      const responseHandler = await this.alexaSpecHelper.pretendIntentCalled(intent, false, { entities: currentEntities });
+      const responseHandler = await this.googleSpecHelper.pretendIntentCalled(intent, false, { entities: currentEntities });
 
       this.currentSession = this.container.inversifyInstance.get<CurrentSessionFactory>(injectionNames.current.sessionFactory)();
 
@@ -112,6 +112,21 @@ describe("PromptState", function() {
   });
 
   describe("invokeGenericIntent", function() {
+    describe("without suggestion chips", function() {
+      beforeEach(async function(this: CurrentThisContext) {
+        hookContext.neededEntity = "country";
+        this.responseHandler = await this.callIntent(GenericIntent.Invoke, true, true, "PromptState");
+      });
+
+      afterEach(function() {
+        hookContext.neededEntity = "city";
+      });
+
+      it("does not add any suggestionchips", async function(this: CurrentThisContext) {
+        expect(this.responseHandlerResults.suggestionChips).toBeUndefined();
+      });
+    });
+
     describe("with defined hook context", async function(this: CurrentThisContext) {
       beforeEach(async function(this: CurrentThisContext) {
         this.responseHandler = await this.callIntent(GenericIntent.Invoke, true, true, "PromptState");
@@ -120,6 +135,10 @@ describe("PromptState", function() {
       it("returns the invoke text as prompt", async function(this: CurrentThisContext) {
         expect(this.responseHandlerResults.voiceMessage!.text).toEqual("Prompt for city");
         expect(this.responseHandlerResults.shouldSessionEnd).toBeFalsy();
+      });
+
+      it("adds suggestion chips", async function(this: CurrentThisContext) {
+        expect(this.responseHandlerResults.suggestionChips).toEqual(["Münster", "München"]);
       });
 
       it("stores current entities to session", async function(this: CurrentThisContext) {

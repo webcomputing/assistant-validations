@@ -1,4 +1,5 @@
 version 0.4.0
+- enables setting of suggestion chips via convention
 - changes for new ResponseHandler with assistant-source 0.4.0
   - `PromptStateRequirements` now uses `ApplicationState` instead of `BaseState`.
   - `State.SetupSet` is replaced by `MergedSetupSet` introduced in assistant-source 0.4.0 (see changelog or new scaffolded project)

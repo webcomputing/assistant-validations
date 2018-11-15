@@ -100,6 +100,8 @@ All intent methods implemented in our [states/prompt.ts](src/components/validati
 
 If you use a custom prompt state (see below), it's name will be used instead of `promptState` in all i18n keys.
 
+If you want to set suggestion chips with your prompts, just use the "suggestionChips.entityName" key.
+
 #### Multiple entities
 
 You can also use `@needs` to prompt for multiple entities. To do so, pass all entity names as arguments:
