@@ -47,7 +47,9 @@
     "tslint": "^5.4.0",
     "tslint-config-airbnb": "^5.9.2",
     "tslint-config-prettier": "^1.13.0",
-    "typescript": "~2.9.2"
+    "typescript": "~2.9.2",
+    "lodash": ">=4.17.5",
+    "atob": ">=2.1.0"
   },
   "main": "./lib/assistant-validations.js",
   "typings": "./dts/assistant-validations.d.ts"
