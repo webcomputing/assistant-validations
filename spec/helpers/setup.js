@@ -9,9 +9,9 @@ const promptState = require("../support/mocks/states/prompt").PromptState;
 const myPromptState = require("../support/mocks/states/my-prompt").MyPromptState;
 
 beforeEach(function() {
-  this.specHelper = new assistantJsCore.SpecHelper();
+  this.assistantJs = new assistantJsCore.AssistantJSSetup();
+  this.specHelper = new assistantJsCore.SpecHelper(this.assistantJs);
 
-  this.assistantJs = this.specHelper.setup;
   this.assistantJs.registerComponent(google.descriptor);
   this.assistantJs.registerComponent(apiai.descriptor);
   this.assistantJs.registerComponent(ownComponent.descriptor);
