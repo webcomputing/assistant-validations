@@ -16,7 +16,7 @@ describe("Prompt", function() {
 
   beforeEach(async function(this: CurrentThisContext) {
     this.preparePrompt = async (promptStateName?: string, additionalArguments = []) => {
-      await this.googleSpecHelper.pretendIntentCalled("test", false);
+      await this.googleSpecHelper.pretendIntentCalled("test");
       this.machine = this.container.inversifyInstance.get(injectionNames.current.stateMachine);
       this.prompt = this.container.inversifyInstance.get<PromptFactory>("validations:current-prompt-factory")(
         intent,

@@ -30,7 +30,7 @@ describe("hook", function() {
     });
 
     if (runMachine) {
-      return instance.googleSpecHelper.specSetup.runMachine() as Promise<void>;
+      return instance.googleSpecHelper.specHelper.runMachine("MainState") as Promise<void>;
     }
     return Promise.resolve();
   };
@@ -40,7 +40,7 @@ describe("hook", function() {
 
     describe("with all entities present", function() {
       beforeEach(async function(this: CurrentThisContext) {
-        await this.googleSpecHelper.pretendIntentCalled("test", false, additionalExtraction);
+        await this.googleSpecHelper.pretendIntentCalled("test", additionalExtraction);
         await prepareMock(this);
       });
 
@@ -51,7 +51,7 @@ describe("hook", function() {
 
     describe("with one entity missing", function() {
       beforeEach(async function(this: CurrentThisContext) {
-        await this.googleSpecHelper.pretendIntentCalled("testMany", false, additionalExtraction);
+        await this.googleSpecHelper.pretendIntentCalled("testMany", additionalExtraction);
       });
 
       describe("as platform intent call", function() {
@@ -85,7 +85,7 @@ describe("hook", function() {
 
   describe("with no entities configured", function() {
     beforeEach(async function(this: CurrentThisContext) {
-      await this.googleSpecHelper.pretendIntentCalled("noEntities", false);
+      await this.googleSpecHelper.pretendIntentCalled("noEntities");
       await prepareMock(this);
     });
 

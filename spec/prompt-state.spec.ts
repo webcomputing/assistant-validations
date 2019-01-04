@@ -37,7 +37,7 @@ describe("PromptState", function() {
 
     this.callIntent = async (intent, callMachine = true, setContext = true, state = "PromptState", getResults: boolean = true, entities: any = undefined) => {
       const currentEntities = typeof entities === "undefined" ? defaultEntities : entities;
-      const responseHandler = await this.googleSpecHelper.pretendIntentCalled(intent, false, { entities: currentEntities });
+      const responseHandler = await this.googleSpecHelper.pretendIntentCalled(intent, { entities: currentEntities });
 
       this.currentSession = this.container.inversifyInstance.get<CurrentSessionFactory>(injectionNames.current.sessionFactory)();
 
