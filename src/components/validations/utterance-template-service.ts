@@ -1,11 +1,11 @@
-import { PlatformGenerator } from "assistant-source";
+import { injectionNames, PlatformGenerator } from "assistant-source";
 import { inject, injectable } from "inversify";
 
 @injectable()
 export class UtteranceTemplateService implements PlatformGenerator.UtteranceTemplateService {
   private mappings: PlatformGenerator.EntityMapping;
 
-  constructor(@inject("core:unifier:user-entity-mappings") mappings: PlatformGenerator.EntityMapping) {
+  constructor(@inject(injectionNames.userEntityMappings) mappings: PlatformGenerator.EntityMapping) {
     this.mappings = mappings;
   }
 
