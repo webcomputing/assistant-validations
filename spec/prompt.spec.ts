@@ -1,4 +1,5 @@
 import { GenericIntent, injectionNames, State, Transitionable } from "assistant-source";
+import { validationsInjectionNames } from "../dts/components/validations/injection-names";
 import { Prompt as PromptImpl } from "../src/components/validations/prompt";
 import { Prompt, PromptFactory } from "../src/components/validations/public-interfaces";
 import { ThisContext } from "./this-context";
@@ -18,7 +19,7 @@ describe("Prompt", function() {
     this.preparePrompt = async (promptStateName?: string, additionalArguments = []) => {
       await this.googleSpecHelper.pretendIntentCalled("test");
       this.machine = this.container.inversifyInstance.get(injectionNames.current.stateMachine);
-      this.prompt = this.container.inversifyInstance.get<PromptFactory>("validations:current-prompt-factory")(
+      this.prompt = this.container.inversifyInstance.get<PromptFactory>(validationsInjectionNames.current.promptFactory)(
         intent,
         state,
         this.machine,

@@ -1,13 +1,6 @@
 import { CurrentSessionFactory, EntityDictionary, PlatformGenerator, Transitionable } from "assistant-source";
 import { Configuration } from "./private-interfaces";
 
-/** Injection names of validations component */
-export const injectionNames = {
-  current: {
-    promptFactory: "validations:current-prompt-factory",
-  },
-};
-
 export interface HookContext {
   intent: string;
   state: string;

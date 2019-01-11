@@ -124,7 +124,7 @@ Sometimes, you want to prompt for an entity based on some previous conditions. I
 ```typescript
 import { ApplicationState } from "./application";
 import { injectionNames, State, Transitionable } from "assistant-source";
-import { needs, PromptFactory, Prompt, injectionNames as validationsInjectionNames } from "assistant-validations";
+import { needs, PromptFactory, Prompt, validationsInjectionNames } from "assistant-validations";
 import { injectable, inject } from "inversify";
 import { MergedSetupSet } from "../../config/handler";
 
