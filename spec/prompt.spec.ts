@@ -1,5 +1,5 @@
 import { GenericIntent, injectionNames, State, Transitionable } from "assistant-source";
-import { validationsInjectionNames } from "../dts/components/validations/injection-names";
+import { validationsInjectionNames } from "../src/components/validations/injection-names";
 import { Prompt as PromptImpl } from "../src/components/validations/prompt";
 import { Prompt, PromptFactory } from "../src/components/validations/public-interfaces";
 import { ThisContext } from "./this-context";
