@@ -34,13 +34,13 @@ export interface Prompt {
  * You find an example in the assistant-validations README.
  */
 export interface PromptStateMixinRequirements {
-  /** The current entitiy dictionary, injectable via injectionNames.current.entityDictionary */
+  /** The current entitiy dictionary, injectable via {@link injectionNames.current.entityDictionary} */
   entities: EntityDictionary;
 
-  /** The current session factory, injectable via injectionNames.current.sessionFactory */
+  /** The current session factory, injectable via {@link injectionNames.current.sessionFactory} */
   sessionFactory: CurrentSessionFactory;
 
-  /** Your entity mappings, injectable via "core:unifier:user-entity-mappings" */
+  /** Your entity mappings, injectable via {@link injectionNames.userEntityMappings} */
   mappings: PlatformGenerator.EntityMapping;
 }
 
