@@ -49,7 +49,7 @@ export class PromptState extends PromptStateMixin(PromptStateRequirements) {
     @inject(injectionNames.current.stateSetupSet) setupSet: MergedSetupSet,
     @inject(injectionNames.current.entityDictionary) entities: EntityDictionary,
     @inject(injectionNames.current.sessionFactory) sessionFactory: CurrentSessionFactory,
-    @inject("core:unifier:user-entity-mappings") mappings: PlatformGenerator.EntityMapping
+    @inject(injectionNames.userEntityMappings) mappings: PlatformGenerator.EntityMapping
   ) {
     super(setupSet, entities, sessionFactory, mappings);
   }
@@ -124,7 +124,7 @@ Sometimes, you want to prompt for an entity based on some previous conditions. I
 ```typescript
 import { ApplicationState } from "./application";
 import { injectionNames, State, Transitionable } from "assistant-source";
-import { needs, PromptFactory, Prompt, injectionNames as validationsInjectionNames } from "assistant-validations";
+import { needs, PromptFactory, Prompt, validationsInjectionNames } from "assistant-validations";
 import { injectable, inject } from "inversify";
 import { MergedSetupSet } from "../../config/handler";
 
@@ -171,7 +171,7 @@ export class PromptState extends PromptStateMixin(PromptStateRequirements) {
     @inject(injectionNames.current.stateSetupSet) setupSet: MergedSetupSet,
     @inject(injectionNames.current.entityDictionary) entities: EntityDictionary,
     @inject(injectionNames.current.sessionFactory) sessionFactory: CurrentSessionFactory,
-    @inject("core:unifier:user-entity-mappings") mappings: PlatformGenerator.EntityMapping
+    @inject(injectionNames.userEntityMappings) mappings: PlatformGenerator.EntityMapping
   ) {
     super(setupSet, entities, sessionFactory, mappings);
   }

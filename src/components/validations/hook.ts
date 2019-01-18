@@ -1,9 +1,10 @@
 import { ComponentSpecificLoggerFactory, EntityDictionary, Hooks, injectionNames, Logger, State } from "assistant-source";
 import { inject, injectable } from "inversify";
 
+import { validationsInjectionNames } from "../../../src/components/validations/injection-names";
 import { needsMetadataKey } from "./annotations";
 import { COMPONENT_NAME } from "./private-interfaces";
-import { injectionNames as ownInjectionNames, PromptFactory } from "./public-interfaces";
+import { PromptFactory } from "./public-interfaces";
 
 @injectable()
 export class BeforeIntentHook {
@@ -15,7 +16,7 @@ export class BeforeIntentHook {
 
   constructor(
     @inject(injectionNames.current.entityDictionary) private entities: EntityDictionary,
-    @inject(ownInjectionNames.current.promptFactory) private promptFactory: PromptFactory,
+    @inject(validationsInjectionNames.current.promptFactory) private promptFactory: PromptFactory,
     @inject(injectionNames.componentSpecificLoggerFactory) loggerFactory: ComponentSpecificLoggerFactory
   ) {
     this.logger = loggerFactory(COMPONENT_NAME);

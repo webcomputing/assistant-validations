@@ -1,7 +1,8 @@
 import { injectionNames, PlatformGenerator, Transitionable } from "assistant-source";
-import { Component, ComponentDescriptor, Hooks } from "inversify-components";
+import { Component, ComponentDescriptor, getMetaInjectionName, Hooks } from "inversify-components";
 
 import { BeforeIntentHook } from "./hook";
+import { validationsInjectionNames } from "./injection-names";
 import { COMPONENT_NAME, Configuration } from "./private-interfaces";
 import { Prompt } from "./prompt";
 import { PromptFactory } from "./public-interfaces";
@@ -29,7 +30,7 @@ export const descriptor: ComponentDescriptor<Configuration.Defaults> = {
           // Grab default promptState by Configuration
           const currentpromptStateName =
             typeof promptStateName === "undefined"
-              ? context.container.get<Component<Configuration.Runtime>>("meta:component//validations").configuration.defaultPromptState
+              ? context.container.get<Component<Configuration.Runtime>>(getMetaInjectionName(COMPONENT_NAME)).configuration.defaultPromptState
               : promptStateName;
 
           return new Prompt(

@@ -34,7 +34,7 @@ export class PromptState<MergedAnswerTypes extends BasicAnswerTypes, MergedHandl
     @inject(injectionNames.current.stateSetupSet) setupSet: State.SetupSet<MergedAnswerTypes, MergedHandler>,
     @inject(injectionNames.current.entityDictionary) entities: EntityDictionary,
     @inject(injectionNames.current.sessionFactory) sessionFactory: CurrentSessionFactory,
-    @inject("core:unifier:user-entity-mappings") mappings: PlatformGenerator.EntityMapping
+    @inject(injectionNames.userEntityMappings) mappings: PlatformGenerator.EntityMapping
   ) {
     super(setupSet, entities, sessionFactory, mappings);
   }
