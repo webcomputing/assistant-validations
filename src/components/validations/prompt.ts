@@ -1,5 +1,5 @@
 import { GenericIntent, Session, Transitionable } from "assistant-source";
-import { HookContext, Prompt as PromptInterface } from "./public-interfaces";
+import { HookContext, Prompt as PromptInterface, ValidationStrategy } from "./public-interfaces";
 
 export class Prompt implements PromptInterface {
   constructor(
@@ -36,10 +36,13 @@ export class Prompt implements PromptInterface {
    * @return promise, after storing all to session
    */
   public saveToContext(entity: string): Promise<void> {
-    const context: HookContext = {
+    const context: HookContext<ValidationStrategy.Prompt> = {
       intent: this.intent,
       state: this.stateName,
-      neededEntity: entity,
+      validation: {
+        type: "prompt",
+        neededEntity: entity,
+      },
       redirectArguments: this.redirectArguments,
     };
 

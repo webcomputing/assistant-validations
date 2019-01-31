@@ -1,11 +1,37 @@
 import { CurrentSessionFactory, EntityDictionary, PlatformGenerator, Transitionable } from "assistant-source";
 import { Configuration } from "./private-interfaces";
 
-export interface HookContext {
+/** All neded information about the validation */
+export interface HookContext<Strategy extends ValidationStrategy.Prompt | ValidationStrategy.Confirmation> {
+  /** Which intent shall we call after confirmation or prompting was successful? */
   intent: string;
+
+  /** Which state shall we redirect to after confirmation or prompting was successful? */
   state: string;
-  neededEntity: string;
+
+  /** List of arguments to append to state#intent call */
   redirectArguments: any[];
+
+  /** Validation settings. Our BeforeIntentHook needs this to decide which state to use for validation */
+  validation: Strategy;
+}
+
+export namespace ValidationStrategy {
+  /** Use this to prompt for a specific entity */
+  // tslint:disable-next-line:no-shadowed-variable
+  export interface Prompt {
+    /** If type is set to prompt, user wants to prompt for a specific entity */
+    type: "prompt";
+
+    /** The entity to prompt for */
+    neededEntity: string;
+  }
+
+  /** Use this to confirm = force the user to choose between either yes or no */
+  export interface Confirmation {
+    /** If type is set to confirm, only "yes" or "no" is allowed as answer. The result will be stored in the last argument of the intent method call */
+    type: "confirmation";
+  }
 }
 
 /**
@@ -100,7 +126,7 @@ export interface PromptStateMixinInstance {
   /**
    * Unserializes hook context
    */
-  unserializeHook(): Promise<HookContext>;
+  unserializeHook(): Promise<HookContext<ValidationStrategy.Prompt>>;
 
   /** Stores all entities currently present in entity dictionary into session. */
   storeCurrentEntitiesToSession(): Promise<void>;

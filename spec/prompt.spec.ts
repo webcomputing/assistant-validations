@@ -42,7 +42,7 @@ describe("Prompt", function() {
       expect(JSON.parse(context)).toEqual({
         intent,
         state,
-        neededEntity: "city",
+        validation: { neededEntity: "city", type: "prompt" },
         redirectArguments: [],
       });
     });

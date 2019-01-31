@@ -1,6 +1,7 @@
 // tslint:disable-next-line:no-implicit-dependencies
 import { GoogleSpecificHandable, GoogleSpecificTypes } from "assistant-google";
 import { CurrentSessionFactory, EntityDictionary, GenericIntent, injectionNames, intent as Intent, Session, Transitionable } from "assistant-source";
+import { HookContext, ValidationStrategy } from "../src/assistant-validations";
 import { ThisContext } from "./this-context";
 
 interface CurrentThisContext extends ThisContext {
@@ -25,10 +26,13 @@ describe("PromptState", function() {
     myEntity: "myValue",
     myEntity2: "myValue2",
   };
-  const hookContext = {
+  const hookContext: HookContext<ValidationStrategy.Prompt> = {
     intent: "testIntent",
     state: "MainState",
-    neededEntity: "city",
+    validation: {
+      type: "prompt",
+      neededEntity: "city",
+    },
     redirectArguments: ["a1", "b2"],
   };
 
@@ -114,12 +118,12 @@ describe("PromptState", function() {
   describe("invokeGenericIntent", function() {
     describe("without suggestion chips", function() {
       beforeEach(async function(this: CurrentThisContext) {
-        hookContext.neededEntity = "country";
+        hookContext.validation.neededEntity = "country";
         this.responseHandler = await this.callIntent(GenericIntent.Invoke, true, true, "PromptState");
       });
 
       afterEach(function() {
-        hookContext.neededEntity = "city";
+        hookContext.validation.neededEntity = "city";
       });
 
       it("does not add any suggestionchips", async function(this: CurrentThisContext) {

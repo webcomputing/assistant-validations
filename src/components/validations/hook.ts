@@ -2,7 +2,7 @@ import { ComponentSpecificLoggerFactory, EntityDictionary, Hooks, injectionNames
 import { inject, injectable } from "inversify";
 
 import { validationsInjectionNames } from "../../../src/components/validations/injection-names";
-import { needsMetadataKey } from "./annotations";
+import { needsMetadataKey } from "./decorators";
 import { COMPONENT_NAME } from "./private-interfaces";
 import { PromptFactory } from "./public-interfaces";
 
@@ -33,7 +33,7 @@ export class BeforeIntentHook {
       const unknownParam = this.neededParams.filter(p => !this.currentRequestHasParam(p))[0];
 
       if (typeof unknownParam !== "undefined") {
-        this.logger.info("Missing required entity " + unknownParam + " in current entity store");
+        this.logger.info(`Missing required entity ${unknownParam} in current entity store.`);
         await this.promptFactory(this.method, this.stateName, machine, undefined, args).prompt(unknownParam);
         return false;
       }
@@ -56,7 +56,7 @@ export class BeforeIntentHook {
     const neededParams = Reflect.getMetadata(needsMetadataKey, this.target[this.method]);
 
     if (typeof neededParams !== "undefined" && neededParams.constructor === Array) {
-      this.logger.debug("Retrieving @needs annotations for " + this.target.constructor.name + " and " + this.method + ":");
+      this.logger.debug(`Retrieving @needs decorators for ${this.target.constructor.name} and ${this.method}.`);
 
       if ((neededParams as any[]).filter(param => typeof param !== "string").length > 0) {
         throw new TypeError("Only strings are allowed as parameter identifiers!");

@@ -5,13 +5,13 @@ import { inject, injectable } from "inversify";
 export class UtteranceTemplateService implements PlatformGenerator.UtteranceTemplateService {
   private mappings: PlatformGenerator.EntityMapping;
 
-  constructor(@inject(injectionNames.userEntityMappings) mappings: PlatformGenerator.EntityMapping) {
+  constructor(@inject(injectionNames.userEntityMapping) mappings: PlatformGenerator.EntityMapping) {
     this.mappings = mappings;
   }
 
   public getUtterancesFor(langauge: string) {
     return {
-      answerPromptIntent: this.getUniqueMappingValues().map(type => "{{" + type + "}}"),
+      answerPromptIntent: this.getUniqueMappingValues().map(type => `{{${type}}}`),
     };
   }
 

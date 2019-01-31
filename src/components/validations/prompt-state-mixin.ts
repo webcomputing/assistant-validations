@@ -11,7 +11,7 @@ import {
 } from "assistant-source";
 
 import { COMPONENT_NAME } from "./private-interfaces";
-import { HookContext, PromptStateMixinInstance, PromptStateMixinRequirements } from "./public-interfaces";
+import { HookContext, PromptStateMixinInstance, PromptStateMixinRequirements, ValidationStrategy } from "./public-interfaces";
 
 export function PromptStateMixin<T extends Constructor<BaseState<BasicAnswerTypes, BasicHandable<BasicAnswerTypes>> & PromptStateMixinRequirements>>(
   superState: T
@@ -24,14 +24,14 @@ export function PromptStateMixin<T extends Constructor<BaseState<BasicAnswerType
       if (typeof context === "undefined" || context === null) throw new Error("HookContext must not be undefined!");
 
       // Check if entity is contained; if so, redirect to answerPromptIntent directly
-      if (this.entityIsContained(this.getEntityType(context.neededEntity))) {
+      if (this.entityIsContained(this.getEntityType(context.validation.neededEntity))) {
         return machine.handleIntent("answerPrompt");
       }
 
       if (tellInvokeMessage) {
         this.logger.debug(this.getLoggerOptions(), "Sending initial prompt message");
-        await this.setSuggestionChipsIfPresent(context.neededEntity);
-        this.responseHandler.prompt(this.translateHelper.t("." + context.neededEntity));
+        await this.setSuggestionChipsIfPresent(context.validation.neededEntity);
+        this.responseHandler.prompt(this.translateHelper.t(`.${context.validation.neededEntity}`));
       }
     }
 
@@ -43,7 +43,7 @@ export function PromptStateMixin<T extends Constructor<BaseState<BasicAnswerType
       return this.unserializeHook().then(context => {
         if (typeof context === "undefined" || context === null) throw new Error("HookContext must not be undefined!");
 
-        const promptedEntity = this.getEntityType(context.neededEntity);
+        const promptedEntity = this.getEntityType(context.validation.neededEntity);
 
         if (this.entityIsContained(promptedEntity)) {
           this.logger.debug(this.getLoggerOptions(), "Current request contained entity");
@@ -53,7 +53,7 @@ export function PromptStateMixin<T extends Constructor<BaseState<BasicAnswerType
               return this.applyStoredEntities();
             })
             .then(() => {
-              this.switchEntityStorage(promptedEntity, context.neededEntity);
+              this.switchEntityStorage(promptedEntity, context.validation.neededEntity);
               this.logger.debug(this.getLoggerOptions(), `Redirecting to initially called ${context.state}#${context.intent}`);
               return machine.redirectTo(context.state, context.intent.replace("Intent", ""), ...context.redirectArguments);
             });
@@ -98,7 +98,7 @@ export function PromptStateMixin<T extends Constructor<BaseState<BasicAnswerType
     public async unhandledGenericIntent(machine: Transitionable, ...additionalArgs: any[]) {
       const context = await this.unserializeHook();
       if (typeof context === "undefined" || context === null) throw new Error("HookContext must not be undefined!");
-      const promptedEntity = this.getEntityType(context.neededEntity);
+      const promptedEntity = this.getEntityType(context.validation.neededEntity);
       if (this.entityIsContained(promptedEntity)) {
         return machine.handleIntent("answerPrompt");
       }
@@ -119,8 +119,8 @@ export function PromptStateMixin<T extends Constructor<BaseState<BasicAnswerType
           this.responseHandler.prompt(this.translateHelper.t());
           await this.setSuggestionChipsIfPresent();
         } else {
-          this.responseHandler.prompt(this.translateHelper.t("." + context.neededEntity));
-          await this.setSuggestionChipsIfPresent(context.neededEntity);
+          this.responseHandler.prompt(this.translateHelper.t(`.${context.validation.neededEntity}`));
+          await this.setSuggestionChipsIfPresent(context.validation.neededEntity);
         }
       } catch (reason) {
         this.responseHandler.prompt(this.translateHelper.t());
@@ -152,7 +152,7 @@ export function PromptStateMixin<T extends Constructor<BaseState<BasicAnswerType
       const searchedEntity: string | undefined = this.mappings[name];
 
       if (searchedEntity === undefined) {
-        throw new Error("Could not find entity configuration for " + name + ". Did you register it's entity type in your config/components.ts?");
+        throw new Error(`Could not find entity configuration for "${name}". Did you register it's entity type in your config/components.ts?`);
       }
       return searchedEntity;
     }
@@ -160,16 +160,14 @@ export function PromptStateMixin<T extends Constructor<BaseState<BasicAnswerType
     /**
      * Unserializes hook context
      */
-    public unserializeHook(): Promise<HookContext> {
-      return this.sessionFactory()
-        .get("entities:currentPrompt")
-        .then(serializedHook => {
-          if (serializedHook) {
-            return JSON.parse(serializedHook) as HookContext;
-          }
+    public async unserializeHook(): Promise<HookContext<ValidationStrategy.Prompt>> {
+      const serializedHook = await this.sessionFactory().get("entities:currentPrompt");
 
-          throw new Error("HookContext cannot be undefined.");
-        });
+      if (serializedHook) {
+        return JSON.parse(serializedHook) as HookContext<ValidationStrategy.Prompt>;
+      }
+
+      throw new Error("HookContext cannot be undefined.");
     }
 
     /** Stores all entities currently present in entity dictionary into session. */
