@@ -1,7 +1,7 @@
 {
   "name": "assistant-validations",
   "version": "0.4.0",
-  "description": "Supports entity validations with the @needs decorator",
+  "description": "Supports validations of entities and confirmations of actions with decorators",
   "scripts": {
     "test": "gulp test",
     "coverage": "gulp test-coverage"

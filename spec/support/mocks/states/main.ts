@@ -1,14 +1,14 @@
 // tslint:disable:no-empty
 import { State } from "assistant-source";
 import { injectable } from "inversify";
-import { needs } from "../../../../src/components/validations/decorators";
+import { needs, needsEntities } from "../../../../src/components/validations/decorators";
 
 @injectable()
 export class MainState implements State.Required {
-  @needs("city")
+  @needsEntities(["city"])
   public testIntent() {}
 
-  @needs("city", "amount")
+  @needsEntities(["city", "amount"])
   public testManyIntent() {}
 
   public noEntitiesIntent() {}

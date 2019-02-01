@@ -75,7 +75,7 @@ export class MainState extends ApplicationState {
     super(setupSet);
   }
 
-  @needs("target")
+  @needsEntities(["target"])
   async busRouteIntent(machine: Transitionable) {
     // ...
   }
@@ -104,11 +104,11 @@ If you want to set suggestion chips with your prompts, just use the "suggestionC
 
 #### Multiple entities
 
-You can also use `@needs` to prompt for multiple entities. To do so, pass all entity names as arguments:
+You can also use `@needsEntities` to prompt for multiple entities. To do so, pass all entity names as arguments:
 
 ```typescript
 export class MainState {
-  @needs("fromBusStop", "toBusStop")
+  @needsEntities(["fromBusStop", "toBusStop"])
   async busRouteIntent(machine: stateMachineInterfaces.Transitionable) {
     // ...
   }
@@ -157,7 +157,7 @@ As you can see, using `promptFactory` forces you to pass the intent method and s
 
 #### Using a custom prompt state
 
-If you need more flexibility, you can change the behaviour of your prompt state (see "Installation") or implement multiple ones. For example, this custom prompt state would redirect to MainState instead of aborting the conversation if a user fires a `cancelGenericIntent`:
+If you need more flexibility, you can change the behaviour of your prompt state (see "Installation") or even implement multiple ones. For example, this custom prompt state would redirect to MainState instead of aborting the conversation if a user fires a `cancelGenericIntent`:
 
 ```typescript
 import { State, EntityDictionary, CurrentSessionFactory, PlatformGenerator, injectionNames } from "assistant-source";
@@ -184,6 +184,8 @@ export class PromptState extends PromptStateMixin(PromptStateRequirements) {
 }
 ```
 
+To use your custom prompt state, either use the above mentioned `promptFactory` or pass it into your decorator using `@needsEntities({ entities: ["myEntitiy"], promptStateName: "MyCustomPromptState" }).
+
 ### Configuration
 
 As listed in our [interfaces](src/components/validations/private-interfaces.ts), the only possible configuration option is `defaultPromptState`:
@@ -191,7 +193,7 @@ As listed in our [interfaces](src/components/validations/private-interfaces.ts),
 ```typescript
 /** Optional configuration settings */
 export interface Defaults {
-  /** Name of prompt state to use for all @needs validations as default */
+  /** Name of prompt state to use for all {@link @needsEntities} validations as default */
   defaultPromptState: string;
 }
 

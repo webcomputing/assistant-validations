@@ -34,6 +34,22 @@ export namespace ValidationStrategy {
   }
 }
 
+export namespace DecoratorContent {
+  /** Metadata content of @needsEntitiy decorator */
+  export interface NeedsEntity {
+    /** Prompt state name to use or undefined if user wants to use default prompt state */
+    promptStateName?: string;
+
+    /** Entities to prompt for */
+    entities: string[];
+  }
+
+  export interface Confirmation {
+    /** Name of confirmation state to use */
+    confirmationStateName?: string;
+  }
+}
+
 /**
  * Creates a prompt. Needed to prompt for a parameter.
  * @param intent Name of the current intent

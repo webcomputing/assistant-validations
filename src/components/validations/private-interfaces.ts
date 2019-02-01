@@ -1,7 +1,7 @@
 export namespace Configuration {
   /** Configuration defaults -> all of these keys are optional for user */
   export interface Defaults {
-    /** Name of prompt state to use for all @needs validations as default */
+    /** Name of prompt state to use for all {@link @needsEntities} validations as default */
     defaultPromptState: string;
   }
 

@@ -2,16 +2,15 @@ import { ComponentSpecificLoggerFactory, EntityDictionary, Hooks, injectionNames
 import { inject, injectable } from "inversify";
 
 import { validationsInjectionNames } from "../../../src/components/validations/injection-names";
-import { needsMetadataKey } from "./decorators";
+import { decoratorSymbols } from "./decorators";
 import { COMPONENT_NAME } from "./private-interfaces";
-import { PromptFactory } from "./public-interfaces";
+import { DecoratorContent, PromptFactory } from "./public-interfaces";
 
 @injectable()
 export class BeforeIntentHook {
   private target?: State.Required;
   private stateName?: string;
   private method?: string;
-  private neededParams: string[] = [];
   private logger: Logger;
 
   constructor(
@@ -27,10 +26,10 @@ export class BeforeIntentHook {
     this.stateName = stateName;
     this.method = intent;
 
-    this.retrieveNeededParamsFromMetadata();
+    const neededParams = this.retrieveNeededParamsFromMetadata();
 
-    if (this.neededParams.length > 0) {
-      const unknownParam = this.neededParams.filter(p => !this.currentRequestHasParam(p))[0];
+    if (neededParams && neededParams.entities.length > 0) {
+      const unknownParam = neededParams.entities.filter(p => !this.currentRequestHasParam(p))[0];
 
       if (typeof unknownParam !== "undefined") {
         this.logger.info(`Missing required entity ${unknownParam} in current entity store.`);
@@ -50,19 +49,19 @@ export class BeforeIntentHook {
     return this.entities.contains(entities);
   }
 
-  /** Sets this.neededParams based on Reflect.getMetadata result = based from what is stored into @needs(..) */
-  private retrieveNeededParamsFromMetadata() {
+  /** Sets this.neededParams based on Reflect.getMetadata result = based from what is stored into @needsEntities(..) */
+  private retrieveNeededParamsFromMetadata(): DecoratorContent.NeedsEntity | undefined {
     if (typeof this.target === "undefined" || typeof this.method === "undefined" || typeof this.target[this.method] === "undefined") return;
-    const neededParams = Reflect.getMetadata(needsMetadataKey, this.target[this.method]);
+    const neededParams: DecoratorContent.NeedsEntity = Reflect.getMetadata(decoratorSymbols.needsEntities, this.target[this.method]);
 
-    if (typeof neededParams !== "undefined" && neededParams.constructor === Array) {
-      this.logger.debug(`Retrieving @needs decorators for ${this.target.constructor.name} and ${this.method}.`);
+    if (typeof neededParams !== "undefined" && Array.isArray(neededParams.entities)) {
+      this.logger.debug(`Retrieving @needsEntities decorators for ${this.target.constructor.name}#${this.method}.`);
 
-      if ((neededParams as any[]).filter(param => typeof param !== "string").length > 0) {
+      if (neededParams.entities.filter(param => typeof param !== "string").length > 0) {
         throw new TypeError("Only strings are allowed as parameter identifiers!");
       }
 
-      this.neededParams = neededParams;
+      return neededParams;
     }
   }
 }
