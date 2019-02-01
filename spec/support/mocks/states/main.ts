@@ -11,6 +11,9 @@ export class MainState implements State.Required {
   @needsEntities(["city", "amount"])
   public testManyIntent() {}
 
+  @needsEntities({ entities: ["city", "amount"], promptStateName: "MyPromptState" })
+  public testCustomPromptStateIntent() {}
+
   public noEntitiesIntent() {}
 
   public unhandledGenericIntent() {}

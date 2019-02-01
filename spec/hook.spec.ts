@@ -81,6 +81,17 @@ describe("hook", function() {
         });
       });
     });
+
+    describe("with custom prompt state given via decorator", function() {
+      beforeEach(async function(this: CurrentThisContext) {
+        await this.googleSpecHelper.pretendIntentCalled("testCustomPromptState", additionalExtraction);
+        await prepareMock(this);
+      });
+
+      it("calls prompt factory with custom prompt state name", async function(this: CurrentThisContext) {
+        expect((this.hook as any).promptFactory).toHaveBeenCalledWith("testCustomPromptStateIntent", "MainState", jasmine.any(Object), "MyPromptState", []);
+      });
+    });
   });
 
   describe("with no entities configured", function() {

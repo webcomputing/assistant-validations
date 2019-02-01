@@ -8,9 +8,6 @@ import { DecoratorContent, PromptFactory } from "./public-interfaces";
 
 @injectable()
 export class BeforeIntentHook {
-  private target?: State.Required;
-  private stateName?: string;
-  private method?: string;
   private logger: Logger;
 
   constructor(
@@ -22,18 +19,14 @@ export class BeforeIntentHook {
   }
 
   public execute: Hooks.BeforeIntentHook = async (mode, state, stateName, intent, machine, ...args: any[]) => {
-    this.target = state;
-    this.stateName = stateName;
-    this.method = intent;
-
-    const neededParams = this.retrieveNeededParamsFromMetadata();
+    const neededParams = this.retrieveNeededParamsFromMetadata(state, intent);
 
     if (neededParams && neededParams.entities.length > 0) {
       const unknownParam = neededParams.entities.filter(p => !this.currentRequestHasParam(p))[0];
 
       if (typeof unknownParam !== "undefined") {
         this.logger.info(`Missing required entity ${unknownParam} in current entity store.`);
-        await this.promptFactory(this.method, this.stateName, machine, undefined, args).prompt(unknownParam);
+        await this.promptFactory(intent, stateName, machine, neededParams.promptStateName, args).prompt(unknownParam);
         return false;
       }
     }
@@ -50,12 +43,12 @@ export class BeforeIntentHook {
   }
 
   /** Sets this.neededParams based on Reflect.getMetadata result = based from what is stored into @needsEntities(..) */
-  private retrieveNeededParamsFromMetadata(): DecoratorContent.NeedsEntity | undefined {
-    if (typeof this.target === "undefined" || typeof this.method === "undefined" || typeof this.target[this.method] === "undefined") return;
-    const neededParams: DecoratorContent.NeedsEntity = Reflect.getMetadata(decoratorSymbols.needsEntities, this.target[this.method]);
+  private retrieveNeededParamsFromMetadata(target: State.Required, method: string): DecoratorContent.NeedsEntity | undefined {
+    if (typeof target === "undefined" || typeof method === "undefined" || typeof target[method] === "undefined") return undefined;
+    const neededParams: DecoratorContent.NeedsEntity = Reflect.getMetadata(decoratorSymbols.needsEntities, target[method]);
 
     if (typeof neededParams !== "undefined" && Array.isArray(neededParams.entities)) {
-      this.logger.debug(`Retrieving @needsEntities decorators for ${this.target.constructor.name}#${this.method}.`);
+      this.logger.debug(`Retrieving @needsEntities decorators for ${target.constructor.name}#${method}.`);
 
       if (neededParams.entities.filter(param => typeof param !== "string").length > 0) {
         throw new TypeError("Only strings are allowed as parameter identifiers!");
