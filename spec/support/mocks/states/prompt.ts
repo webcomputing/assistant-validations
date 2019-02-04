@@ -29,12 +29,12 @@ class PromptStateRequirements<MergedAnswerTypes extends BasicAnswerTypes, Merged
 @injectable()
 export class PromptState<MergedAnswerTypes extends BasicAnswerTypes, MergedHandler extends BasicHandable<MergedAnswerTypes>> extends PromptStateMixin(
   PromptStateRequirements
-)<MergedAnswerTypes, MergedHandler> {
+) {
   constructor(
     @inject(injectionNames.current.stateSetupSet) setupSet: State.SetupSet<MergedAnswerTypes, MergedHandler>,
     @inject(injectionNames.current.entityDictionary) entities: EntityDictionary,
     @inject(injectionNames.current.sessionFactory) sessionFactory: CurrentSessionFactory,
-    @inject(injectionNames.userEntityMappings) mappings: PlatformGenerator.EntityMapping
+    @inject(injectionNames.userEntityMapping) mappings: PlatformGenerator.EntityMapping
   ) {
     super(setupSet, entities, sessionFactory, mappings);
   }
