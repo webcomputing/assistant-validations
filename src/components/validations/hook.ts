@@ -1,8 +1,8 @@
 import { ComponentSpecificLoggerFactory, EntityDictionary, Hooks, injectionNames, Logger, State } from "assistant-source";
 import { inject, injectable } from "inversify";
 
-import { validationsInjectionNames } from "../../../src/components/validations/injection-names";
 import { needsMetadataKey } from "./annotations";
+import { validationsInjectionNames } from "./injection-names";
 import { COMPONENT_NAME } from "./private-interfaces";
 import { PromptFactory } from "./public-interfaces";
 
