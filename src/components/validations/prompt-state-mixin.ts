@@ -13,6 +13,35 @@ import {
 import { COMPONENT_NAME } from "./private-interfaces";
 import { HookContext, PromptStateMixinInstance, PromptStateMixinRequirements } from "./public-interfaces";
 
+
+/**
+ * The mixin's return type has a flaw in the return type. According to some findings, e.g. https://github.com/Microsoft/TypeScript/issues/10261, 
+ * the intersection of two Constructor types is not considered to be Constructor type itself. Hence, `Constructor<PromptStateMixinInstance> & T` 
+ * is not instantiable (by type, actually it is). The solution is not to intersect two Constructor types, but to intersect the return type of the
+ * constructor. There're two possible ways.
+ * 
+ * The first one uses the `InstanceType` mapped type and does not require an adaption of the generic:
+ * 
+ * export declare function PromptStateMixin<T extends Constructor<BaseState<BasicAnswerTypes, BasicHandable<BasicAnswerTypes>> & PromptStateMixinRequirements>>(superState: T): Constructor<PromptStateMixinInstance & InstanceType<T>>;
+ * 
+ * However, this results in an non-static return type as `InstanceType` uses conditionals. Consequently, TypeScript does not allow to extend from
+ * this immediately; it must've been explicitely casted to a static type:
+ * 
+ * 
+ * const mixedState = PromptStateMixin(superState);
+ *
+ * @injectable()
+ * class LeanPromptState extends mixedState {}
+ * 
+ * 
+ * The alternative is to alter return type and the generic, which works like a charm, but may have some implications in existing projects (though I can't imagine any):
+ * 
+ * export declare function PromptStateMixin<T extends Constructor<I>, I extends BaseState<BasicAnswerTypes, BasicHandable<BasicAnswerTypes>> & PromptStateMixinRequirements>(superState: T): Constructor<PromptStateMixinInstance & I>;
+ * 
+ */
+
+
+
 export function PromptStateMixin<T extends Constructor<BaseState<BasicAnswerTypes, BasicHandable<BasicAnswerTypes>> & PromptStateMixinRequirements>>(
   superState: T
 ): Constructor<PromptStateMixinInstance> & T {
