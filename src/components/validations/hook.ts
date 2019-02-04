@@ -4,7 +4,8 @@ import { inject, injectable } from "inversify";
 import { validationsInjectionNames } from "../../../src/components/validations/injection-names";
 import { decoratorSymbols } from "./decorators";
 import { COMPONENT_NAME } from "./private-interfaces";
-import { DecoratorContent, PromptFactory } from "./public-interfaces";
+import { DecoratorContent } from "./public-interfaces";
+import { ValidationsInitializer } from "./validations-initializer";
 
 @injectable()
 export class BeforeIntentHook {
@@ -12,7 +13,7 @@ export class BeforeIntentHook {
 
   constructor(
     @inject(injectionNames.current.entityDictionary) private entities: EntityDictionary,
-    @inject(validationsInjectionNames.current.promptFactory) private promptFactory: PromptFactory,
+    @inject(validationsInjectionNames.current.validationsInitializer) private validationsInitializer: ValidationsInitializer,
     @inject(injectionNames.componentSpecificLoggerFactory) loggerFactory: ComponentSpecificLoggerFactory
   ) {
     this.logger = loggerFactory(COMPONENT_NAME);
@@ -26,7 +27,10 @@ export class BeforeIntentHook {
 
       if (typeof unknownParam !== "undefined") {
         this.logger.info(`Missing required entity ${unknownParam} in current entity store.`);
-        await this.promptFactory(intent, stateName, machine, neededParams.promptStateName, args).prompt(unknownParam);
+        await this.validationsInitializer.initializePrompt(stateName, intent, unknownParam, {
+          promptStateName: neededParams.promptStateName,
+          redirectArguments: args,
+        });
         return false;
       }
     }

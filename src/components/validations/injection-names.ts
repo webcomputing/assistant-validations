@@ -5,8 +5,8 @@ export const validationsInjectionNames = {
    */
   current: {
     /**
-     * Inject an instance of @type {PromptFactory}}
+     * Inject an instance of @type {ValidationsInitializer}}
      */
-    promptFactory: "validations:current-prompt-factory",
+    validationsInitializer: "validations:validations-initializer",
   },
 };

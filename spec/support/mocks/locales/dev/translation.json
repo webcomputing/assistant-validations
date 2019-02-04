@@ -7,6 +7,7 @@
   "promptState": {
     "city": "Prompt for city",
     "country": "Prompt for country",
+    "amount": "Prompt for amount",
     "helpGenericIntent": {
       "city": "Help for city",
       "amount": "Help for amount"
@@ -19,6 +20,7 @@
     }
   },
   "myPromptState": {
-    "city": "My prompt state prompt for city"
+    "city": "My prompt state prompt for city",
+    "amount": "My prompt state prompt for amount"
   }
 }

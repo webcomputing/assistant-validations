@@ -50,24 +50,31 @@ export namespace DecoratorContent {
   }
 }
 
-/**
- * Creates a prompt. Needed to prompt for a parameter.
- * @param intent Name of the current intent
- * @param stateName Name of the current state
- * @param machine Reference to Transitionable object
- * @param promptStateName (optional) Name of prompt state to transition to, defaults to "PromptState"
- * @param redirectArguments (optional) Additional arguments to pass to the current state and intent
- */
-export type PromptFactory = (intent: string, stateName: string, machine: Transitionable, promptStateName?: string, redirectArguments?: any[]) => Prompt;
+export namespace InitializerOptions {
+  /** Options used in {@link ValidationsInitializer#initializePrompt} */
+  export interface Prompt {
+    /** If set to false, no invoke message will be emitted */
+    tellInvokeMessage: boolean;
 
-export interface Prompt {
-  /**
-   * Starts prompting for a parameter
-   * @param parameter string The parameter to prompt for
-   * @param tellInvokeMessage boolean If set to true (default), sends response to ask the user for the parameter
-   */
-  prompt(parameter: string, tellInvokeMessage?: boolean): Promise<void>;
+    /** Name of prompt state to use, if not given, uses default prompt state */
+    promptStateName: string;
+
+    /** Additional arguments to pass, will be re-passed to state/intent call */
+    redirectArguments: any[];
+  }
 }
+
+/** Session keys used in assistant-validations */
+export const sessionKeys = {
+  /** Session keys used for prompting */
+  prompt: {
+    /** Basic information about the prompt itself, stored before making the transition by {@link PromptTransition} */
+    context: "entities:currentPrompt",
+
+    /** Key holding information about all entities in store before prompting for a new one */
+    previousEntities: "entities:currentPrompt:previousEntities",
+  },
+};
 
 /**
  * Requirements you need to use the PromptMixin in one of your prompt states.

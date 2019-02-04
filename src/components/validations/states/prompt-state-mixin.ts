@@ -10,8 +10,8 @@ import {
   Transitionable,
 } from "assistant-source";
 
-import { COMPONENT_NAME } from "./private-interfaces";
-import { HookContext, PromptStateMixinInstance, PromptStateMixinRequirements, ValidationStrategy } from "./public-interfaces";
+import { COMPONENT_NAME } from "../private-interfaces";
+import { HookContext, PromptStateMixinInstance, PromptStateMixinRequirements, sessionKeys, ValidationStrategy } from "../public-interfaces";
 
 export function PromptStateMixin<T extends Constructor<BaseState<BasicAnswerTypes, BasicHandable<BasicAnswerTypes>> & PromptStateMixinRequirements>>(
   superState: T
@@ -48,7 +48,7 @@ export function PromptStateMixin<T extends Constructor<BaseState<BasicAnswerType
         if (this.entityIsContained(promptedEntity)) {
           this.logger.debug(this.getLoggerOptions(), "Current request contained entity");
           return this.sessionFactory()
-            .delete("entities:currentPrompt")
+            .delete(sessionKeys.prompt.context)
             .then(() => {
               return this.applyStoredEntities();
             })
@@ -161,7 +161,7 @@ export function PromptStateMixin<T extends Constructor<BaseState<BasicAnswerType
      * Unserializes hook context
      */
     public async unserializeHook(): Promise<HookContext<ValidationStrategy.Prompt>> {
-      const serializedHook = await this.sessionFactory().get("entities:currentPrompt");
+      const serializedHook = await this.sessionFactory().get(sessionKeys.prompt.context);
 
       if (serializedHook) {
         return JSON.parse(serializedHook) as HookContext<ValidationStrategy.Prompt>;
@@ -172,13 +172,13 @@ export function PromptStateMixin<T extends Constructor<BaseState<BasicAnswerType
 
     /** Stores all entities currently present in entity dictionary into session. */
     public async storeCurrentEntitiesToSession() {
-      await this.entities.storeToSession(this.sessionFactory(), "entities:currentPrompt:previousEntities");
+      await this.entities.storeToSession(this.sessionFactory(), sessionKeys.prompt.previousEntities);
     }
 
     /** Opposite of storeCurrentEntitiesToSession() */
     public async applyStoredEntities() {
-      await this.entities.readFromSession(this.sessionFactory(), true, "entities:currentPrompt:previousEntities");
-      return this.sessionFactory().delete("entities:currentPrompt:previousEntities");
+      await this.entities.readFromSession(this.sessionFactory(), true, sessionKeys.prompt.previousEntities);
+      return this.sessionFactory().delete(sessionKeys.prompt.previousEntities);
     }
 
     private getLoggerOptions() {

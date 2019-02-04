@@ -1,8 +1,8 @@
 // tslint:disable-next-line:no-implicit-dependencies
 import { GoogleSpecificHandable, GoogleSpecificTypes } from "assistant-google";
 import { CurrentSessionFactory, EntityDictionary, GenericIntent, injectionNames, intent as Intent, Session, Transitionable } from "assistant-source";
-import { HookContext, ValidationStrategy } from "../src/assistant-validations";
-import { ThisContext } from "./this-context";
+import { HookContext, sessionKeys, ValidationStrategy } from "../../src/assistant-validations";
+import { ThisContext } from "../this-context";
 
 interface CurrentThisContext extends ThisContext {
   currentSession: Session;
@@ -62,7 +62,7 @@ describe("PromptState", function() {
 
     this.setHookContext = () => {
       const session = this.container.inversifyInstance.get<CurrentSessionFactory>(injectionNames.current.sessionFactory)();
-      return session.set("entities:currentPrompt", JSON.stringify(hookContext));
+      return session.set(sessionKeys.prompt.context, JSON.stringify(hookContext));
     };
   });
 
@@ -146,7 +146,7 @@ describe("PromptState", function() {
       });
 
       it("stores current entities to session", async function(this: CurrentThisContext) {
-        const storedEntities = await this.currentSession.get("entities:currentPrompt:previousEntities");
+        const storedEntities = await this.currentSession.get(sessionKeys.prompt.previousEntities);
         expect(JSON.parse(storedEntities!).myEntity).toEqual("myValue");
       });
     });
@@ -171,7 +171,7 @@ describe("PromptState", function() {
     describe("with the prompted entity given", function() {
       beforeEach(async function(this: CurrentThisContext) {
         this.responseHandler = await this.callIntent(intentName, false, true, "PromptState", false, { myEntityType: "Münster" });
-        await this.currentSession.set("entities:currentPrompt:previousEntities", JSON.stringify(defaultEntities));
+        await this.currentSession.set(sessionKeys.prompt.previousEntities, JSON.stringify(defaultEntities));
 
         this.entityDictionary = this.container.inversifyInstance.get(injectionNames.current.entityDictionary);
         this.stateMachine = this.container.inversifyInstance.get(injectionNames.current.stateMachine);

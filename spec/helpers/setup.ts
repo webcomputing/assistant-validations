@@ -33,6 +33,7 @@ beforeEach(function(this: ThisContext) {
     "core:unifier": {
       entities: {
         myEntityType: ["city", "country"],
+        mySecondEntityType: ["amount"],
       },
     },
   });

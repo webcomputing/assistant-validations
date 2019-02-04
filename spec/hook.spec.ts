@@ -1,39 +1,45 @@
 import { injectionNames, Transitionable } from "assistant-source";
+import { ValidationsInitializer, validationsInjectionNames } from "../src/assistant-validations";
 import { BeforeIntentHook } from "../src/components/validations/hook";
 import { ThisContext } from "./this-context";
 
 interface CurrentThisContext extends ThisContext {
   stateMachine: Transitionable;
   hook: BeforeIntentHook;
-  promptedParam: any;
+  validationsInitializer: ValidationsInitializer;
+
+  prepareMock: (runMachine?: boolean) => Promise<void>;
 }
 
 describe("hook", function() {
   beforeEach(async function(this: CurrentThisContext) {
     this.prepareWithStates();
+
+    this.prepareMock = (runMachine = true) => {
+      // Rebind mocks in singleton scope
+      this.container.inversifyInstance
+        .rebind(BeforeIntentHook)
+        .to(BeforeIntentHook)
+        .inSingletonScope();
+      this.container.inversifyInstance
+        .rebind(validationsInjectionNames.current.validationsInitializer)
+        .to(ValidationsInitializer)
+        .inSingletonScope();
+
+      // Get relevant instances
+      this.hook = this.container.inversifyInstance.get(BeforeIntentHook);
+      this.validationsInitializer = this.container.inversifyInstance.get(validationsInjectionNames.current.validationsInitializer);
+      this.stateMachine = this.container.inversifyInstance.get(injectionNames.current.stateMachine);
+
+      // Register relevant spies
+      spyOn(this.validationsInitializer, "initializePrompt").and.callThrough();
+
+      if (runMachine) {
+        return this.googleSpecHelper.specHelper.runMachine("MainState") as Promise<void>;
+      }
+      return Promise.resolve();
+    };
   });
-
-  const prepareMock = (instance: CurrentThisContext, runMachine = true) => {
-    instance.container.inversifyInstance
-      .rebind(BeforeIntentHook)
-      .to(BeforeIntentHook)
-      .inSingletonScope();
-
-    instance.hook = instance.container.inversifyInstance.get(BeforeIntentHook);
-    instance.promptedParam = null;
-    spyOn(instance.hook as any, "promptFactory").and.returnValue({
-      prompt: p =>
-        new Promise((resolve, reject) => {
-          instance.promptedParam = p;
-          resolve();
-        }),
-    });
-
-    if (runMachine) {
-      return instance.googleSpecHelper.specHelper.runMachine("MainState") as Promise<void>;
-    }
-    return Promise.resolve();
-  };
 
   describe("with multiple entities configured", function() {
     const additionalExtraction = { entities: { city: "Münster" } };
@@ -41,11 +47,11 @@ describe("hook", function() {
     describe("with all entities present", function() {
       beforeEach(async function(this: CurrentThisContext) {
         await this.googleSpecHelper.pretendIntentCalled("test", additionalExtraction);
-        await prepareMock(this);
+        await this.prepareMock();
       });
 
       it("does nothing", async function(this: CurrentThisContext) {
-        expect((this.hook as any).promptFactory).not.toHaveBeenCalled();
+        expect(this.validationsInitializer.initializePrompt).not.toHaveBeenCalled();
       });
     });
 
@@ -56,28 +62,26 @@ describe("hook", function() {
 
       describe("as platform intent call", function() {
         beforeEach(async function(this: CurrentThisContext) {
-          await prepareMock(this);
+          await this.prepareMock();
         });
 
-        it("calls prompt factory with given arguments", async function(this: CurrentThisContext) {
-          this.stateMachine = this.container.inversifyInstance.get(injectionNames.current.stateMachine);
-          expect((this.hook as any).promptFactory).toHaveBeenCalledWith("testManyIntent", "MainState", this.stateMachine, undefined, []);
-        });
-
-        it("prompts the needed entity", async function(this: CurrentThisContext) {
-          expect(this.promptedParam).toEqual("amount");
+        it("calls validationsInitializer#initializePrompt with given arguments", async function(this: CurrentThisContext) {
+          expect(this.validationsInitializer.initializePrompt).toHaveBeenCalledWith("MainState", "testManyIntent", "amount", {
+            redirectArguments: [],
+          });
         });
       });
 
       describe("as state machine transition with additional arguments", function() {
         beforeEach(async function(this: CurrentThisContext) {
-          await prepareMock(this, false);
-          this.stateMachine = this.container.inversifyInstance.get(injectionNames.current.stateMachine);
+          await this.prepareMock(false);
           await this.stateMachine.handleIntent("testMany", "arg1", "arg2");
         });
 
-        it("passes the additional arguments to promptFactory", async function(this: CurrentThisContext) {
-          expect((this.hook as any).promptFactory).toHaveBeenCalledWith("testManyIntent", "MainState", this.stateMachine, undefined, ["arg1", "arg2"]);
+        it("passes the additional arguments to validationsInitializer", async function(this: CurrentThisContext) {
+          expect(this.validationsInitializer.initializePrompt).toHaveBeenCalledWith(jasmine.any(String), jasmine.any(String), jasmine.any(String), {
+            redirectArguments: ["arg1", "arg2"],
+          });
         });
       });
     });
@@ -85,11 +89,14 @@ describe("hook", function() {
     describe("with custom prompt state given via decorator", function() {
       beforeEach(async function(this: CurrentThisContext) {
         await this.googleSpecHelper.pretendIntentCalled("testCustomPromptState", additionalExtraction);
-        await prepareMock(this);
+        await this.prepareMock();
       });
 
       it("calls prompt factory with custom prompt state name", async function(this: CurrentThisContext) {
-        expect((this.hook as any).promptFactory).toHaveBeenCalledWith("testCustomPromptStateIntent", "MainState", jasmine.any(Object), "MyPromptState", []);
+        expect(this.validationsInitializer.initializePrompt).toHaveBeenCalledWith("MainState", "testCustomPromptStateIntent", jasmine.any(String), {
+          redirectArguments: [],
+          promptStateName: "MyPromptState",
+        });
       });
     });
   });
@@ -97,11 +104,11 @@ describe("hook", function() {
   describe("with no entities configured", function() {
     beforeEach(async function(this: CurrentThisContext) {
       await this.googleSpecHelper.pretendIntentCalled("noEntities");
-      await prepareMock(this);
+      await this.prepareMock();
     });
 
     it("does nothing", async function(this: CurrentThisContext) {
-      expect((this.hook as any).promptFactory).not.toHaveBeenCalled();
+      expect(this.validationsInitializer.initializePrompt).not.toHaveBeenCalled();
     });
   });
 });
