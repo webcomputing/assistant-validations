@@ -1,8 +1,8 @@
 import { ComponentSpecificLoggerFactory, EntityDictionary, Hooks, injectionNames, Logger, State } from "assistant-source";
 import { inject, injectable } from "inversify";
 
-import { validationsInjectionNames } from "../../../src/components/validations/injection-names";
 import { decoratorSymbols } from "./decorators";
+import { validationsInjectionNames } from "./injection-names";
 import { COMPONENT_NAME } from "./private-interfaces";
 import { DecoratorContent, InitializerOptions } from "./public-interfaces";
 import { ValidationsInitializer } from "./validations-initializer";
