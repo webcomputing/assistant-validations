@@ -28,7 +28,7 @@ import { HookContext, PromptStateMixinInstance, PromptStateMixinRequirements } f
  * this immediately; it must've been explicitely casted to a static type:
  * 
  * 
- * const mixedState = PromptStateMixin(superState);
+ * const mixedState = PromptStateMixin(superState) as Constructor<PromptStateMixinInstance & BaseState<BasicAnswerTypes, BasicHandable<BasicAnswerTypes>> & PromptStateMixinRequirements>;
  *
  * @injectable()
  * class LeanPromptState extends mixedState {}
