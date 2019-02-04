@@ -13,9 +13,12 @@ import {
 import { COMPONENT_NAME } from "./private-interfaces";
 import { HookContext, PromptStateMixinInstance, PromptStateMixinRequirements } from "./public-interfaces";
 
-export function PromptStateMixin<T extends Constructor<BaseState<BasicAnswerTypes, BasicHandable<BasicAnswerTypes>> & PromptStateMixinRequirements>>(
+// Defines the public members requirements to an instance of a prompt state
+type PromptStateInstanceRequirements = BaseState<BasicAnswerTypes, BasicHandable<BasicAnswerTypes>> & PromptStateMixinRequirements;
+
+export function PromptStateMixin<T extends Constructor<PromptStateInstanceRequirements>>(
   superState: T
-): Constructor<PromptStateMixinInstance> & T {
+): Constructor<PromptStateMixinInstance & PromptStateInstanceRequirements> {
   return class extends superState {
     public async invokeGenericIntent(machine: Transitionable, tellInvokeMessage = true, ...additionalArgs: any[]) {
       const promises = await Promise.all([this.unserializeHook(), this.storeCurrentEntitiesToSession()]);
