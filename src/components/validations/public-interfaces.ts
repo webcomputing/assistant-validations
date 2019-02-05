@@ -62,6 +62,12 @@ export namespace InitializerOptions {
     /** Additional arguments to pass, will be re-passed to state/intent call */
     redirectArguments: any[];
   }
+
+  /** Options used in {@link ValidationsInitializer#initializeConfirmation} */
+  export interface Confirmation {
+    /** Name of custom confirmation state to use. If not given, uses default confirmation state. */
+    confirmationStateName: string;
+  }
 }
 
 /** Session keys used in assistant-validations */
@@ -157,6 +163,18 @@ export interface PromptStateMixinInstance {
   /** Opposite of storeCurrentEntitiesToSession() */
   applyStoredEntities(): Promise<void>;
 }
+
+/** Result of the confirmation. Will be passed as the last argument of your intent method. */
+export interface ConfirmationResult {
+  /** Internal symbol (equals {@link confirmationResultIdentifier}) used to identify this argument from all possible arguments of an intent method */
+  returnIdentifier: symbol;
+
+  /** True if user confirmed, false otherwise */
+  confirmed: boolean;
+}
+
+/** Internal symbol to identify a confirmation result argument. See also {@link ConfirmationResult}. */
+export const confirmationResultIdentifier = Symbol("ConfigurationResult.returnIdentifier");
 
 /** Configuration of validations component */
 export interface ValidationsConfiguration extends Partial<Configuration.Defaults>, Configuration.Required {}

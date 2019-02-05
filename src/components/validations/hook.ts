@@ -4,7 +4,7 @@ import { inject, injectable } from "inversify";
 import { decoratorSymbols } from "./decorators";
 import { validationsInjectionNames } from "./injection-names";
 import { COMPONENT_NAME } from "./private-interfaces";
-import { DecoratorContent, InitializerOptions } from "./public-interfaces";
+import { ConfirmationResult, confirmationResultIdentifier, DecoratorContent, InitializerOptions } from "./public-interfaces";
 import { ValidationsInitializer } from "./validations-initializer";
 
 @injectable()
@@ -32,8 +32,11 @@ export class BeforeIntentHook {
     }
 
     // Secondly, do the same for confirmation
-    const confirmationNeeded = await this.initializeConfirmationIfNeeded();
+    const confirmationNeeded = await this.needsConfirmation(state, intent, args);
     if (confirmationNeeded !== false) {
+      const options = typeof confirmationNeeded.confirmationStateName === "string" ? confirmationNeeded : undefined;
+      await this.validationsInitializer.initializeConfirmation(stateName, intent, options);
+
       // ... and return false to interrupt state machine
       return false;
     }
@@ -42,7 +45,25 @@ export class BeforeIntentHook {
     return true;
   };
 
-  private async initializeConfirmationIfNeeded(): Promise<boolean> {
+  /** Checks if we need to confirm this intent, and if so, returns information about the confirmation we need. Returns false otherwise. */
+  private async needsConfirmation(state: State.Required, intentMethod: string, args: any[]): Promise<false | Partial<InitializerOptions.Confirmation>> {
+    const decoratorContent = this.retrieveNeededConfirmationFromMetadata(state, intentMethod);
+
+    if (typeof decoratorContent !== "undefined") {
+      const lastArgument: ConfirmationResult | undefined = args.slice(-1)[0];
+      if (lastArgument && lastArgument.returnIdentifier === confirmationResultIdentifier) {
+        // State is decorated with @needsConfirmation, but confirmation is already done - the result is already here!
+        this.logger.info(
+          `${state.constructor.name}#${intentMethod} is decorated with @needsConfirmation, but we already got a confirmation result. Won't halt state machine.`
+        );
+        return false;
+      }
+
+      // State is decorated with @needsConfirmation, and there was no confirmation yet - so let's confirm!
+      this.logger.info(`${state.constructor.name}#${intentMethod} is decorated with @needsConfirmation - halting state machine to initialize confirmation.`);
+      return decoratorContent;
+    }
+
     return false;
   }
 
@@ -81,8 +102,7 @@ export class BeforeIntentHook {
 
   /** Returns needed entities based on Reflect.getMetadata result = based from what is stored into @needsEntities(..) */
   private retrieveNeededEntitiesFromMetadata(target: State.Required, method: string): DecoratorContent.NeedsEntity | undefined {
-    if (typeof target === "undefined" || typeof method === "undefined" || typeof target[method] === "undefined") return undefined;
-    const neededParams: DecoratorContent.NeedsEntity = Reflect.getMetadata(decoratorSymbols.needsEntities, target[method]);
+    const neededParams = this.retrieveDecoratorContent<DecoratorContent.NeedsEntity>(target, method, decoratorSymbols.needsEntities);
 
     if (typeof neededParams !== "undefined" && Array.isArray(neededParams.entities)) {
       this.logger.debug(`Retrieving @needsEntities decorators for ${target.constructor.name}#${method}.`);
@@ -93,5 +113,26 @@ export class BeforeIntentHook {
 
       return neededParams;
     }
+  }
+
+  /** Returns content of needsConfirmation decorator */
+  private retrieveNeededConfirmationFromMetadata(target: State.Required, method: string): DecoratorContent.Confirmation | undefined {
+    const decoratorContent = this.retrieveDecoratorContent<DecoratorContent.Confirmation>(target, method, decoratorSymbols.needsConfirmation);
+
+    if (typeof decoratorContent !== "undefined") {
+      this.logger.debug(`Retrieving @needsConfirmation decorators for ${target.constructor.name}#${method}.`);
+    }
+
+    return decoratorContent;
+  }
+
+  /** Returns content of any decorator */
+  private retrieveDecoratorContent<T extends DecoratorContent.NeedsEntity | DecoratorContent.Confirmation>(
+    target: State.Required,
+    method: string,
+    decoratorSymbol: symbol
+  ): T | undefined {
+    if (typeof target === "undefined" || typeof method === "undefined" || typeof target[method] === "undefined") return undefined;
+    return Reflect.getMetadata(decoratorSymbol, target[method]);
   }
 }

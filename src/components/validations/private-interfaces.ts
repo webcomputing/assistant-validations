@@ -1,8 +1,11 @@
 export namespace Configuration {
   /** Configuration defaults -> all of these keys are optional for user */
   export interface Defaults {
-    /** Name of prompt state to use for all {@link @needsEntities} validations as default */
+    /** Name of prompt state to use for all {@link @needsEntities} validations as default state */
     defaultPromptState: string;
+
+    /** Name of confirmation state to use fo all {@link @needsConfirmation} validations as default state */
+    defaultConfirmationState: string;
   }
 
   /** Required configuration options, no defaults are used here */

@@ -6,9 +6,9 @@ export const decoratorSymbols = {
 };
 
 /** Only execute the decorated intent (or any intent in the decorated state) if all given entites are present. Asks for unpresent entities. */
-export function needsConfirmation(confirmationStateName?: string) {
+export function needsConfirmation(opts?: DecoratorContent.Confirmation) {
   return function(targetClass: any, methodName: string) {
-    const decoratorInput: DecoratorContent.Confirmation = { confirmationStateName };
+    const decoratorInput: DecoratorContent.Confirmation = opts ? opts : {};
     Reflect.defineMetadata(decoratorSymbols.needsConfirmation, decoratorInput, targetClass[methodName]);
   };
 }

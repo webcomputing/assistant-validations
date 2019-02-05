@@ -10,6 +10,7 @@ import { ValidationsInitializer } from "./validations-initializer";
 
 export const defaultConfiguration: Configuration.Defaults = {
   defaultPromptState: "PromptState",
+  defaultConfirmationState: "ConfirmationState",
 };
 
 export const descriptor: ComponentDescriptor<Configuration.Defaults> = {

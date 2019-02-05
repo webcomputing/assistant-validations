@@ -48,4 +48,10 @@ export class ValidationsInitializer {
       mergedOptions.tellInvokeMessage
     );
   }
+
+  public async initializeConfirmation(
+    redirectStateName: string,
+    redirectIntentName: string,
+    options?: Partial<InitializerOptions.Confirmation>
+  ): Promise<void> {}
 }

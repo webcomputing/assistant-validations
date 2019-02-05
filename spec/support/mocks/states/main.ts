@@ -1,7 +1,7 @@
 // tslint:disable:no-empty
 import { State } from "assistant-source";
 import { injectable } from "inversify";
-import { needs, needsEntities } from "../../../../src/components/validations/decorators";
+import { needs, needsConfirmation, needsEntities } from "../../../../src/components/validations/decorators";
 
 @injectable()
 export class MainState implements State.Required {
@@ -14,7 +14,13 @@ export class MainState implements State.Required {
   @needsEntities({ entities: ["city", "amount"], promptStateName: "MyPromptState" })
   public testCustomPromptStateIntent() {}
 
-  public noEntitiesIntent() {}
+  public noDecoratorsIntent() {}
+
+  @needsConfirmation()
+  public needsConfirmationIntent() {}
+
+  @needsConfirmation({ confirmationStateName: "MyConfirmationState" })
+  public needsConfirmationCustomStateIntent() {}
 
   public unhandledGenericIntent() {}
   public unansweredGenericIntent() {}
