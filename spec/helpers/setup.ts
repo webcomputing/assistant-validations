@@ -3,7 +3,7 @@ require("reflect-metadata");
 
 import { descriptor as apiAiDescriptor } from "assistant-apiai";
 import { descriptor as googleDescriptor, GoogleSpecHelper } from "assistant-google";
-import { AssistantJSSetup, SpecHelper } from "assistant-source";
+import { AssistantJSSetup, SpecHelper, StateMachineSetup } from "assistant-source";
 import { descriptor } from "../../src/assistant-validations";
 import { ConfirmationState } from "../support/mocks/states/confirmation-state";
 import { MainState } from "../support/mocks/states/main-state";
@@ -14,14 +14,18 @@ import { ThisContext } from "../this-context";
 
 beforeEach(function(this: ThisContext) {
   this.assistantJs = new AssistantJSSetup();
-  this.specHelper = new SpecHelper(this.assistantJs);
+  this.stateMachineSetup = new StateMachineSetup(this.assistantJs);
+  this.specHelper = new SpecHelper(this.assistantJs, this.stateMachineSetup);
 
+  this.assistantJs.registerInternalComponents();
   this.assistantJs.registerComponent(googleDescriptor);
   this.assistantJs.registerComponent(apiAiDescriptor);
   this.assistantJs.registerComponent(descriptor);
 
   this.prepareWithStates = () => {
-    this.specHelper.prepare([MainState, PromptState, MyPromptState, ConfirmationState, MyConfirmationState]);
+    [MainState, PromptState, MyPromptState, ConfirmationState, MyConfirmationState].forEach(state => this.stateMachineSetup.addState(state));
+    this.stateMachineSetup.registerStates();
+    this.specHelper.prepareSpec(this.defaultSpecOptions);
   };
 
   this.assistantJs.addConfiguration({
@@ -40,7 +44,9 @@ beforeEach(function(this: ThisContext) {
     },
   });
 
-  this.container = this.assistantJs.container;
-
-  this.googleSpecHelper = new GoogleSpecHelper(this.specHelper);
+  this.defaultSpecOptions = {};
+  this.inversify = this.assistantJs.container.inversifyInstance;
+  this.platforms = {
+    google: new GoogleSpecHelper(this.specHelper),
+  };
 });

@@ -41,9 +41,9 @@ describe("PromptState", function() {
 
     this.callIntent = async (intent, callMachine = true, setContext = true, state = "PromptState", getResults: boolean = true, entities: any = undefined) => {
       const currentEntities = typeof entities === "undefined" ? defaultEntities : entities;
-      const responseHandler = await this.googleSpecHelper.pretendIntentCalled(intent, { entities: currentEntities });
+      const responseHandler = this.specHelper.prepareIntentCall(this.platforms.google, intent, { entities: currentEntities });
 
-      this.currentSession = this.container.inversifyInstance.get<CurrentSessionFactory>(injectionNames.current.sessionFactory)();
+      this.currentSession = this.inversify.get<CurrentSessionFactory>(injectionNames.current.sessionFactory)();
 
       if (setContext) {
         await this.setHookContext();
@@ -61,7 +61,7 @@ describe("PromptState", function() {
     };
 
     this.setHookContext = () => {
-      const session = this.container.inversifyInstance.get<CurrentSessionFactory>(injectionNames.current.sessionFactory)();
+      const session = this.inversify.get<CurrentSessionFactory>(injectionNames.current.sessionFactory)();
       return session.set(sessionKeys.prompt.context, JSON.stringify(hookContext));
     };
   });
@@ -173,8 +173,8 @@ describe("PromptState", function() {
         this.responseHandler = await this.callIntent(intentName, false, true, "PromptState", false, { myEntityType: "Münster" });
         await this.currentSession.set(sessionKeys.prompt.previousEntities, JSON.stringify(defaultEntities));
 
-        this.entityDictionary = this.container.inversifyInstance.get(injectionNames.current.entityDictionary);
-        this.stateMachine = this.container.inversifyInstance.get(injectionNames.current.stateMachine);
+        this.entityDictionary = this.inversify.get(injectionNames.current.entityDictionary);
+        this.stateMachine = this.inversify.get(injectionNames.current.stateMachine);
 
         spyOn(this.stateMachine, "handleIntent").and.callThrough();
 

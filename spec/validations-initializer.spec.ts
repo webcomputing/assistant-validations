@@ -19,11 +19,11 @@ interface CurrentThisContext extends ThisContext {
 describe("ValidationsInitializer", function() {
   beforeEach(async function(this: CurrentThisContext) {
     this.prepareWithStates();
-    await this.googleSpecHelper.pretendIntentCalled("testIntent");
-    this.validationsInitializer = this.container.inversifyInstance.get(validationsInjectionNames.current.validationsInitializer);
+    await this.specHelper.prepareIntentCall(this.platforms.google, "test");
+    this.validationsInitializer = this.inversify.get(validationsInjectionNames.current.validationsInitializer);
     this.promptTransition = (this.validationsInitializer as any).promptTransition;
     this.confirmationTransition = (this.validationsInitializer as any).confirmationTransition;
-    this.configuration = this.container.inversifyInstance.get<Component<Configuration.Runtime>>(getMetaInjectionName(COMPONENT_NAME)).configuration;
+    this.configuration = this.inversify.get<Component<Configuration.Runtime>>(getMetaInjectionName(COMPONENT_NAME)).configuration;
 
     this.defaults = {
       prompt: {

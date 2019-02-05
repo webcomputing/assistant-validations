@@ -22,26 +22,26 @@ describe("Hook", function() {
 
     this.prepareMock = (runMachine = true, ...args: any[]) => {
       // Rebind mocks in singleton scope
-      this.container.inversifyInstance
+      this.inversify
         .rebind(BeforeIntentHook)
         .to(BeforeIntentHook)
         .inSingletonScope();
-      this.container.inversifyInstance
+      this.inversify
         .rebind(validationsInjectionNames.current.validationsInitializer)
         .to(ValidationsInitializer)
         .inSingletonScope();
 
       // Get relevant instances
-      this.hook = this.container.inversifyInstance.get(BeforeIntentHook);
-      this.validationsInitializer = this.container.inversifyInstance.get(validationsInjectionNames.current.validationsInitializer);
-      this.stateMachine = this.container.inversifyInstance.get(injectionNames.current.stateMachine);
+      this.hook = this.inversify.get(BeforeIntentHook);
+      this.validationsInitializer = this.inversify.get(validationsInjectionNames.current.validationsInitializer);
+      this.stateMachine = this.inversify.get(injectionNames.current.stateMachine);
 
       // Register relevant spies
       spyOn(this.validationsInitializer, "initializePrompt").and.callThrough();
       spyOn(this.validationsInitializer, "initializeConfirmation").and.callThrough();
 
       if (runMachine) {
-        return this.googleSpecHelper.specHelper.runMachine("MainState", ...args) as Promise<void>;
+        return this.specHelper.runMachine("MainState", ...args) as Promise<void>;
       }
       return Promise.resolve();
     };
@@ -53,7 +53,7 @@ describe("Hook", function() {
 
       describe("with all entities present", function() {
         beforeEach(async function(this: CurrentThisContext) {
-          await this.googleSpecHelper.pretendIntentCalled("test", additionalExtraction);
+          await this.specHelper.prepareIntentCall(this.platforms.google, "test", additionalExtraction);
           await this.prepareMock();
         });
 
@@ -64,7 +64,7 @@ describe("Hook", function() {
 
       describe("with one entity missing", function() {
         beforeEach(async function(this: CurrentThisContext) {
-          await this.googleSpecHelper.pretendIntentCalled("testMany", additionalExtraction);
+          await this.specHelper.prepareIntentCall(this.platforms.google, "testMany", additionalExtraction);
         });
 
         describe("as platform intent call", function() {
@@ -95,7 +95,7 @@ describe("Hook", function() {
 
       describe("with custom prompt state given via decorator", function() {
         beforeEach(async function(this: CurrentThisContext) {
-          await this.googleSpecHelper.pretendIntentCalled("testCustomPromptState", additionalExtraction);
+          await this.specHelper.prepareIntentCall(this.platforms.google, "testCustomPromptState", additionalExtraction);
           await this.prepareMock();
         });
 
@@ -113,7 +113,7 @@ describe("Hook", function() {
     describe("with intent not yet confirmed", function() {
       describe("with custom confirmation state given in @needsConfirmation decorator", function() {
         beforeEach(async function(this: CurrentThisContext) {
-          await this.googleSpecHelper.pretendIntentCalled("needsConfirmationCustomState");
+          await this.specHelper.prepareIntentCall(this.platforms.google, "needsConfirmationCustomState");
           await this.prepareMock();
         });
 
@@ -127,7 +127,7 @@ describe("Hook", function() {
 
       describe("with no custom confirmation state given in @needsConfirmation decorator", function() {
         beforeEach(async function(this: CurrentThisContext) {
-          await this.googleSpecHelper.pretendIntentCalled("needsConfirmation");
+          await this.specHelper.prepareIntentCall(this.platforms.google, "needsConfirmation");
           await this.prepareMock();
         });
 
@@ -139,7 +139,7 @@ describe("Hook", function() {
 
     describe("with intent already being confirmed", function() {
       beforeEach(async function(this: CurrentThisContext) {
-        await this.googleSpecHelper.pretendIntentCalled("needsConfirmation");
+        await this.specHelper.prepareIntentCall(this.platforms.google, "needsConfirmation");
 
         const confirmationResult: ConfirmationResult = { returnIdentifier: confirmationResultIdentifier, confirmed: true };
         await this.prepareMock(true, confirmationResult);
@@ -153,7 +153,7 @@ describe("Hook", function() {
 
   describe("with no decorators used at all", function() {
     beforeEach(async function(this: CurrentThisContext) {
-      await this.googleSpecHelper.pretendIntentCalled("noDecorators");
+      await this.specHelper.prepareIntentCall(this.platforms.google, "noDecorators");
       await this.prepareMock();
     });
 

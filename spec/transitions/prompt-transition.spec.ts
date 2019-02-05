@@ -33,14 +33,14 @@ describe("PromptTransition", function() {
       entityName = "city"
     ) => {
       // Create request scope
-      await this.googleSpecHelper.pretendIntentCalled("test");
+      await this.specHelper.prepareIntentCall(this.platforms.google, "test");
 
       // Get some injections
-      this.machine = this.container.inversifyInstance.get(injectionNames.current.stateMachine);
-      this.promptTransition = this.container.inversifyInstance.get<PromptTransition>(PromptTransition);
-      this.currentStateProvider = this.container.inversifyInstance.get<State.CurrentProvider>(injectionNames.current.stateProvider);
-      this.configuration = this.container.inversifyInstance.get<Component<Configuration.Runtime>>(getMetaInjectionName(COMPONENT_NAME)).configuration;
-      this.currentSession = this.container.inversifyInstance.get<CurrentSessionFactory>(injectionNames.current.sessionFactory)();
+      this.machine = this.inversify.get(injectionNames.current.stateMachine);
+      this.promptTransition = this.inversify.get<PromptTransition>(PromptTransition);
+      this.currentStateProvider = this.inversify.get<State.CurrentProvider>(injectionNames.current.stateProvider);
+      this.configuration = this.inversify.get<Component<Configuration.Runtime>>(getMetaInjectionName(COMPONENT_NAME)).configuration;
+      this.currentSession = this.inversify.get<CurrentSessionFactory>(injectionNames.current.sessionFactory)();
 
       // Register spies
       spyOn(this.machine, "redirectTo").and.callThrough();
@@ -137,7 +137,7 @@ describe("PromptTransition", function() {
 
     describe("without PromptState configured", function() {
       beforeEach(async function(this: CurrentThisContext) {
-        this.specHelper.prepare();
+        this.specHelper.prepareSpec(this.defaultSpecOptions);
       });
 
       it("throws an exception", async function(this: CurrentThisContext) {
