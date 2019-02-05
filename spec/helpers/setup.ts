@@ -5,9 +5,11 @@ import { descriptor as apiAiDescriptor } from "assistant-apiai";
 import { descriptor as googleDescriptor, GoogleSpecHelper } from "assistant-google";
 import { AssistantJSSetup, SpecHelper } from "assistant-source";
 import { descriptor } from "../../src/assistant-validations";
-import { MainState } from "../support/mocks/states/main";
-import { MyPromptState } from "../support/mocks/states/my-prompt";
-import { PromptState } from "../support/mocks/states/prompt";
+import { ConfirmationState } from "../support/mocks/states/confirmation-state";
+import { MainState } from "../support/mocks/states/main-state";
+import { MyConfirmationState } from "../support/mocks/states/my-confirmation-state";
+import { MyPromptState } from "../support/mocks/states/my-prompt-state";
+import { PromptState } from "../support/mocks/states/prompt-state";
 import { ThisContext } from "../this-context";
 
 beforeEach(function(this: ThisContext) {
@@ -19,7 +21,7 @@ beforeEach(function(this: ThisContext) {
   this.assistantJs.registerComponent(descriptor);
 
   this.prepareWithStates = () => {
-    this.specHelper.prepare([MainState, PromptState, MyPromptState]);
+    this.specHelper.prepare([MainState, PromptState, MyPromptState, ConfirmationState, MyConfirmationState]);
   };
 
   this.assistantJs.addConfiguration({

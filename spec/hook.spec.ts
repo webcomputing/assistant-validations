@@ -16,7 +16,7 @@ interface CurrentThisContext extends ThisContext {
   prepareMock: (runMachine?: boolean, ...args: any[]) => Promise<void>;
 }
 
-fdescribe("Hook", function() {
+describe("Hook", function() {
   beforeEach(async function(this: CurrentThisContext) {
     this.prepareWithStates();
 
@@ -120,6 +120,7 @@ fdescribe("Hook", function() {
         it("calls ValidationsInitializer#initializeConfirmation with given confirmation state", async function(this: CurrentThisContext) {
           expect(this.validationsInitializer.initializeConfirmation).toHaveBeenCalledWith("MainState", "needsConfirmationCustomStateIntent", {
             confirmationStateName: "MyConfirmationState",
+            redirectArguments: [],
           });
         });
       });
@@ -131,7 +132,7 @@ fdescribe("Hook", function() {
         });
 
         it("calls ValidationsInitializer#initializeConfirmation with no custom confirmation state", async function(this: CurrentThisContext) {
-          expect(this.validationsInitializer.initializeConfirmation).toHaveBeenCalledWith("MainState", "needsConfirmationIntent", undefined);
+          expect(this.validationsInitializer.initializeConfirmation).toHaveBeenCalledWith("MainState", "needsConfirmationIntent", { redirectArguments: [] });
         });
       });
     });

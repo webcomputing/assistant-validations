@@ -43,7 +43,6 @@ describe("PromptTransition", function() {
       this.currentSession = this.container.inversifyInstance.get<CurrentSessionFactory>(injectionNames.current.sessionFactory)();
 
       // Register spies
-      spyOn(this.promptTransition as any, "switchStateForRetrieval").and.callThrough();
       spyOn(this.machine, "redirectTo").and.callThrough();
 
       // Call transition function

@@ -1,4 +1,4 @@
-import { CurrentSessionFactory, EntityDictionary, PlatformGenerator, Transitionable } from "assistant-source";
+import { CurrentSessionFactory, EntityDictionary, PlatformGenerator, State, Transitionable } from "assistant-source";
 import { Configuration } from "./private-interfaces";
 
 /** All neded information about the validation */
@@ -51,20 +51,23 @@ export namespace DecoratorContent {
 }
 
 export namespace InitializerOptions {
-  /** Options used in {@link ValidationsInitializer#initializePrompt} */
-  export interface Prompt {
-    /** If set to false, no invoke message will be emitted */
-    tellInvokeMessage: boolean;
-
-    /** Name of prompt state to use, if not given, uses default prompt state */
-    promptStateName: string;
-
+  /** Options used in all InitializerOptions */
+  interface BaseOptions {
     /** Additional arguments to pass, will be re-passed to state/intent call */
     redirectArguments: any[];
+
+    /** If set to false, no invoke message will be emitted */
+    tellInvokeMessage: boolean;
+  }
+
+  /** Options used in {@link ValidationsInitializer#initializePrompt} */
+  export interface Prompt extends BaseOptions {
+    /** Name of prompt state to use, if not given, uses default prompt state */
+    promptStateName: string;
   }
 
   /** Options used in {@link ValidationsInitializer#initializeConfirmation} */
-  export interface Confirmation {
+  export interface Confirmation extends BaseOptions {
     /** Name of custom confirmation state to use. If not given, uses default confirmation state. */
     confirmationStateName: string;
   }
@@ -88,7 +91,7 @@ export const sessionKeys = {
  * In your class using the PromptState mixin, just inject all of these requirements.
  * You find an example in the assistant-validations README.
  */
-export interface PromptStateMixinRequirements {
+export interface PromptStateMixinRequirements extends State.Required {
   /** The current entitiy dictionary, injectable via {@link injectionNames.current.entityDictionary} */
   entities: EntityDictionary;
 
@@ -100,7 +103,7 @@ export interface PromptStateMixinRequirements {
 }
 
 /**
- * Interface describing PromptMixin
+ * Interface describing what you get when applying PromptMixin to one of your states
  */
 export interface PromptStateMixinInstance {
   /**
@@ -163,6 +166,19 @@ export interface PromptStateMixinInstance {
   /** Opposite of storeCurrentEntitiesToSession() */
   applyStoredEntities(): Promise<void>;
 }
+
+/**
+ * Requirements you need to use the ConfirmationMixin in one of your confirmation states.
+ * To fulfill them, add a class in your class hierarchy below BaseState and add these parameters to your constructor.
+ * In your class using the ConfirmationState mixin, just inject all of these requirements.
+ * You find an example in the assistant-validations README.
+ */
+export interface ConfirmationStateMixinRequirements extends State.Required {}
+
+/**
+ * Interface describing what you get when applying ConfirmationMixin to one of your states
+ */
+export interface ConfirmationStateMixinInstance {}
 
 /** Result of the confirmation. Will be passed as the last argument of your intent method. */
 export interface ConfirmationResult {

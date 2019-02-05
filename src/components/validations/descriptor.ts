@@ -4,6 +4,7 @@ import { Component, ComponentDescriptor, getMetaInjectionName, Hooks } from "inv
 import { BeforeIntentHook } from "./hook";
 import { validationsInjectionNames } from "./injection-names";
 import { COMPONENT_NAME, Configuration } from "./private-interfaces";
+import { ConfirmationTransition } from "./transitions/confirmation-transition";
 import { PromptTransition } from "./transitions/prompt-transition";
 import { UtteranceTemplateService } from "./utterance-template-service";
 import { ValidationsInitializer } from "./validations-initializer";
@@ -30,6 +31,7 @@ export const descriptor: ComponentDescriptor<Configuration.Defaults> = {
 
       // Bind local transition classes
       bindService.bindLocalServiceToSelf(PromptTransition);
+      bindService.bindLocalServiceToSelf(ConfirmationTransition);
 
       // Register hook function as method of a class
       bindService.bindLocalServiceToSelf(BeforeIntentHook);

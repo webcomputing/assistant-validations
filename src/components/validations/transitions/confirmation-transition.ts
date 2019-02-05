@@ -4,10 +4,10 @@ import { Component, getMetaInjectionName } from "inversify-components";
 import { COMPONENT_NAME, Configuration } from "../private-interfaces";
 import { BaseTransition } from "./base-transition";
 
-/** Transitions to prompt state to prompt for a specific entity. Prepares everything that transition works out of the box. */
+/** Transitions to confirmation state to confirm an intent call. */
 
 @injectable()
-export class PromptTransition extends BaseTransition {
+export class ConfirmationTransition extends BaseTransition {
   constructor(
     @inject(injectionNames.current.sessionFactory) currentSessionFactory: CurrentSessionFactory,
     @inject(injectionNames.current.stateMachine) machine: Transitionable,
@@ -18,23 +18,15 @@ export class PromptTransition extends BaseTransition {
   }
 
   /**
-   * Transitions to prompt state to prompt for an entity
-   * @param {string} entity entity to prompt for
+   * Transitions to confirmation state to confirm an intent call
    * @param {string} redirectState state to redirect to
    * @param {string} redirectIntent state to redirect to
    * @param {any[]} redirectArguments arguments we are passing to the redirected state
-   * @param {string} promptStateName prompt state name to use for prompting
+   * @param {string} confirmationStateName confirmation state name to use for prompting
    * @param {boolean} tellInvokeMessage If set to false, no invoke message will be emitted
    */
-  public async transition(
-    entity: string,
-    redirectState: string,
-    redirectIntent: string,
-    redirectArguments: any[],
-    promptStateName: string,
-    tellInvokeMessage: boolean
-  ) {
-    await this.saveToContext(redirectState, redirectIntent, redirectArguments, { type: "prompt", neededEntity: entity });
-    return this.switchState(promptStateName, "defaultPromptState", tellInvokeMessage);
+  public async transition(redirectState: string, redirectIntent: string, redirectArguments: any[], confirmationStateName: string, tellInvokeMessage: boolean) {
+    await this.saveToContext(redirectState, redirectIntent, redirectArguments, { type: "confirmation" });
+    return this.switchState(confirmationStateName, "defaultConfirmationState", tellInvokeMessage);
   }
 }

@@ -22,5 +22,11 @@
   "myPromptState": {
     "city": "My prompt state prompt for city",
     "amount": "My prompt state prompt for amount"
+  },
+  "confirmationState": {
+    "unhandledGenericIntent": "confirmationState#unhandledGenericIntent"
+  },
+  "myConfirmationState": {
+    "unhandledGenericIntent": "myConfirmationState#unhandledGenericIntent"
   }
 }

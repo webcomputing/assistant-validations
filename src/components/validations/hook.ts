@@ -34,8 +34,7 @@ export class BeforeIntentHook {
     // Secondly, do the same for confirmation
     const confirmationNeeded = await this.needsConfirmation(state, intent, args);
     if (confirmationNeeded !== false) {
-      const options = typeof confirmationNeeded.confirmationStateName === "string" ? confirmationNeeded : undefined;
-      await this.validationsInitializer.initializeConfirmation(stateName, intent, options);
+      await this.validationsInitializer.initializeConfirmation(stateName, intent, confirmationNeeded);
 
       // ... and return false to interrupt state machine
       return false;
@@ -61,7 +60,7 @@ export class BeforeIntentHook {
 
       // State is decorated with @needsConfirmation, and there was no confirmation yet - so let's confirm!
       this.logger.info(`${state.constructor.name}#${intentMethod} is decorated with @needsConfirmation - halting state machine to initialize confirmation.`);
-      return decoratorContent;
+      return { ...decoratorContent, redirectArguments: args };
     }
 
     return false;
