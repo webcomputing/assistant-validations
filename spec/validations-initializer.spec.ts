@@ -16,8 +16,8 @@ interface CurrentThisContext extends ThisContext {
   };
 }
 
-describe("ValidationsInitializer", function() {
-  beforeEach(async function(this: CurrentThisContext) {
+describe("ValidationsInitializer", function () {
+  beforeEach(async function (this: CurrentThisContext) {
     this.prepareWithStates();
     await this.specHelper.prepareIntentCall(this.platforms.google, "test");
     this.validationsInitializer = this.inversify.get(validationsInjectionNames.current.validationsInitializer);
@@ -42,13 +42,13 @@ describe("ValidationsInitializer", function() {
     spyOn(this.confirmationTransition, "transition").and.callThrough();
   });
 
-  describe("#initializePrompt", function() {
-    describe("with defaultPromptState given, but set to undefined", function() {
-      beforeEach(async function(this: CurrentThisContext) {
+  describe("#initializePrompt", function () {
+    describe("with defaultPromptState given, but set to undefined", function () {
+      beforeEach(async function (this: CurrentThisContext) {
         await this.validationsInitializer.initializePrompt("MainState", "invokeGenericIntent", "amount", { promptStateName: undefined });
       });
 
-      it("uses prompt state name from configuration", async function(this: CurrentThisContext) {
+      it("uses prompt state name from configuration", async function (this: CurrentThisContext) {
         expect(this.promptTransition.transition).toHaveBeenCalledWith(
           "amount",
           "MainState",
@@ -60,8 +60,8 @@ describe("ValidationsInitializer", function() {
       });
     });
 
-    describe("with options given", function() {
-      beforeEach(async function(this: CurrentThisContext) {
+    describe("with options given", function () {
+      beforeEach(async function (this: CurrentThisContext) {
         await this.validationsInitializer.initializePrompt("MainState", "invokeGenericIntent", "amount", {
           tellInvokeMessage: !this.defaults.prompt.tellInvokeMessage,
           redirectArguments: ["a"],
@@ -69,17 +69,17 @@ describe("ValidationsInitializer", function() {
         });
       });
 
-      it("overrides all defaults", async function(this: CurrentThisContext) {
+      it("overrides all defaults", async function (this: CurrentThisContext) {
         expect(this.promptTransition.transition).toHaveBeenCalledWith("amount", "MainState", "invokeGenericIntent", ["a"], "MyPromptState", false);
       });
     });
 
-    describe("with no options given", function() {
-      beforeEach(async function(this: CurrentThisContext) {
+    describe("with no options given", function () {
+      beforeEach(async function (this: CurrentThisContext) {
         await this.validationsInitializer.initializePrompt("MainState", "invokeGenericIntent", "amount");
       });
 
-      it("uses all defaults", async function(this: CurrentThisContext) {
+      it("uses all defaults", async function (this: CurrentThisContext) {
         expect(this.promptTransition.transition).toHaveBeenCalledWith(
           "amount",
           "MainState",
@@ -92,13 +92,13 @@ describe("ValidationsInitializer", function() {
     });
   });
 
-  describe("#initializeConfirmation", function() {
-    describe("with no options given", function() {
-      beforeEach(async function(this: CurrentThisContext) {
+  describe("#initializeConfirmation", function () {
+    describe("with no options given", function () {
+      beforeEach(async function (this: CurrentThisContext) {
         await this.validationsInitializer.initializeConfirmation("MainState", "invokeGenericIntent");
       });
 
-      it("calls ConfirmationTransition#transition with default confirmation state from configuration", async function(this: CurrentThisContext) {
+      it("calls ConfirmationTransition#transition with default confirmation state from configuration", async function (this: CurrentThisContext) {
         expect(this.confirmationTransition.transition).toHaveBeenCalledWith(
           "MainState",
           "invokeGenericIntent",
@@ -109,8 +109,8 @@ describe("ValidationsInitializer", function() {
       });
     });
 
-    describe("with options given", function() {
-      beforeEach(async function(this: CurrentThisContext) {
+    describe("with options given", function () {
+      beforeEach(async function (this: CurrentThisContext) {
         await this.validationsInitializer.initializeConfirmation("MainState", "invokeGenericIntent", {
           confirmationStateName: "MyConfirmationState",
           redirectArguments: ["a", "b"],
@@ -118,7 +118,7 @@ describe("ValidationsInitializer", function() {
         });
       });
 
-      it("calls ConfirmationTransition#transition with given options", async function(this: CurrentThisContext) {
+      it("calls ConfirmationTransition#transition with given options", async function (this: CurrentThisContext) {
         expect(this.confirmationTransition.transition).toHaveBeenCalledWith("MainState", "invokeGenericIntent", ["a", "b"], "MyConfirmationState", false);
       });
     });

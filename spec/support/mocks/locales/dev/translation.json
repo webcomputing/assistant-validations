@@ -24,7 +24,17 @@
     "amount": "My prompt state prompt for amount"
   },
   "confirmationState": {
-    "unhandledGenericIntent": "confirmationState#unhandledGenericIntent"
+    "unhandledGenericIntent": "confirmationState#unhandledGenericIntent",
+    "helpGenericIntent": {
+      "stateA": {
+        "intentX": "Help for stateA and intentX",
+        "intentY": "Help for stateA and intentY"
+      },
+      "stateB": {
+        "intentX": "Help for stateB and intentX",
+        "intentY": "help for stateB and intentY"
+      }
+    }
   },
   "myConfirmationState": {
     "unhandledGenericIntent": "myConfirmationState#unhandledGenericIntent"

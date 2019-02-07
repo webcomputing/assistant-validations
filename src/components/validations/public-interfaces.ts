@@ -1,7 +1,7 @@
 import { CurrentSessionFactory, EntityDictionary, PlatformGenerator, State, Transitionable } from "assistant-source";
 import { Configuration } from "./private-interfaces";
 
-/** All neded information about the validation */
+/** All needed information about the validation */
 export interface HookContext<Strategy extends ValidationStrategy.Prompt | ValidationStrategy.Confirmation> {
   /** Which intent shall we call after confirmation or prompting was successful? */
   intent: string;
@@ -82,6 +82,12 @@ export const sessionKeys = {
 
     /** Key holding information about all entities in store before prompting for a new one */
     previousEntities: "entities:currentPrompt:previousEntities",
+  },
+
+  /** Session keys used for confirmation */
+  confirmation: {
+    /** Basic information about the confirmation */
+    context: "entities:currentConfirmation",
   },
 };
 
@@ -173,12 +179,32 @@ export interface PromptStateMixinInstance {
  * In your class using the ConfirmationState mixin, just inject all of these requirements.
  * You find an example in the assistant-validations README.
  */
-export interface ConfirmationStateMixinRequirements extends State.Required {}
+export interface ConfirmationStateMixinRequirements extends State.Required {
+
+  /** The current session factory, injectable via {@link injectionNames.current.sessionFactory} */
+  sessionFactory: CurrentSessionFactory;
+}
 
 /**
  * Interface describing what you get when applying ConfirmationMixin to one of your states
  */
-export interface ConfirmationStateMixinInstance {}
+export interface ConfirmationStateMixinInstance {
+
+  invokeGenericIntent(machine: Transitionable, tellInvokeMessage?: boolean, ...additionalArgs: any[]): Promise<void>;
+
+  yesGenericIntent(machine: Transitionable, ...additionalArgs: any[]): Promise<void>;
+
+  noGenericIntent(machine: Transitionable, ...additionalArgs: any[]): Promise<void>;
+
+  helpGenericIntent(machine: Transitionable, ...additionalArgs: any[]): Promise<void>;
+
+  unhandledGenericIntent(machine: Transitionable, ...additionalArgs: any[]): Promise<void>;
+
+  /**
+   * Unserializes hook context
+   */
+  unserializeHook(): Promise<HookContext<ValidationStrategy.Confirmation>>;
+}
 
 /** Result of the confirmation. Will be passed as the last argument of your intent method. */
 export interface ConfirmationResult {
@@ -193,7 +219,7 @@ export interface ConfirmationResult {
 export const confirmationResultIdentifier = Symbol("ConfigurationResult.returnIdentifier");
 
 /** Configuration of validations component */
-export interface ValidationsConfiguration extends Partial<Configuration.Defaults>, Configuration.Required {}
+export interface ValidationsConfiguration extends Partial<Configuration.Defaults>, Configuration.Required { }
 
 /** Property describing the configuration of the validations component */
 export interface ValidationsConfigurationAttribute {
