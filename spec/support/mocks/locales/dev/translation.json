@@ -25,18 +25,25 @@
   },
   "confirmationState": {
     "unhandledGenericIntent": "confirmationState#unhandledGenericIntent",
+    "invokeGenericIntent": {
+      "MainState": {
+        "needsConfirmationIntent": "invokeGenericIntent for MainState needsConfirmationIntent",
+        "invokeGenericIntent": "invokeGenericIntent for Mainstate invokeGenericIntent",
+        "testIntent": "invokeGenericIntent for MainState testIntent"
+      }
+    },
     "helpGenericIntent": {
-      "stateA": {
-        "intentX": "Help for stateA and intentX",
-        "intentY": "Help for stateA and intentY"
-      },
-      "stateB": {
-        "intentX": "Help for stateB and intentX",
-        "intentY": "help for stateB and intentY"
+      "MainState": {
+        "testIntent": "Help for MainState and testIntent"
       }
     }
   },
   "myConfirmationState": {
-    "unhandledGenericIntent": "myConfirmationState#unhandledGenericIntent"
+    "unhandledGenericIntent": "myConfirmationState#unhandledGenericIntent",
+    "invokeGenericIntent": {
+      "MainState": {
+        "needsConfirmationCustomStateIntent": "invokeGenericIntent for MainState needsConfirmationCustomStateIntent"
+      }
+    }
   }
 }

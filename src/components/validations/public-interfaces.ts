@@ -180,7 +180,6 @@ export interface PromptStateMixinInstance {
  * You find an example in the assistant-validations README.
  */
 export interface ConfirmationStateMixinRequirements extends State.Required {
-
   /** The current session factory, injectable via {@link injectionNames.current.sessionFactory} */
   sessionFactory: CurrentSessionFactory;
 }
@@ -189,7 +188,6 @@ export interface ConfirmationStateMixinRequirements extends State.Required {
  * Interface describing what you get when applying ConfirmationMixin to one of your states
  */
 export interface ConfirmationStateMixinInstance {
-
   invokeGenericIntent(machine: Transitionable, tellInvokeMessage?: boolean, ...additionalArgs: any[]): Promise<void>;
 
   yesGenericIntent(machine: Transitionable, ...additionalArgs: any[]): Promise<void>;
@@ -206,6 +204,24 @@ export interface ConfirmationStateMixinInstance {
   unserializeHook(): Promise<HookContext<ValidationStrategy.Confirmation>>;
 }
 
+/**
+ *
+ */
+export interface CommonFunctionsMixinRequirements extends State.Required {
+  /** The current session factory, injectable via {@link injectionNames.current.sessionFactory} */
+  sessionFactory: CurrentSessionFactory;
+}
+
+export interface CommonFunctionsMixinInstance {
+  /**
+   * Unserializes hook context
+   */
+  unserializeHook(
+    strategy: ValidationStrategy.Prompt | ValidationStrategy.Confirmation,
+    sessionKey: string
+  ): Promise<HookContext<ValidationStrategy.Prompt | ValidationStrategy.Confirmation>>;
+}
+
 /** Result of the confirmation. Will be passed as the last argument of your intent method. */
 export interface ConfirmationResult {
   /** Internal symbol (equals {@link confirmationResultIdentifier}) used to identify this argument from all possible arguments of an intent method */
@@ -219,7 +235,7 @@ export interface ConfirmationResult {
 export const confirmationResultIdentifier = Symbol("ConfigurationResult.returnIdentifier");
 
 /** Configuration of validations component */
-export interface ValidationsConfiguration extends Partial<Configuration.Defaults>, Configuration.Required { }
+export interface ValidationsConfiguration extends Partial<Configuration.Defaults>, Configuration.Required {}
 
 /** Property describing the configuration of the validations component */
 export interface ValidationsConfigurationAttribute {

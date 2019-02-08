@@ -1,17 +1,14 @@
 // tslint:disable:max-classes-per-file
 
-import { BaseState, BasicAnswerTypes, BasicHandable, injectionNames, State, CurrentSessionFactory } from "assistant-source";
+import { BaseState, BasicAnswerTypes, BasicHandable, CurrentSessionFactory, injectionNames, State } from "assistant-source";
 import { inject, injectable } from "inversify";
 import { ConfirmationStateMixin, ConfirmationStateMixinRequirements } from "../../../../src/assistant-validations";
 
 class ConfirmationStateRequirements<MergedAnswerTypes extends BasicAnswerTypes, MergedHandler extends BasicHandable<MergedAnswerTypes>> extends BaseState<
   MergedAnswerTypes,
   MergedHandler
-  > implements ConfirmationStateMixinRequirements {
-  constructor(
-    stateSetupSet: State.SetupSet<MergedAnswerTypes, MergedHandler>,
-    public sessionFactory: CurrentSessionFactory,
-  ) {
+> implements ConfirmationStateMixinRequirements {
+  constructor(stateSetupSet: State.SetupSet<MergedAnswerTypes, MergedHandler>, public sessionFactory: CurrentSessionFactory) {
     super(stateSetupSet);
   }
 }
@@ -20,7 +17,7 @@ class ConfirmationStateRequirements<MergedAnswerTypes extends BasicAnswerTypes, 
 export class ConfirmationState<
   MergedAnswerTypes extends BasicAnswerTypes,
   MergedHandler extends BasicHandable<MergedAnswerTypes>
-  > extends ConfirmationStateMixin(ConfirmationStateRequirements) {
+> extends ConfirmationStateMixin(ConfirmationStateRequirements) {
   constructor(
     @inject(injectionNames.current.stateSetupSet) setupSet: State.SetupSet<MergedAnswerTypes, MergedHandler>,
     @inject(injectionNames.current.sessionFactory) sessionFactory: CurrentSessionFactory
