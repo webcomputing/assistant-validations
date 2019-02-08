@@ -1,7 +1,5 @@
 import {
-  BaseState,
   BasicAnswerTypes,
-  BasicHandable,
   Constructor,
   featureIsAvailable,
   GenericIntent,
@@ -9,19 +7,18 @@ import {
   SuggestionChipsMixin,
   Transitionable,
 } from "assistant-source";
-
-import { COMPONENT_NAME } from "../private-interfaces";
-import { HookContext, PromptStateMixinInstance, PromptStateMixinRequirements, sessionKeys, ValidationStrategy } from "../public-interfaces";
+import { CommonFunctionsInstanceRequirements, CommonFunctionsMixin } from "../mixins/common-functions";
+import { PromptStateMixinInstance, PromptStateMixinRequirements, sessionKeys, ValidationStrategy } from "../public-interfaces";
 
 // Defines the public members requirements to an instance of a prompt state
-type PromptStateInstanceRequirements = BaseState<BasicAnswerTypes, BasicHandable<BasicAnswerTypes>> & PromptStateMixinRequirements;
+type PromptStateInstanceRequirements = CommonFunctionsInstanceRequirements & PromptStateMixinRequirements;
 
 export function PromptStateMixin<T extends Constructor<PromptStateInstanceRequirements>>(
   superState: T
 ): Constructor<PromptStateMixinInstance & PromptStateInstanceRequirements> {
-  return class extends superState {
+  return class extends CommonFunctionsMixin(superState) {
     public async invokeGenericIntent(machine: Transitionable, tellInvokeMessage = true, ...additionalArgs: any[]) {
-      const promises = await Promise.all([this.unserializeHook(), this.storeCurrentEntitiesToSession()]);
+      const promises = await Promise.all([this.unserializeHook<ValidationStrategy.Prompt>(sessionKeys.prompt.context), this.storeCurrentEntitiesToSession()]);
       const context = promises[0];
 
       if (typeof context === "undefined" || context === null) throw new Error("HookContext must not be undefined!");
@@ -32,9 +29,8 @@ export function PromptStateMixin<T extends Constructor<PromptStateInstanceRequir
       }
 
       if (tellInvokeMessage) {
-        this.logger.debug(this.getLoggerOptions(), "Sending initial prompt message");
+        this.handleInvokeMessage("Sending initial prompt message", `.${context.validation.neededEntity}`);
         await this.setSuggestionChipsIfPresent(context.validation.neededEntity);
-        this.responseHandler.prompt(this.translateHelper.t(`.${context.validation.neededEntity}`));
       }
     }
 
@@ -43,7 +39,7 @@ export function PromptStateMixin<T extends Constructor<PromptStateInstanceRequir
      * an entity is given and to store the new entity into entity store
      */
     public answerPromptIntent(machine: Transitionable, ...additionalArgs: any[]) {
-      return this.unserializeHook().then(context => {
+      return this.unserializeHook<ValidationStrategy.Prompt>(sessionKeys.prompt.context).then(context => {
         if (typeof context === "undefined" || context === null) throw new Error("HookContext must not be undefined!");
 
         const promptedEntity = this.getEntityType(context.validation.neededEntity);
@@ -99,7 +95,7 @@ export function PromptStateMixin<T extends Constructor<PromptStateInstanceRequir
     * If so, redirects to answerPromptIntent instead of reprompting 
     */
     public async unhandledGenericIntent(machine: Transitionable, ...additionalArgs: any[]) {
-      const context = await this.unserializeHook();
+      const context = await this.unserializeHook<ValidationStrategy.Prompt>(sessionKeys.prompt.context);
       if (typeof context === "undefined" || context === null) throw new Error("HookContext must not be undefined!");
       const promptedEntity = this.getEntityType(context.validation.neededEntity);
       if (this.entityIsContained(promptedEntity)) {
@@ -117,7 +113,7 @@ export function PromptStateMixin<T extends Constructor<PromptStateInstanceRequir
      */
     public async unserializeAndPrompt() {
       try {
-        const context = await this.unserializeHook();
+        const context = await this.unserializeHook<ValidationStrategy.Prompt>(sessionKeys.prompt.context);
         if (typeof context === "undefined" || typeof context.intent === "undefined") {
           this.responseHandler.prompt(this.translateHelper.t());
           await this.setSuggestionChipsIfPresent();
@@ -160,19 +156,6 @@ export function PromptStateMixin<T extends Constructor<PromptStateInstanceRequir
       return searchedEntity;
     }
 
-    /**
-     * Unserializes hook context
-     */
-    public async unserializeHook(): Promise<HookContext<ValidationStrategy.Prompt>> {
-      const serializedHook = await this.sessionFactory().get(sessionKeys.prompt.context);
-
-      if (serializedHook) {
-        return JSON.parse(serializedHook) as HookContext<ValidationStrategy.Prompt>;
-      }
-
-      throw new Error("HookContext cannot be undefined.");
-    }
-
     /** Stores all entities currently present in entity dictionary into session. */
     public async storeCurrentEntitiesToSession() {
       await this.entities.storeToSession(this.sessionFactory(), sessionKeys.prompt.previousEntities);
@@ -182,10 +165,6 @@ export function PromptStateMixin<T extends Constructor<PromptStateInstanceRequir
     public async applyStoredEntities() {
       await this.entities.readFromSession(this.sessionFactory(), true, sessionKeys.prompt.previousEntities);
       return this.sessionFactory().delete(sessionKeys.prompt.previousEntities);
-    }
-
-    private getLoggerOptions() {
-      return { component: COMPONENT_NAME };
     }
   };
 }

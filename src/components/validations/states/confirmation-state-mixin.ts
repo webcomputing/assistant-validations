@@ -1,46 +1,32 @@
-import { BaseState, BasicAnswerTypes, BasicHandable, Constructor, GenericIntent, Transitionable } from "assistant-source";
-import { CommonFunctionsMixin } from "../mixins/common-functions";
-import { COMPONENT_NAME } from "../private-interfaces";
-import { ConfirmationStateMixinInstance, ConfirmationStateMixinRequirements, HookContext, sessionKeys, ValidationStrategy } from "../public-interfaces";
+import { Constructor, GenericIntent, Transitionable } from "assistant-source";
+import { CommonFunctionsInstanceRequirements, CommonFunctionsMixin } from "../mixins/common-functions";
+import { ConfirmationStateMixinInstance, ConfirmationStateMixinRequirements, sessionKeys, ValidationStrategy } from "../public-interfaces";
 
 // Defines the public members requirements to an instance of a prompt state
-type ConfirmationStateInstanceRequirements = BaseState<BasicAnswerTypes, BasicHandable<BasicAnswerTypes>> & ConfirmationStateMixinRequirements;
+type ConfirmationStateInstanceRequirements = CommonFunctionsInstanceRequirements & ConfirmationStateMixinRequirements;
 
 export function ConfirmationStateMixin<T extends Constructor<ConfirmationStateInstanceRequirements>>(
   superState: T
 ): Constructor<ConfirmationStateMixinInstance & ConfirmationStateMixinRequirements> {
-  return class extends superState {
+  return class extends CommonFunctionsMixin(superState) {
     public async invokeGenericIntent(machine: Transitionable, tellInvokeMessage = true, ...additionalArgs: any[]) {
-      const context = await this.unserializeHook();
+      const context = await this.unserializeHook<ValidationStrategy.Confirmation>(sessionKeys.confirmation.context);
 
       if (tellInvokeMessage) {
-        this.logger.debug(this.getLoggerOptions(), "Sending initial confirmation message");
-        this.responseHandler.prompt(this.translateHelper.t(`.${context.state}.${context.intent}`));
+        this.handleInvokeMessage("Sending initial confirmation message", `.${context.state}.${context.intent}`);
       }
     }
 
     public async yesGenericIntent(machine: Transitionable, ...additionalArgs: any[]) {
-      const context = await this.unserializeHook();
-
-      if (typeof context === "undefined" || context === null) throw new Error("HookContext must not be undefined!");
-
-      const redirectArgs = [...context.redirectArguments, true];
-
-      await machine.redirectTo(context.state, context.intent.replace("Intent", ""), ...redirectArgs);
+      await this.handleYesOrNo(machine, true);
     }
 
     public async noGenericIntent(machine: Transitionable, ...additionalArgs: any[]) {
-      const context = await this.unserializeHook();
-
-      if (typeof context === "undefined" || context === null) throw new Error("HookContext must not be undefined!");
-
-      const redirectArgs = [...context.redirectArguments, false];
-
-      await machine.redirectTo(context.state, context.intent.replace("Intent", ""), ...redirectArgs);
+      await this.handleYesOrNo(machine, false);
     }
 
     public async helpGenericIntent(machine: Transitionable, ...additionalArgs: any[]) {
-      const context = await this.unserializeHook();
+      const context = await this.unserializeHook<ValidationStrategy.Confirmation>(sessionKeys.confirmation.context);
 
       if (typeof context === "undefined" || typeof context.intent === "undefined") {
         this.responseHandler.prompt(this.translateHelper.t());
@@ -57,21 +43,14 @@ export function ConfirmationStateMixin<T extends Constructor<ConfirmationStateIn
       await this.endSessionWith(this.translateHelper.t());
     }
 
-    /**
-     * Unserializes hook context
-     */
-    public async unserializeHook(): Promise<HookContext<ValidationStrategy.Confirmation>> {
-      const serializedHook = await this.sessionFactory().get(sessionKeys.confirmation.context);
+    private async handleYesOrNo(machine: Transitionable, answer: boolean) {
+      const context = await this.unserializeHook<ValidationStrategy.Confirmation>(sessionKeys.confirmation.context);
 
-      if (serializedHook) {
-        return JSON.parse(serializedHook) as HookContext<ValidationStrategy.Confirmation>;
-      }
+      if (typeof context === "undefined" || context === null) throw new Error("HookContext must not be undefined!");
 
-      throw new Error("HookContext cannot be undefined.");
-    }
+      const redirectArgs = [...context.redirectArguments, answer];
 
-    private getLoggerOptions() {
-      return { component: COMPONENT_NAME };
+      await machine.redirectTo(context.state, context.intent.replace("Intent", ""), ...redirectArgs);
     }
   };
 }

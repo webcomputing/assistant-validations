@@ -161,11 +161,6 @@ export interface PromptStateMixinInstance {
    */
   getEntityType(name: string): string;
 
-  /**
-   * Unserializes hook context
-   */
-  unserializeHook(): Promise<HookContext<ValidationStrategy.Prompt>>;
-
   /** Stores all entities currently present in entity dictionary into session. */
   storeCurrentEntitiesToSession(): Promise<void>;
 
@@ -179,7 +174,7 @@ export interface PromptStateMixinInstance {
  * In your class using the ConfirmationState mixin, just inject all of these requirements.
  * You find an example in the assistant-validations README.
  */
-export interface ConfirmationStateMixinRequirements extends State.Required {
+export interface ConfirmationStateMixinRequirements {
   /** The current session factory, injectable via {@link injectionNames.current.sessionFactory} */
   sessionFactory: CurrentSessionFactory;
 }
@@ -197,29 +192,37 @@ export interface ConfirmationStateMixinInstance {
   helpGenericIntent(machine: Transitionable, ...additionalArgs: any[]): Promise<void>;
 
   unhandledGenericIntent(machine: Transitionable, ...additionalArgs: any[]): Promise<void>;
-
-  /**
-   * Unserializes hook context
-   */
-  unserializeHook(): Promise<HookContext<ValidationStrategy.Confirmation>>;
 }
 
 /**
- *
+ * Requirements needed to be able to use the CommonFunctionsMixin. Use this mixin inside of another mixin to get availability
+ * to several useful functions, e.g. unserializeHook.
  */
-export interface CommonFunctionsMixinRequirements extends State.Required {
+export interface CommonFunctionsMixinRequirements {
   /** The current session factory, injectable via {@link injectionNames.current.sessionFactory} */
   sessionFactory: CurrentSessionFactory;
 }
 
+/**
+ * Interface of the CommonFunctionsMixin describing the available functions from this mixin
+ */
 export interface CommonFunctionsMixinInstance {
   /**
    * Unserializes hook context
    */
-  unserializeHook(
-    strategy: ValidationStrategy.Prompt | ValidationStrategy.Confirmation,
-    sessionKey: string
-  ): Promise<HookContext<ValidationStrategy.Prompt | ValidationStrategy.Confirmation>>;
+  unserializeHook<Strategy extends ValidationStrategy.Confirmation | ValidationStrategy.Prompt>(sessionKey: string): Promise<HookContext<Strategy>>;
+
+  /**
+   * Gives options for the logger
+   */
+  getLoggerOptions(): { component: string };
+
+  /**
+   * Create message when invoking the state together with a log message
+   * @param loggerMessage - message to write to the debug logger
+   * @param translationArgs - additional arguments for the translation helper
+   */
+  handleInvokeMessage(loggerMessage: string, ...translationArgs: any[]);
 }
 
 /** Result of the confirmation. Will be passed as the last argument of your intent method. */
