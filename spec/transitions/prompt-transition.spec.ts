@@ -11,6 +11,8 @@ interface CurrentThisContext extends ThisContext {
   currentStateProvider: State.CurrentProvider;
   configuration: Configuration.Runtime;
   currentSession: Session;
+  intent: string;
+  state: string;
 
   /** Calls promptTransition.transition() and registers all spies */
   callTransitionAndRegisterSpies(
@@ -22,10 +24,10 @@ interface CurrentThisContext extends ThisContext {
 }
 
 describe("PromptTransition", function() {
-  const intent = "testIntent";
-  const state = "MainState";
-
   beforeEach(async function(this: CurrentThisContext) {
+    this.intent = "testIntent";
+    this.state = "MainState";
+
     this.callTransitionAndRegisterSpies = async (
       promptStateName?: string | undefined,
       additionalArguments = [],
@@ -47,7 +49,7 @@ describe("PromptTransition", function() {
 
       // Call transition function
       const usedPromptStateName = promptStateName || this.configuration.defaultPromptState;
-      await this.promptTransition.transition(entityName, state, intent, additionalArguments, usedPromptStateName, tellInvokeMessage);
+      await this.promptTransition.transition(entityName, this.state, this.intent, additionalArguments, usedPromptStateName, tellInvokeMessage);
     };
   });
 
@@ -67,11 +69,10 @@ describe("PromptTransition", function() {
       describe("regarding the transition's context", function() {
         it("saves entity in an PromptContext to session", async function(this: CurrentThisContext) {
           await this.callTransitionAndRegisterSpies();
-
-          const context = (await this.currentSession.get(sessionKeys.prompt.context)) as string;
+          const context = (await this.currentSession.get(sessionKeys.context)) as string;
           expect(JSON.parse(context)).toEqual({
-            intent,
-            state,
+            intent: this.intent,
+            state: this.state,
             validation: { neededEntity: "city", type: "prompt" },
             redirectArguments: [],
           });
@@ -80,7 +81,7 @@ describe("PromptTransition", function() {
         it("stores additional arguments in transition context", async function(this: CurrentThisContext) {
           await this.callTransitionAndRegisterSpies(undefined, ["additionalArg1", "additionalArg2"]);
 
-          const context = (await this.currentSession.get(sessionKeys.prompt.context)) as string;
+          const context = (await this.currentSession.get(sessionKeys.context)) as string;
           expect(JSON.parse(context).redirectArguments).toEqual(["additionalArg1", "additionalArg2"]);
         });
       });

@@ -24,7 +24,15 @@
     "amount": "My prompt state prompt for amount"
   },
   "confirmationState": {
-    "unhandledGenericIntent": "confirmationState#unhandledGenericIntent",
+    "suggestionChips": [
+      "Yes",
+      "No"
+    ],
+    "unhandledGenericIntent": {
+      "MainState": {
+        "testIntent": "unhandledGenericIntent for MainState and testIntent"
+      }
+    },
     "invokeGenericIntent": {
       "MainState": {
         "needsConfirmationIntent": "invokeGenericIntent for MainState needsConfirmationIntent",
@@ -36,10 +44,12 @@
       "MainState": {
         "testIntent": "Help for MainState and testIntent"
       }
+    },
+    "MainState2": {
+      "testIntent2": "Fallback message for MainState2 and testIntent2"
     }
   },
   "myConfirmationState": {
-    "unhandledGenericIntent": "myConfirmationState#unhandledGenericIntent",
     "invokeGenericIntent": {
       "MainState": {
         "needsConfirmationCustomStateIntent": "invokeGenericIntent for MainState needsConfirmationCustomStateIntent"

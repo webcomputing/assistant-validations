@@ -5,7 +5,7 @@ export const decoratorSymbols = {
   needsConfirmation: Symbol("decorator: @needsConfirmation"),
 };
 
-/** Only execute the decorated intent (or any intent in the decorated state) if all given entites are present. Asks for unpresent entities. */
+/** Execute the given intent (or any intent in the decorated state) after the user does a confirmation. */
 export function needsConfirmation(opts?: DecoratorContent.Confirmation) {
   return function(targetClass: any, methodName: string) {
     const decoratorInput: DecoratorContent.Confirmation = opts ? opts : {};

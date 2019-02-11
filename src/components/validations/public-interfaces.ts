@@ -1,4 +1,13 @@
-import { CurrentSessionFactory, EntityDictionary, PlatformGenerator, State, Transitionable } from "assistant-source";
+import {
+  BaseState,
+  BasicAnswerTypes,
+  BasicHandable,
+  CurrentSessionFactory,
+  EntityDictionary,
+  PlatformGenerator,
+  State,
+  Transitionable,
+} from "assistant-source";
 import { Configuration } from "./private-interfaces";
 
 /** All needed information about the validation */
@@ -77,18 +86,11 @@ export namespace InitializerOptions {
 export const sessionKeys = {
   /** Session keys used for prompting */
   prompt: {
-    /** Basic information about the prompt itself, stored before making the transition by {@link PromptTransition} */
-    context: "entities:currentPrompt",
-
     /** Key holding information about all entities in store before prompting for a new one */
     previousEntities: "entities:currentPrompt:previousEntities",
   },
-
-  /** Session keys used for confirmation */
-  confirmation: {
-    /** Basic information about the confirmation */
-    context: "entities:currentConfirmation",
-  },
+  /** Session key used for saving basic information about the prompt itself, stored before making the transition by {@link BaseTransition} */
+  context: "assistant-validations-context",
 };
 
 /**
@@ -174,7 +176,7 @@ export interface PromptStateMixinInstance {
  * In your class using the ConfirmationState mixin, just inject all of these requirements.
  * You find an example in the assistant-validations README.
  */
-export interface ConfirmationStateMixinRequirements {
+export interface ConfirmationStateMixinRequirements extends State.Required {
   /** The current session factory, injectable via {@link injectionNames.current.sessionFactory} */
   sessionFactory: CurrentSessionFactory;
 }
@@ -183,22 +185,34 @@ export interface ConfirmationStateMixinRequirements {
  * Interface describing what you get when applying ConfirmationMixin to one of your states
  */
 export interface ConfirmationStateMixinInstance {
+  /**
+   * Entrance point of the confirmationState, called from validations-initializer
+   * @param machine Transitionable interface
+   * @param tellInvokeMessage If true, an invoke Message will be returned to the user. Default: true
+   */
   invokeGenericIntent(machine: Transitionable, tellInvokeMessage?: boolean, ...additionalArgs: any[]): Promise<void>;
 
+  /** Handle a yes intent from the user by transitioning to the given state and intent, that was specified by the decorator. */
   yesGenericIntent(machine: Transitionable, ...additionalArgs: any[]): Promise<void>;
 
+  /** Handle a no intent from the user by transitioning to the given state and intent, that was specified by the decorator. */
   noGenericIntent(machine: Transitionable, ...additionalArgs: any[]): Promise<void>;
 
+  /** Handle a help intent from the user by prompting. */
   helpGenericIntent(machine: Transitionable, ...additionalArgs: any[]): Promise<void>;
 
+  /** Handle a unhandled intent from the user by prompting. */
   unhandledGenericIntent(machine: Transitionable, ...additionalArgs: any[]): Promise<void>;
+
+  /** Get the translation convention which represents the lookup string under which the translations for the confirmation state are found. */
+  getTranslationConvention(): Promise<string>;
 }
 
 /**
  * Requirements needed to be able to use the CommonFunctionsMixin. Use this mixin inside of another mixin to get availability
  * to several useful functions, e.g. unserializeHook.
  */
-export interface CommonFunctionsMixinRequirements {
+export interface CommonFunctionsInstanceRequirements extends BaseState<BasicAnswerTypes, BasicHandable<BasicAnswerTypes>> {
   /** The current session factory, injectable via {@link injectionNames.current.sessionFactory} */
   sessionFactory: CurrentSessionFactory;
 }
@@ -210,7 +224,7 @@ export interface CommonFunctionsMixinInstance {
   /**
    * Unserializes hook context
    */
-  unserializeHook<Strategy extends ValidationStrategy.Confirmation | ValidationStrategy.Prompt>(sessionKey: string): Promise<HookContext<Strategy>>;
+  unserializeHook<Strategy extends ValidationStrategy.Confirmation | ValidationStrategy.Prompt>(): Promise<HookContext<Strategy>>;
 
   /**
    * Gives options for the logger
@@ -219,10 +233,17 @@ export interface CommonFunctionsMixinInstance {
 
   /**
    * Create message when invoking the state together with a log message
-   * @param loggerMessage - message to write to the debug logger
-   * @param translationArgs - additional arguments for the translation helper
+   * @param loggerMessage message to write to the debug logger
+   * @param suggestionChipsLookupString lookupString containing the information where to find the suggestionChips translation
+   * @param translationArgs additional arguments for the translation helper
    */
-  handleInvokeMessage(loggerMessage: string, ...translationArgs: any[]);
+  handleInvokeMessage(loggerMessage: string, suggestionChipsLookupString?: string, ...translationArgs: any[]);
+
+  /**
+   * Sets suggestionChips if the feature is available and they can be found
+   * @param lookupString lookupString containing the information where to find the suggestionChips translation
+   */
+  setSuggestionChips(lookupString?: string);
 }
 
 /** Result of the confirmation. Will be passed as the last argument of your intent method. */

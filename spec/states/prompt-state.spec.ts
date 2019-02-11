@@ -62,7 +62,7 @@ describe("PromptState", function() {
 
     this.setHookContext = () => {
       const session = this.inversify.get<CurrentSessionFactory>(injectionNames.current.sessionFactory)();
-      return session.set(sessionKeys.prompt.context, JSON.stringify(hookContext));
+      return session.set(sessionKeys.context, JSON.stringify(hookContext));
     };
   });
 

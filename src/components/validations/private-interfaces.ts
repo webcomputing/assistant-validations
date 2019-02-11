@@ -4,7 +4,7 @@ export namespace Configuration {
     /** Name of prompt state to use for all {@link @needsEntities} validations as default state */
     defaultPromptState: string;
 
-    /** Name of confirmation state to use fo all {@link @needsConfirmation} validations as default state */
+    /** Name of confirmation state to use for all {@link @needsConfirmation} validations as default state */
     defaultConfirmationState: string;
   }
 

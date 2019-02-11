@@ -1,14 +1,12 @@
+import { Constructor, GenericIntent, Transitionable } from "assistant-source";
+import { CommonFunctionsMixin } from "../mixins/common-functions";
 import {
-  BasicAnswerTypes,
-  Constructor,
-  featureIsAvailable,
-  GenericIntent,
-  OptionalHandlerFeatures,
-  SuggestionChipsMixin,
-  Transitionable,
-} from "assistant-source";
-import { CommonFunctionsInstanceRequirements, CommonFunctionsMixin } from "../mixins/common-functions";
-import { PromptStateMixinInstance, PromptStateMixinRequirements, sessionKeys, ValidationStrategy } from "../public-interfaces";
+  CommonFunctionsInstanceRequirements,
+  PromptStateMixinInstance,
+  PromptStateMixinRequirements,
+  sessionKeys,
+  ValidationStrategy,
+} from "../public-interfaces";
 
 // Defines the public members requirements to an instance of a prompt state
 type PromptStateInstanceRequirements = CommonFunctionsInstanceRequirements & PromptStateMixinRequirements;
@@ -18,10 +16,8 @@ export function PromptStateMixin<T extends Constructor<PromptStateInstanceRequir
 ): Constructor<PromptStateMixinInstance & PromptStateInstanceRequirements> {
   return class extends CommonFunctionsMixin(superState) {
     public async invokeGenericIntent(machine: Transitionable, tellInvokeMessage = true, ...additionalArgs: any[]) {
-      const promises = await Promise.all([this.unserializeHook<ValidationStrategy.Prompt>(sessionKeys.prompt.context), this.storeCurrentEntitiesToSession()]);
+      const promises = await Promise.all([this.unserializeHook<ValidationStrategy.Prompt>(), this.storeCurrentEntitiesToSession()]);
       const context = promises[0];
-
-      if (typeof context === "undefined" || context === null) throw new Error("HookContext must not be undefined!");
 
       // Check if entity is contained; if so, redirect to answerPromptIntent directly
       if (this.entityIsContained(this.getEntityType(context.validation.neededEntity))) {
@@ -29,8 +25,11 @@ export function PromptStateMixin<T extends Constructor<PromptStateInstanceRequir
       }
 
       if (tellInvokeMessage) {
-        this.handleInvokeMessage("Sending initial prompt message", `.${context.validation.neededEntity}`);
-        await this.setSuggestionChipsIfPresent(context.validation.neededEntity);
+        await this.handleInvokeMessage(
+          "Sending initial prompt message",
+          `.suggestionChips.${context.validation.neededEntity}`,
+          `.${context.validation.neededEntity}`
+        );
       }
     }
 
@@ -39,15 +38,13 @@ export function PromptStateMixin<T extends Constructor<PromptStateInstanceRequir
      * an entity is given and to store the new entity into entity store
      */
     public answerPromptIntent(machine: Transitionable, ...additionalArgs: any[]) {
-      return this.unserializeHook<ValidationStrategy.Prompt>(sessionKeys.prompt.context).then(context => {
-        if (typeof context === "undefined" || context === null) throw new Error("HookContext must not be undefined!");
-
+      return this.unserializeHook<ValidationStrategy.Prompt>().then(context => {
         const promptedEntity = this.getEntityType(context.validation.neededEntity);
 
         if (this.entityIsContained(promptedEntity)) {
           this.logger.debug(this.getLoggerOptions(), "Current request contained entity");
           return this.sessionFactory()
-            .delete(sessionKeys.prompt.context)
+            .delete(sessionKeys.context)
             .then(() => {
               return this.applyStoredEntities();
             })
@@ -95,8 +92,8 @@ export function PromptStateMixin<T extends Constructor<PromptStateInstanceRequir
     * If so, redirects to answerPromptIntent instead of reprompting 
     */
     public async unhandledGenericIntent(machine: Transitionable, ...additionalArgs: any[]) {
-      const context = await this.unserializeHook<ValidationStrategy.Prompt>(sessionKeys.prompt.context);
-      if (typeof context === "undefined" || context === null) throw new Error("HookContext must not be undefined!");
+      const context = await this.unserializeHook<ValidationStrategy.Prompt>();
+
       const promptedEntity = this.getEntityType(context.validation.neededEntity);
       if (this.entityIsContained(promptedEntity)) {
         return machine.handleIntent("answerPrompt");
@@ -113,33 +110,12 @@ export function PromptStateMixin<T extends Constructor<PromptStateInstanceRequir
      */
     public async unserializeAndPrompt() {
       try {
-        const context = await this.unserializeHook<ValidationStrategy.Prompt>(sessionKeys.prompt.context);
-        if (typeof context === "undefined" || typeof context.intent === "undefined") {
-          this.responseHandler.prompt(this.translateHelper.t());
-          await this.setSuggestionChipsIfPresent();
-        } else {
-          this.responseHandler.prompt(this.translateHelper.t(`.${context.validation.neededEntity}`));
-          await this.setSuggestionChipsIfPresent(context.validation.neededEntity);
-        }
+        const context = await this.unserializeHook<ValidationStrategy.Prompt>();
+        this.responseHandler.prompt(this.translateHelper.t(`.${context.validation.neededEntity}`));
+        await this.setSuggestionChips(`.suggestionChips.${context.validation.neededEntity}`);
       } catch (reason) {
         this.responseHandler.prompt(this.translateHelper.t());
-        await this.setSuggestionChipsIfPresent();
-      }
-    }
-
-    /** Sets suggestion chips if we got a translation for it */
-    public async setSuggestionChipsIfPresent(neededEntitiy?: string): Promise<void> {
-      const lookupString = typeof neededEntitiy === "string" ? `.suggestionChips.${neededEntitiy}` : ".suggestionChips";
-
-      // Allow having no suggestion chips at all -> catch error
-      try {
-        if (featureIsAvailable(this.responseHandler, OptionalHandlerFeatures.FeatureChecker.SuggestionChips)) {
-          (this.responseHandler as SuggestionChipsMixin<BasicAnswerTypes>).setSuggestionChips(await this.translateHelper.getAllAlternatives(lookupString));
-        } else {
-          this.logger.debug(`Current response handler doesn't support suggestion chips, so not setting any for entity = ${neededEntitiy}`);
-        }
-      } catch {
-        this.logger.debug(`Didn't find any suggestion chips for entity = ${neededEntitiy}, so not setting any`);
+        await this.setSuggestionChips();
       }
     }
 

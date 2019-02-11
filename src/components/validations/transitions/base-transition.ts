@@ -56,20 +56,7 @@ export abstract class BaseTransition {
       validation: validationSpecificContext,
     };
 
-    switch (validationSpecificContext.type) {
-      case "prompt": {
-        await this.currentSessionFactory().set(sessionKeys.prompt.context, JSON.stringify(context));
-        break;
-      }
-
-      case "confirmation": {
-        await this.currentSessionFactory().set(sessionKeys.confirmation.context, JSON.stringify(context));
-        break;
-      }
-
-      default:
-        break;
-    }
+    await this.currentSessionFactory().set(sessionKeys.context, JSON.stringify(context));
 
     return context;
   }

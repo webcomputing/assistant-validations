@@ -3,7 +3,7 @@ require("reflect-metadata");
 
 import { descriptor as apiAiDescriptor } from "assistant-apiai";
 import { descriptor as googleDescriptor, GoogleSpecHelper } from "assistant-google";
-import { AssistantJSSetup, SpecHelper, StateMachineSetup } from "assistant-source";
+import { AssistantJSSetup, injectionNames, SpecHelper, StateMachineSetup } from "assistant-source";
 import { descriptor } from "../../src/assistant-validations";
 import { ConfirmationState } from "../support/mocks/states/confirmation-state";
 import { MainState } from "../support/mocks/states/main-state";
@@ -46,6 +46,9 @@ beforeEach(function(this: ThisContext) {
 
   this.defaultSpecOptions = {};
   this.inversify = this.assistantJs.container.inversifyInstance;
+
+  this.translateValuesForGetter = () => this.inversify.get(injectionNames.current.i18nTranslateValuesFor);
+
   this.platforms = {
     google: new GoogleSpecHelper(this.specHelper),
   };

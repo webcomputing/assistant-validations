@@ -1,5 +1,5 @@
 import { GoogleSpecHelper } from "assistant-google";
-import { AssistantJSSetup, SpecHelper, SpecHelperOptions, StateMachineSetup } from "assistant-source";
+import { AssistantJSSetup, SpecHelper, SpecHelperOptions, StateMachineSetup, TranslateValuesFor } from "assistant-source";
 import { interfaces as inversifyInterfaces } from "inversify";
 
 export interface ThisContext {
@@ -28,4 +28,7 @@ export interface ThisContext {
 
   /** Calls specHelper.prepare() and also adds all mock states */
   prepareWithStates(): void;
+
+  /** Shorten access to i18next helper */
+  translateValuesForGetter(): TranslateValuesFor;
 }
