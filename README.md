@@ -172,7 +172,7 @@ export class MainState extends ApplicationState {
 }
 ```
 
-Now, everytime the `busRouteIntent` of the `MainState` is called, assistant-validations forces AssistantJS to aks the user for his confirmation and only transitions to the `busRouteIntent` after an answer was given.
+Now, everytime the `busRouteIntent` of the `MainState` is called, assistant-validations forces AssistantJS to ask the user for his confirmation and only transitions to the `busRouteIntent` after an answer was given.
 
 #### I18N integration
 
