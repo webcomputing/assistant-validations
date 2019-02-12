@@ -185,7 +185,7 @@ describe("ConfirmationState", function() {
       this.responseHandler = await this.callIntent(GenericIntent.Yes);
     });
 
-    it("transitions to given state and intent with additional 'true' information", async function(this: CurrentThisContext) {
+    it("transitions to given state and intent with additional ConfirmationResult where confirmed = true", async function(this: CurrentThisContext) {
       const expectedConfirmationResult: ConfirmationResult = {
         returnIdentifier: confirmationResultIdentifier,
         confirmed: true,
@@ -199,7 +199,7 @@ describe("ConfirmationState", function() {
       this.responseHandler = await this.callIntent(GenericIntent.No);
     });
 
-    it("transitions to given state and intent with additional 'false' information", async function(this: CurrentThisContext) {
+    it("transitions to given state and intent with additional ConfirmationResult where confirmed = false", async function(this: CurrentThisContext) {
       const expectedConfirmationResult: ConfirmationResult = {
         returnIdentifier: confirmationResultIdentifier,
         confirmed: false,
