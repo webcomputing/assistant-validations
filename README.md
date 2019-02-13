@@ -174,26 +174,26 @@ export class MainState extends ApplicationState {
 
 Now, everytime the `busRouteIntent` of the `MainState` is called, assistant-validations forces AssistantJS to ask the user for his confirmation and only transitions to the `busRouteIntent` after an answer was given.
 
-#### I18N integration
+#### I18N integration [](#i18n-integration)
 
 All intent methods implemented in our [states](src/components/validations/states) make use of the [AssistantJS's i18n conventions][3].
 
-If you use a custom prompt or confirmation state (see below), it's name will be used instead in all i18n keys.
+If you use a custom prompt or confirmation state (see below), its name will be used instead in all i18n keys.
 
 ##### Entity validation
 
-To differ between multiple entity names, all `translateHelper` calls are appended by the prompted entity's name. For example, if you prompt for an entity name called "target", these rules would apply:
+To differ between multiple entity names for different states and intents, all `translateHelper` calls are appended by the prompted entity's, the state  and the intent name. For example, if you prompt for an entity name called "target" in a state called "MainState" and intent called "transactionIntent" these rules would apply:
 
 | Intent                 | Description                                                                                                                                            | I18N key                                  |
 | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------- |
-| invokeGenericIntent    | Invoked automatically at prompt start. Message can be omitted using `validations-initializer`.                                                                   | promptState.invokeGenericIntent.target    |
-| unhandledGenericIntent | Invoked if the user fires an intent which is not handleable by the prompt state or if the given entity value does not fit to prompted the entity type. | promptState.unhandledGenericIntent.target |
-| cancelGenericIntent    | Invoked if the user says 'cancel'                                                                                                                      | promptState.cancelGenericIntent.target    |
+| invokeGenericIntent    | Invoked automatically at prompt start. Message can be omitted using `validations-initializer`.                                                                   | promptState.invokeGenericIntent.target.MainState.transactionIntent    |
+| unhandledGenericIntent | Invoked if the user fires an intent which is not handleable by the prompt state or if the given entity value does not fit to prompted the entity type. | promptState.unhandledGenericIntent.target.MainState.transactionIntent |
+| cancelGenericIntent    | Invoked if the user says 'cancel'                                                                                                                      | promptState.cancelGenericIntent.target.MainState.transactionIntent    |
 | stopGenericIntent      | Invoked if the user says 'stop'                                                                                                                        | same as cancel                            |
-| helpGenericIntent      | Invoked if the user says 'help'                                                                                                                        | promptState.helpGenericIntent.target      |
+| helpGenericIntent      | Invoked if the user says 'help'                                                                                                                        | promptState.helpGenericIntent.target.MainState.transactionIntent      |
 
 
-If you want to set suggestion chips with your prompts, just use the "suggestionChips.entityName" key.
+If you want to set suggestion chips with your prompts, just use the "promptState.suggestionChips.entityName" key.
 
 ##### Confirmation
 
@@ -207,7 +207,11 @@ To define different prompts for different states and intents, that use the confi
 | cancelGenericIntent    | Invoked if the user says 'cancel'                                                                                                                      | confirmationState.cancelGenericIntent    |
 | stopGenericIntent      | Invoked if the user says 'stop'                                                                                                                        | same as cancel                            |
 
-If you want to use suggestion chips with your confirmations, use the "suggestionChips" key.
+If you want to use suggestion chips with your confirmations, use the "confirmationState.suggestionChips" key.
+
+##### Using a custom translation convention
+
+If you don't want to use the default translation conventions, you can override the function `getTranslationConvention` in your own validation state. For an example see [Using a custom state](#using-a-custom-state).
 
 #### Initialize validations dynamically
 
@@ -216,7 +220,7 @@ Sometimes, you want to prompt for an entity or start a confirmation based on som
 ```typescript
 import { ApplicationState } from "./application";
 import { injectionNames, State, Transitionable } from "assistant-source";
-import { validationsInitializer, validationsInjectionNames } from "assistant-validations";
+import { ValidationsInitializer, validationsInjectionNames } from "assistant-validations";
 import { injectable, inject } from "inversify";
 import { MergedSetupSet } from "../../config/handler";
 
@@ -226,13 +230,12 @@ export class MainState extends ApplicationState {
 
   constructor(
     @inject(injectionNames.current.stateSetupSet) setupSet: MergedSetupSet
-    @inject(validationsInjectionNames.current.validationsInitializer) private currentValidationsInitializer: validationsInitializer
+    @inject(validationsInjectionNames.current.validationsInitializer) private currentValidationsInitializer: ValidationsInitializer
   ) {
     super(setupSet);
   }
 
   async busRouteIntent(machine: Transitionable, ...args: any[]) {
-    const validationsInitializer = this.currentValidationsInitializer();
 
     /** If "target" is missing / invalid ... */
     this.prompt(this.t(".targetInvalid"));
@@ -240,7 +243,6 @@ export class MainState extends ApplicationState {
   }
 
   async finishTransactionIntent(machine: Transitionable, ...args: any[]) {
-    const validationsInitializer = this.currentValidationsInitializer();
 
     /** If some condition is met */
     return validationsInitializer.initializeConfirmation("MainState", "finishTransactionIntent", { tellInvokeMessage: false });
@@ -252,18 +254,18 @@ As you can see, using the `validationsInitializer` offers the possibility to cre
 
 |Parameter|Validation|Description|
 |---------|----------|-----------|
-|tellInvokeMessage|*|If set to true, invoking the validation state creates a message for the user|
+|tellInvokeMessage|*|If set to true, invoking the validation state creates a message based on i18n for the user. See [I18N Integration](#i18n-integration) for the specific I18N key used. |
 |redirectArguments|*|Additional Arguments, which are then passed onto the returning call|
 |promptStateName|prompt|Name of the _custom prompt state_ used instead of assistant-validation's default `PromptState`|
 |confirmationStateName|confirmation|Name of the _custom confirmation state_ used instead of assistant-validation's default `ConfirmationState`|
 
-#### Using a custom state
+#### Using a custom state [](#using-a-custom-state)
 
-If you need more flexibility, you can change the behaviour of your prompt state (see "Installation") or even implement multiple ones. For example, this custom prompt state would redirect to MainState instead of aborting the conversation if a user fires a `cancelGenericIntent`:
+If you need more flexibility, you can change the behaviour of your prompt state (see "Installation") or even implement multiple ones. For example, this custom prompt state would redirect to MainState instead of aborting the conversation if a user fires a `cancelGenericIntent` and use a different convention for its translations:
 
 ```typescript
 import { State, EntityDictionary, CurrentSessionFactory, PlatformGenerator, injectionNames } from "assistant-source";
-import { PromptStateMixin } from "assistant-validations";
+import { PromptStateMixin, ValidationStrategy } from "assistant-validations";
 import { injectable, inject } from "inversify";
 import { MergedSetupSet } from "../../config/handler";
 
@@ -283,6 +285,13 @@ export class PromptState extends PromptStateMixin(PromptStateRequirements) {
     this.prompt(this.t());
     return machine.transitionTo("MainState");
   }
+
+  /** Override the translation convention */
+  public async getTranslationConvention() {
+
+    const context = await this.unserializeHookContext<ValidationStrategy.Prompt>();
+    return `.${context.validation.neededEntity}`;
+  }
 }
 ```
 
@@ -299,10 +308,10 @@ As listed in our [interfaces](src/components/validations/private-interfaces.ts),
 ```typescript
 /** Optional configuration settings */
 export interface Defaults {
-  /** Name of prompt state to use for all {@link @needsEntities} validations as default */
+  /** Name of prompt state to use for all {@link needsEntities} validations as default */
   defaultPromptState: string;
 
-  /** Name of confirmation state to use for all {@link @needsConfirmation} validations as default state */
+  /** Name of confirmation state to use for all {@link needsConfirmation} validations as default state */
   defaultConfirmationState: string;
 }
 

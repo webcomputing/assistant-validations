@@ -59,16 +59,17 @@ describe("PromptTransition", function() {
         this.prepareWithStates();
       });
 
-      it("transitions to PromptState", async function(this: CurrentThisContext) {
-        await this.callTransitionAndRegisterSpies();
-
-        const currentState = await this.currentStateProvider();
-        expect(currentState.name).toEqual("PromptState");
-      });
-
-      describe("regarding the transition's context", function() {
-        it("saves entity in an PromptContext to session", async function(this: CurrentThisContext) {
+      describe("with default values", function() {
+        beforeEach(async function(this: CurrentThisContext) {
           await this.callTransitionAndRegisterSpies();
+        });
+
+        it("transitions to PromptState", async function(this: CurrentThisContext) {
+          const currentState = await this.currentStateProvider();
+          expect(currentState.name).toEqual("PromptState");
+        });
+
+        it("saves entity in an PromptContext to session", async function(this: CurrentThisContext) {
           const context = (await this.currentSession.get(sessionKeys.context)) as string;
           expect(JSON.parse(context)).toEqual({
             intent: this.intent,
@@ -78,21 +79,19 @@ describe("PromptTransition", function() {
           });
         });
 
-        it("stores additional arguments in transition context", async function(this: CurrentThisContext) {
-          await this.callTransitionAndRegisterSpies(undefined, ["additionalArg1", "additionalArg2"]);
-
-          const context = (await this.currentSession.get(sessionKeys.context)) as string;
-          expect(JSON.parse(context).redirectArguments).toEqual(["additionalArg1", "additionalArg2"]);
+        it("calls machine.redirectTo with tellInvokeMessage = true", async function(this: CurrentThisContext) {
+          expect(this.machine.redirectTo).toHaveBeenCalledWith("PromptState", GenericIntent.Invoke, true);
         });
       });
 
-      describe("using tellInvokeMessage = true", function() {
+      describe("with additional arguments", function() {
         beforeEach(async function(this: CurrentThisContext) {
-          await this.callTransitionAndRegisterSpies();
+          await this.callTransitionAndRegisterSpies(undefined, ["additionalArg1", "additionalArg2"]);
         });
 
-        it("calls machine.redirectTo with tellInvokeMessage = true", async function(this: CurrentThisContext) {
-          expect(this.machine.redirectTo).toHaveBeenCalledWith("PromptState", GenericIntent.Invoke, true);
+        it("stores additional arguments in transition context", async function(this: CurrentThisContext) {
+          const context = (await this.currentSession.get(sessionKeys.context)) as string;
+          expect(JSON.parse(context).redirectArguments).toEqual(["additionalArg1", "additionalArg2"]);
         });
       });
 
@@ -101,7 +100,7 @@ describe("PromptTransition", function() {
           await this.callTransitionAndRegisterSpies(undefined, [], false);
         });
 
-        it("calls machine.redirectTo with tellInvokeMessage = true", async function(this: CurrentThisContext) {
+        it("calls machine.redirectTo with tellInvokeMessage = false", async function(this: CurrentThisContext) {
           expect(this.machine.redirectTo).toHaveBeenCalledWith("PromptState", GenericIntent.Invoke, false);
         });
       });

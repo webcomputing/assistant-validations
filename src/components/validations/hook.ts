@@ -4,7 +4,7 @@ import { inject, injectable } from "inversify";
 import { decoratorSymbols } from "./decorators";
 import { validationsInjectionNames } from "./injection-names";
 import { COMPONENT_NAME } from "./private-interfaces";
-import { ConfirmationResult, confirmationResultIdentifier, DecoratorContent, InitializerOptions } from "./public-interfaces";
+import { ConfirmationResult, confirmationResultIdentifier, DecoratorOptions, InitializerOptions } from "./public-interfaces";
 import { ValidationsInitializer } from "./validations-initializer";
 
 @injectable()
@@ -13,6 +13,7 @@ export class BeforeIntentHook {
 
   constructor(
     @inject(injectionNames.current.entityDictionary) private entities: EntityDictionary,
+    /** Service containing functions to initialize the prompt or confirmation state */
     @inject(validationsInjectionNames.current.validationsInitializer) private validationsInitializer: ValidationsInitializer,
     @inject(injectionNames.componentSpecificLoggerFactory) loggerFactory: ComponentSpecificLoggerFactory
   ) {
@@ -20,7 +21,7 @@ export class BeforeIntentHook {
   }
 
   public execute: Hooks.BeforeIntentHook = async (mode, state, stateName, intent, machine, ...args: any[]) => {
-    // First of all, check if pormpt is needed.
+    // First of all, check if prompt is needed.
     const promptNeeded = await this.needsPrompt(state, intent, args);
     if (promptNeeded !== false) {
       // If so, start prompting using validations initializer...
@@ -46,9 +47,9 @@ export class BeforeIntentHook {
 
   /** Checks if we need to confirm this intent, and if so, returns information about the confirmation we need. Returns false otherwise. */
   private async needsConfirmation(state: State.Required, intentMethod: string, args: any[]): Promise<false | Partial<InitializerOptions.Confirmation>> {
-    const decoratorContent = this.retrieveNeededConfirmationFromMetadata(state, intentMethod);
+    const decoratorOptions = this.retrieveNeededConfirmationFromMetadata(state, intentMethod);
 
-    if (typeof decoratorContent !== "undefined") {
+    if (typeof decoratorOptions !== "undefined") {
       const lastArgument: ConfirmationResult | undefined = args.slice(-1)[0];
       if (lastArgument && lastArgument.returnIdentifier === confirmationResultIdentifier) {
         // State is decorated with @needsConfirmation, but confirmation is already done - the result is already here!
@@ -60,7 +61,7 @@ export class BeforeIntentHook {
 
       // State is decorated with @needsConfirmation, and there was no confirmation yet - so let's confirm!
       this.logger.info(`${state.constructor.name}#${intentMethod} is decorated with @needsConfirmation - halting state machine to initialize confirmation.`);
-      return { ...decoratorContent, redirectArguments: args };
+      return { ...decoratorOptions, redirectArguments: args };
     }
 
     return false;
@@ -72,16 +73,16 @@ export class BeforeIntentHook {
     intentMethod: string,
     args: any[]
   ): Promise<false | { unknownEntity: string; promptOptions: Partial<InitializerOptions.Prompt> }> {
-    const decoratorContent = this.retrieveNeededEntitiesFromMetadata(state, intentMethod);
+    const decoratorOptions = this.retrieveNeededEntitiesFromMetadata(state, intentMethod);
 
-    if (decoratorContent && decoratorContent.entities.length > 0) {
-      const unknownEntity = decoratorContent.entities.filter(p => !this.currentRequestHasEntities(p))[0];
+    if (decoratorOptions && decoratorOptions.entities.length > 0) {
+      const unknownEntity = decoratorOptions.entities.filter(p => !this.currentRequestHasEntities(p))[0];
 
       if (typeof unknownEntity !== "undefined") {
         return {
           unknownEntity,
           promptOptions: {
-            promptStateName: decoratorContent.promptStateName,
+            promptStateName: decoratorOptions.promptStateName,
             redirectArguments: args,
           },
         };
@@ -100,8 +101,8 @@ export class BeforeIntentHook {
   }
 
   /** Returns needed entities based on Reflect.getMetadata result = based from what is stored into @needsEntities(..) */
-  private retrieveNeededEntitiesFromMetadata(target: State.Required, method: string): DecoratorContent.NeedsEntity | undefined {
-    const neededParams = this.retrieveDecoratorContent<DecoratorContent.NeedsEntity>(target, method, decoratorSymbols.needsEntities);
+  private retrieveNeededEntitiesFromMetadata(target: State.Required, method: string): DecoratorOptions.NeedsEntity | undefined {
+    const neededParams = this.retrieveDecoratorOptions<DecoratorOptions.NeedsEntity>(target, method, decoratorSymbols.needsEntities);
 
     if (typeof neededParams !== "undefined" && Array.isArray(neededParams.entities)) {
       this.logger.debug(`Retrieving @needsEntities decorators for ${target.constructor.name}#${method}.`);
@@ -114,19 +115,19 @@ export class BeforeIntentHook {
     }
   }
 
-  /** Returns content of needsConfirmation decorator */
-  private retrieveNeededConfirmationFromMetadata(target: State.Required, method: string): DecoratorContent.Confirmation | undefined {
-    const decoratorContent = this.retrieveDecoratorContent<DecoratorContent.Confirmation>(target, method, decoratorSymbols.needsConfirmation);
+  /** Returns options of needsConfirmation decorator */
+  private retrieveNeededConfirmationFromMetadata(target: State.Required, method: string): DecoratorOptions.Confirmation | undefined {
+    const decoratorOptions = this.retrieveDecoratorOptions<DecoratorOptions.Confirmation>(target, method, decoratorSymbols.needsConfirmation);
 
-    if (typeof decoratorContent !== "undefined") {
+    if (typeof decoratorOptions !== "undefined") {
       this.logger.debug(`Retrieving @needsConfirmation decorators for ${target.constructor.name}#${method}.`);
     }
 
-    return decoratorContent;
+    return decoratorOptions;
   }
 
-  /** Returns content of any decorator */
-  private retrieveDecoratorContent<T extends DecoratorContent.NeedsEntity | DecoratorContent.Confirmation>(
+  /** Returns options of any decorator */
+  private retrieveDecoratorOptions<T extends DecoratorOptions.NeedsEntity | DecoratorOptions.Confirmation>(
     target: State.Required,
     method: string,
     decoratorSymbol: symbol

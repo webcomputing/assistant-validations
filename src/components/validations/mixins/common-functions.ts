@@ -13,7 +13,7 @@ export function CommonFunctionsMixin<T extends CommonFunctionsInstanceRequiremen
      /**
       * Unserializes hook context
       */
-    public async unserializeHook<Strategy extends ValidationStrategy.Confirmation | ValidationStrategy.Prompt>() {
+    public async unserializeHookContext<Strategy extends ValidationStrategy.Confirmation | ValidationStrategy.Prompt>() {
       const serializedHook = await this.sessionFactory().get(sessionKeys.context);
 
       if (serializedHook) {
@@ -31,14 +31,14 @@ export function CommonFunctionsMixin<T extends CommonFunctionsInstanceRequiremen
     }
 
     /**
-     * Create message when invoking the state together with a log message
+     * Create message when invoking the state together with a log message and possible suggestionchips
      * @param loggerMessage message to write to the debug logger
      * @param suggestionChipsLookupString lookupString containing the information where to find the suggestionChips translation
      * @param translationArgs additional arguments for the translation helper
      */
     public async handleInvokeMessage(loggerMessage, suggestionChipsLookupString?: string, ...translationArgs: any[]) {
       this.logger.debug(this.getLoggerOptions(), loggerMessage);
-      this.responseHandler.prompt(this.translateHelper.t(...translationArgs));
+      this.responseHandler.prompt(this.t(...translationArgs));
       await this.setSuggestionChips(suggestionChipsLookupString);
     }
 

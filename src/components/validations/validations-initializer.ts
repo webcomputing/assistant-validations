@@ -5,6 +5,7 @@ import { InitializerOptions } from "./public-interfaces";
 import { ConfirmationTransition } from "./transitions/confirmation-transition";
 import { PromptTransition } from "./transitions/prompt-transition";
 
+/** Service containing functions to initialize a prompt or confirmation dynamically */
 @injectable()
 export class ValidationsInitializer {
   constructor(
@@ -15,7 +16,7 @@ export class ValidationsInitializer {
   ) {}
 
   /**
-   * Initializes a prompt by switchting state to prompt state. Is called automatically when using decorators.
+   * Initializes a prompt by switching state to prompt state. Is called automatically when using decorators.
    * @param {string} redirectStateName Name of state to redirect to if prompt is finished, mostly it's the current state
    * @param {string} redirectIntentName Name of intent to redirect to if prompt is finished, mostly it's the current intent
    * @param {string} entityName Entity to prompt for

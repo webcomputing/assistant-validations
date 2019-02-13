@@ -8,6 +8,9 @@ interface CurrentThisContext extends ThisContext {
   hook: BeforeIntentHook;
   validationsInitializer: ValidationsInitializer;
 
+  /** Additional extraction containing entities to be used to test prompting when entities are already present */
+  additionalExtraction: any;
+
   /**
    * Prepares spies, BeforeIntentHook etc.
    * @param {boolean} runMachine If set to true, runMachine() will be called after preparation
@@ -16,11 +19,13 @@ interface CurrentThisContext extends ThisContext {
   prepareMock: (runMachine?: boolean, ...args: any[]) => Promise<void>;
 }
 
-describe("Hook", function() {
+describe("BeforeIntentHook", function() {
   beforeEach(async function(this: CurrentThisContext) {
+    this.additionalExtraction = { entities: { city: "Münster" } };
+
     this.prepareWithStates();
 
-    this.prepareMock = (runMachine = true, ...args: any[]) => {
+    this.prepareMock = async (runMachine = true, ...args: any[]) => {
       // Rebind mocks in singleton scope
       this.inversify
         .rebind(BeforeIntentHook)
@@ -41,19 +46,16 @@ describe("Hook", function() {
       spyOn(this.validationsInitializer, "initializeConfirmation").and.callThrough();
 
       if (runMachine) {
-        return this.specHelper.runMachine("MainState", ...args) as Promise<void>;
+        await this.specHelper.runMachine("MainState", ...args);
       }
-      return Promise.resolve();
     };
   });
 
   describe("regarding prompting", function() {
     describe("with multiple entities configured", function() {
-      const additionalExtraction = { entities: { city: "Münster" } };
-
       describe("with all entities present", function() {
         beforeEach(async function(this: CurrentThisContext) {
-          await this.specHelper.prepareIntentCall(this.platforms.google, "test", additionalExtraction);
+          await this.specHelper.prepareIntentCall(this.platforms.google, "test", this.additionalExtraction);
           await this.prepareMock();
         });
 
@@ -64,7 +66,7 @@ describe("Hook", function() {
 
       describe("with one entity missing", function() {
         beforeEach(async function(this: CurrentThisContext) {
-          await this.specHelper.prepareIntentCall(this.platforms.google, "testMany", additionalExtraction);
+          await this.specHelper.prepareIntentCall(this.platforms.google, "testMany", this.additionalExtraction);
         });
 
         describe("as platform intent call", function() {
@@ -95,7 +97,7 @@ describe("Hook", function() {
 
       describe("with custom prompt state given via decorator", function() {
         beforeEach(async function(this: CurrentThisContext) {
-          await this.specHelper.prepareIntentCall(this.platforms.google, "testCustomPromptState", additionalExtraction);
+          await this.specHelper.prepareIntentCall(this.platforms.google, "testCustomPromptState", this.additionalExtraction);
           await this.prepareMock();
         });
 

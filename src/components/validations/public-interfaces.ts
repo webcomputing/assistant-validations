@@ -43,8 +43,8 @@ export namespace ValidationStrategy {
   }
 }
 
-export namespace DecoratorContent {
-  /** Metadata content of @needsEntitiy decorator */
+export namespace DecoratorOptions {
+  /** Metadata options of @needsEntitiy decorator */
   export interface NeedsEntity {
     /** Prompt state name to use or undefined if user wants to use default prompt state */
     promptStateName?: string;
@@ -53,6 +53,7 @@ export namespace DecoratorContent {
     entities: string[];
   }
 
+  /** Metadata options of @needsConfirmation decorator */
   export interface Confirmation {
     /** Name of confirmation state to use */
     confirmationStateName?: string;
@@ -168,6 +169,9 @@ export interface PromptStateMixinInstance {
 
   /** Opposite of storeCurrentEntitiesToSession() */
   applyStoredEntities(): Promise<void>;
+
+  /** Get the translation convention which represents the lookup string under which the translations for the prompt state are found. */
+  getTranslationConvention(): Promise<string>;
 }
 
 /**
@@ -224,7 +228,7 @@ export interface CommonFunctionsMixinInstance {
   /**
    * Unserializes hook context
    */
-  unserializeHook<Strategy extends ValidationStrategy.Confirmation | ValidationStrategy.Prompt>(): Promise<HookContext<Strategy>>;
+  unserializeHookContext<Strategy extends ValidationStrategy.Confirmation | ValidationStrategy.Prompt>(): Promise<HookContext<Strategy>>;
 
   /**
    * Gives options for the logger

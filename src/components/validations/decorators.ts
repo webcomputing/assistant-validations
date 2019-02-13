@@ -1,4 +1,4 @@
-import { DecoratorContent } from "./public-interfaces";
+import { DecoratorOptions } from "./public-interfaces";
 
 export const decoratorSymbols = {
   needsEntities: Symbol("decorator: @needsEntities"),
@@ -6,9 +6,9 @@ export const decoratorSymbols = {
 };
 
 /** Execute the given intent (or any intent in the decorated state) after the user does a confirmation. */
-export function needsConfirmation(opts?: DecoratorContent.Confirmation) {
+export function needsConfirmation(opts?: DecoratorOptions.Confirmation) {
   return function(targetClass: any, methodName: string) {
-    const decoratorInput: DecoratorContent.Confirmation = opts ? opts : {};
+    const decoratorInput: DecoratorOptions.Confirmation = opts ? opts : {};
     Reflect.defineMetadata(decoratorSymbols.needsConfirmation, decoratorInput, targetClass[methodName]);
   };
 }
@@ -19,7 +19,7 @@ export function needsEntities(opts: string[] | { promptStateName: string; entiti
   const promptStateName = Array.isArray(opts) ? undefined : opts.promptStateName;
 
   return function(targetClass: any, methodName: string) {
-    const decoratorInput: DecoratorContent.NeedsEntity = { entities, promptStateName };
+    const decoratorInput: DecoratorOptions.NeedsEntity = { entities, promptStateName };
     Reflect.defineMetadata(decoratorSymbols.needsEntities, decoratorInput, targetClass[methodName]);
   };
 }

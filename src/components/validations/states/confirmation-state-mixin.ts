@@ -2,6 +2,7 @@ import { Constructor, Transitionable } from "assistant-source";
 import { CommonFunctionsMixin } from "../mixins/common-functions";
 import {
   CommonFunctionsInstanceRequirements,
+  CommonFunctionsMixinInstance,
   ConfirmationResult,
   confirmationResultIdentifier,
   ConfirmationStateMixinInstance,
@@ -14,7 +15,7 @@ type ConfirmationStateInstanceRequirements = CommonFunctionsInstanceRequirements
 
 export function ConfirmationStateMixin<T extends Constructor<ConfirmationStateInstanceRequirements>>(
   superState: T
-): Constructor<ConfirmationStateMixinInstance & ConfirmationStateMixinRequirements> {
+): Constructor<ConfirmationStateMixinInstance & ConfirmationStateMixinRequirements & CommonFunctionsMixinInstance> {
   return class extends CommonFunctionsMixin(superState) {
     public async invokeGenericIntent(machine: Transitionable, tellInvokeMessage = true, ...additionalArgs: any[]) {
       if (tellInvokeMessage) {
@@ -39,12 +40,12 @@ export function ConfirmationStateMixin<T extends Constructor<ConfirmationStateIn
     }
 
     public async cancelGenericIntent(machine: Transitionable, ...additionalArgs: any[]) {
-      await this.endSessionWith(this.translateHelper.t());
+      await this.endSessionWith(this.t());
     }
 
     /** Get the translation convention which represents the lookup string under which the translations for the confirmation state are found. */
     public async getTranslationConvention() {
-      const context = await this.unserializeHook<ValidationStrategy.Confirmation>();
+      const context = await this.unserializeHookContext<ValidationStrategy.Confirmation>();
       return `.${context.state}.${context.intent}`;
     }
 
@@ -55,7 +56,7 @@ export function ConfirmationStateMixin<T extends Constructor<ConfirmationStateIn
      * @param answer If set to true, answer was yes, else it was no
      */
     private async handleYesOrNo(machine: Transitionable, answer: boolean) {
-      const context = await this.unserializeHook<ValidationStrategy.Confirmation>();
+      const context = await this.unserializeHookContext<ValidationStrategy.Confirmation>();
 
       const confirmationResult: ConfirmationResult = {
         returnIdentifier: confirmationResultIdentifier,
@@ -71,7 +72,7 @@ export function ConfirmationStateMixin<T extends Constructor<ConfirmationStateIn
      * @param machine Transitionable interface
      */
     private async handleGenericAnswer(machine: Transitionable) {
-      this.responseHandler.prompt(this.translateHelper.t(await this.getTranslationConvention()));
+      this.responseHandler.prompt(this.t(await this.getTranslationConvention()));
     }
   };
 }

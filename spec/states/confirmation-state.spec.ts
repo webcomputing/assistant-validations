@@ -86,7 +86,7 @@ describe("ConfirmationState", function() {
     };
   });
 
-  describe("helpGenericIntent", function() {
+  describe("#helpGenericIntent", function() {
     beforeEach(async function(this: CurrentThisContext) {
       this.responseHandler = await this.callIntent(GenericIntent.Help);
     });
@@ -98,7 +98,7 @@ describe("ConfirmationState", function() {
     });
   });
 
-  describe("unhandledGenericIntent", function() {
+  describe("#unhandledGenericIntent", function() {
     beforeEach(async function(this: CurrentThisContext) {
       this.responseHandler = await this.callIntent("unhandled");
     });
@@ -110,18 +110,21 @@ describe("ConfirmationState", function() {
     });
   });
 
-  describe("cancelGenericIntent", function() {
+  describe("#cancelGenericIntent", function() {
     beforeEach(async function(this: CurrentThisContext) {
       this.responseHandler = await this.callIntent(GenericIntent.Cancel);
     });
 
     it("returns general cancel text", async function(this: CurrentThisContext) {
       expect(this.responseHandlerResults.voiceMessage!.text).toEqual((await this.translateValuesFor("root.cancelGenericIntent"))[0]);
+    });
+
+    it("ends the session", async function(this: CurrentThisContext) {
       expect(this.responseHandlerResults.shouldSessionEnd).toBeTruthy();
     });
   });
 
-  describe("invokeGenericIntent", function() {
+  describe("#invokeGenericIntent", function() {
     describe("with hook context", function() {
       beforeEach(async function(this: CurrentThisContext) {
         this.responseHandler = await this.callIntent(GenericIntent.Invoke);
@@ -180,7 +183,7 @@ describe("ConfirmationState", function() {
     });
   });
 
-  describe("yesGenericIntent", function() {
+  describe("#yesGenericIntent", function() {
     beforeEach(async function(this: CurrentThisContext) {
       this.responseHandler = await this.callIntent(GenericIntent.Yes);
     });
@@ -194,7 +197,7 @@ describe("ConfirmationState", function() {
     });
   });
 
-  describe("noGenericIntent", function() {
+  describe("#noGenericIntent", function() {
     beforeEach(async function(this: CurrentThisContext) {
       this.responseHandler = await this.callIntent(GenericIntent.No);
     });

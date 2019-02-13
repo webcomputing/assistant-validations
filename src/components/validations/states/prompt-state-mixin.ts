@@ -2,6 +2,7 @@ import { Constructor, GenericIntent, Transitionable } from "assistant-source";
 import { CommonFunctionsMixin } from "../mixins/common-functions";
 import {
   CommonFunctionsInstanceRequirements,
+  CommonFunctionsMixinInstance,
   PromptStateMixinInstance,
   PromptStateMixinRequirements,
   sessionKeys,
@@ -13,10 +14,10 @@ type PromptStateInstanceRequirements = CommonFunctionsInstanceRequirements & Pro
 
 export function PromptStateMixin<T extends Constructor<PromptStateInstanceRequirements>>(
   superState: T
-): Constructor<PromptStateMixinInstance & PromptStateInstanceRequirements> {
+): Constructor<PromptStateMixinInstance & PromptStateInstanceRequirements & CommonFunctionsMixinInstance> {
   return class extends CommonFunctionsMixin(superState) {
     public async invokeGenericIntent(machine: Transitionable, tellInvokeMessage = true, ...additionalArgs: any[]) {
-      const promises = await Promise.all([this.unserializeHook<ValidationStrategy.Prompt>(), this.storeCurrentEntitiesToSession()]);
+      const promises = await Promise.all([this.unserializeHookContext<ValidationStrategy.Prompt>(), this.storeCurrentEntitiesToSession()]);
       const context = promises[0];
 
       // Check if entity is contained; if so, redirect to answerPromptIntent directly
@@ -28,7 +29,7 @@ export function PromptStateMixin<T extends Constructor<PromptStateInstanceRequir
         await this.handleInvokeMessage(
           "Sending initial prompt message",
           `.suggestionChips.${context.validation.neededEntity}`,
-          `.${context.validation.neededEntity}`
+          await this.getTranslationConvention()
         );
       }
     }
@@ -38,7 +39,7 @@ export function PromptStateMixin<T extends Constructor<PromptStateInstanceRequir
      * an entity is given and to store the new entity into entity store
      */
     public answerPromptIntent(machine: Transitionable, ...additionalArgs: any[]) {
-      return this.unserializeHook<ValidationStrategy.Prompt>().then(context => {
+      return this.unserializeHookContext<ValidationStrategy.Prompt>().then(context => {
         const promptedEntity = this.getEntityType(context.validation.neededEntity);
 
         if (this.entityIsContained(promptedEntity)) {
@@ -83,7 +84,7 @@ export function PromptStateMixin<T extends Constructor<PromptStateInstanceRequir
     }
 
     public cancelGenericIntent(machine: Transitionable, ...additionalArgs: any[]) {
-      this.endSessionWith(this.translateHelper.t());
+      this.endSessionWith(this.t());
       return Promise.resolve();
     }
 
@@ -92,7 +93,7 @@ export function PromptStateMixin<T extends Constructor<PromptStateInstanceRequir
     * If so, redirects to answerPromptIntent instead of reprompting 
     */
     public async unhandledGenericIntent(machine: Transitionable, ...additionalArgs: any[]) {
-      const context = await this.unserializeHook<ValidationStrategy.Prompt>();
+      const context = await this.unserializeHookContext<ValidationStrategy.Prompt>();
 
       const promptedEntity = this.getEntityType(context.validation.neededEntity);
       if (this.entityIsContained(promptedEntity)) {
@@ -110,11 +111,11 @@ export function PromptStateMixin<T extends Constructor<PromptStateInstanceRequir
      */
     public async unserializeAndPrompt() {
       try {
-        const context = await this.unserializeHook<ValidationStrategy.Prompt>();
-        this.responseHandler.prompt(this.translateHelper.t(`.${context.validation.neededEntity}`));
+        const context = await this.unserializeHookContext<ValidationStrategy.Prompt>();
+        this.responseHandler.prompt(this.t(await this.getTranslationConvention()));
         await this.setSuggestionChips(`.suggestionChips.${context.validation.neededEntity}`);
       } catch (reason) {
-        this.responseHandler.prompt(this.translateHelper.t());
+        this.responseHandler.prompt(this.t());
         await this.setSuggestionChips();
       }
     }
@@ -141,6 +142,12 @@ export function PromptStateMixin<T extends Constructor<PromptStateInstanceRequir
     public async applyStoredEntities() {
       await this.entities.readFromSession(this.sessionFactory(), true, sessionKeys.prompt.previousEntities);
       return this.sessionFactory().delete(sessionKeys.prompt.previousEntities);
+    }
+
+    /** Get the translation convention which represents the lookup string under which the translations for the confirmation state are found. */
+    public async getTranslationConvention() {
+      const context = await this.unserializeHookContext<ValidationStrategy.Prompt>();
+      return `.${context.validation.neededEntity}.${context.state}.${context.intent}`;
     }
   };
 }

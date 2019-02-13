@@ -1,14 +1,14 @@
 // tslint:disable:max-classes-per-file
 
 import { BaseState, BasicAnswerTypes, BasicHandable, CurrentSessionFactory, injectionNames, State } from "assistant-source";
-import { inject, injectable } from "inversify";
+import { inject, injectable, unmanaged } from "inversify";
 import { ConfirmationStateMixin, ConfirmationStateMixinRequirements } from "../../../../src/assistant-validations";
 
 class ConfirmationStateRequirements<MergedAnswerTypes extends BasicAnswerTypes, MergedHandler extends BasicHandable<MergedAnswerTypes>> extends BaseState<
   MergedAnswerTypes,
   MergedHandler
 > implements ConfirmationStateMixinRequirements {
-  constructor(stateSetupSet: State.SetupSet<MergedAnswerTypes, MergedHandler>, public sessionFactory: CurrentSessionFactory) {
+  constructor(@unmanaged() stateSetupSet: State.SetupSet<MergedAnswerTypes, MergedHandler>, @unmanaged() public sessionFactory: CurrentSessionFactory) {
     super(stateSetupSet);
   }
 }
