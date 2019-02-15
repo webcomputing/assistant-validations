@@ -132,9 +132,7 @@ describe("PromptState", function() {
     });
 
     it("returns specific help text", async function(this: CurrentThisContext) {
-      expect(this.responseHandlerResults.voiceMessage!.text).toEqual(
-        (await this.translateValuesFor("promptState.helpGenericIntent.city.MainState.testIntent"))[0]
-      );
+      expect(this.responseHandlerResults.voiceMessage!.text).toEqual((await this.translateValuesFor("promptState.helpGenericIntent.city"))[0]);
     });
 
     it("doesn't end the session", async function(this: CurrentThisContext) {
@@ -164,9 +162,7 @@ describe("PromptState", function() {
       });
 
       it("returns the invoke text as prompt", async function(this: CurrentThisContext) {
-        expect(this.responseHandlerResults.voiceMessage!.text).toEqual(
-          (await this.translateValuesFor("promptState.invokeGenericIntent.city.MainState.testIntent"))[0]
-        );
+        expect(this.responseHandlerResults.voiceMessage!.text).toEqual((await this.translateValuesFor("promptState.invokeGenericIntent.city"))[0]);
       });
 
       it("doesn't end the session", async function(this: CurrentThisContext) {
@@ -200,7 +196,7 @@ describe("PromptState", function() {
       });
 
       it("returns the invoke text found under a different translationConvention as prompt", async function(this: CurrentThisContext) {
-        expect(this.responseHandlerResults.voiceMessage!.text).toEqual((await this.translateValuesFor("myPromptState.city"))[0]);
+        expect(this.responseHandlerResults.voiceMessage!.text).toEqual((await this.translateValuesFor("myPromptState.city.MainState.testIntent"))[0]);
       });
     });
   });
@@ -245,7 +241,7 @@ describe("PromptState", function() {
 
       it("returns unhandledIntent result", async function(this: CurrentThisContext) {
         expect(this.responseHandlerResults.voiceMessage).not.toBeUndefined();
-        expect(this.responseHandlerResults.voiceMessage!.text).toEqual((await this.translateValuesFor("promptState.city.MainState.testIntent"))[0]);
+        expect(this.responseHandlerResults.voiceMessage!.text).toEqual((await this.translateValuesFor("promptState.city"))[0]);
       });
 
       it("doesn't end the session", async function(this: CurrentThisContext) {

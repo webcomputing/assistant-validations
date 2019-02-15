@@ -6,46 +6,16 @@
   },
   "promptState": {
     "invokeGenericIntent": {
-      "city": {
-        "MainState": {
-          "testIntent": "Invoke for MainState#testIntent and entity city",
-          "testManyIntent": "Invoke for MainState#testManyIntent and entity city"
-        }
-      },
-      "amount": {
-        "MainState": {
-          "testIntent": "Invoke for MainState#testIntent and entity amount",
-          "testManyIntent": "Invoke for MainState#testManyIntent and entity amount"
-        }
-      },
-      "country": {
-        "MainState": {
-          "testIntent": "Invoke for MainState#testIntent and entity country"
-        }
-      }
+      "city": "invoke for entity city",
+      "amount": "invoke for entity amount",
+      "country": "invoke for entity country"
     },
     "helpGenericIntent": {
-      "city": {
-        "MainState": {
-          "testIntent": "Help for MainState#testIntent and entity city"
-        }
-      },
-      "amount": {
-        "MainState": {
-          "testIntent": "Help for MainState#testIntent and entity amount"
-        }
-      }
+      "city": "help for entity city",
+      "amount": "help for entity amount"
     },
-    "city": {
-      "MainState": {
-        "testIntent": "Fallback for city"
-      }
-    },
-    "amount": {
-      "MainState": {
-        "testIntent": "Fallback for amount"
-      }
-    },
+    "city": "fallback for entity city",
+    "amount": "fallback for entity amount",
     "suggestionChips": {
       "city": [
         "Münster",
@@ -54,8 +24,18 @@
     }
   },
   "myPromptState": {
-    "city": "My prompt state prompt for city",
-    "amount": "My prompt state prompt for amount"
+    "city": {
+      "MainState": {
+        "testIntent": "Invoke for MainState#testIntent and entity city"
+      }
+    },
+    "amount": {
+      "MainState": {
+        "testIntent": "Invoke for MainState#testIntent and entity amount",
+        "testCustomPromptStateIntent": "Invoke for MainState#testCustomPromptStateIntent and entity amount",
+        "invokeGenericIntent": "Invoke for MainState#invokeGenericIntent and entity amount"
+      }
+    }
   },
   "confirmationState": {
     "suggestionChips": [

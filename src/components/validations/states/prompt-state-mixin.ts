@@ -147,7 +147,7 @@ export function PromptStateMixin<T extends Constructor<PromptStateInstanceRequir
     /** Get the translation convention which represents the lookup string under which the translations for the confirmation state are found. */
     public async getTranslationConvention() {
       const context = await this.unserializeHookContext<ValidationStrategy.Prompt>();
-      return `.${context.validation.neededEntity}.${context.state}.${context.intent}`;
+      return `.${context.validation.neededEntity}`;
     }
   };
 }

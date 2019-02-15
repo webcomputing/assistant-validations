@@ -14,6 +14,6 @@ export class MyPromptState<MergedAnswerTypes extends BasicAnswerTypes, MergedHan
   /** Override the translation convention */
   public async getTranslationConvention() {
     const context = await this.unserializeHookContext<ValidationStrategy.Prompt>();
-    return `.${context.validation.neededEntity}`;
+    return `.${context.validation.neededEntity}.${context.state}.${context.intent}`;
   }
 }

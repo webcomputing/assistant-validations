@@ -90,7 +90,10 @@ export const sessionKeys = {
     /** Key holding information about all entities in store before prompting for a new one */
     previousEntities: "entities:currentPrompt:previousEntities",
   },
-  /** Session key used for saving basic information about the prompt itself, stored before making the transition by {@link BaseTransition} */
+  /**
+   * Session key used for saving basic information about the validation context, e.g. state and intent where a validation decorator is used.
+   * Stored before making the transition by {@link BaseTransition}
+   */
   context: "assistant-validations-context",
 };
 

@@ -182,15 +182,15 @@ If you use a custom prompt or confirmation state (see below), its name will be u
 
 ##### Entity validation
 
-To differ between multiple entity names for different states and intents, all `translateHelper` calls are appended by the prompted entity's, the state  and the intent name. For example, if you prompt for an entity name called "target" in a state called "MainState" and intent called "transactionIntent" these rules would apply:
+To differ between multiple entity names, all `translateHelper` calls are appended by the prompted entity's name. For example, if you prompt for an entity name called "target" these rules would apply:
 
 | Intent                 | Description                                                                                                                                            | I18N key                                  |
 | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------- |
-| invokeGenericIntent    | Invoked automatically at prompt start. Message can be omitted using `validations-initializer`.                                                                   | promptState.invokeGenericIntent.target.MainState.transactionIntent    |
-| unhandledGenericIntent | Invoked if the user fires an intent which is not handleable by the prompt state or if the given entity value does not fit to prompted the entity type. | promptState.unhandledGenericIntent.target.MainState.transactionIntent |
-| cancelGenericIntent    | Invoked if the user says 'cancel'                                                                                                                      | promptState.cancelGenericIntent.target.MainState.transactionIntent    |
+| invokeGenericIntent    | Invoked automatically at prompt start. Message can be omitted using `validations-initializer`.                                                                   | promptState.invokeGenericIntent.target    |
+| unhandledGenericIntent | Invoked if the user fires an intent which is not handleable by the prompt state or if the given entity value does not fit to prompted the entity type. | promptState.unhandledGenericIntent.target |
+| cancelGenericIntent    | Invoked if the user says 'cancel'                                                                                                                      | promptState.cancelGenericIntent.target    |
 | stopGenericIntent      | Invoked if the user says 'stop'                                                                                                                        | same as cancel                            |
-| helpGenericIntent      | Invoked if the user says 'help'                                                                                                                        | promptState.helpGenericIntent.target.MainState.transactionIntent      |
+| helpGenericIntent      | Invoked if the user says 'help'                                                                                                                        | promptState.helpGenericIntent.target      |
 
 
 If you want to set suggestion chips with your prompts, just use the "promptState.suggestionChips.entityName" key.
@@ -290,7 +290,7 @@ export class PromptState extends PromptStateMixin(PromptStateRequirements) {
   public async getTranslationConvention() {
 
     const context = await this.unserializeHookContext<ValidationStrategy.Prompt>();
-    return `.${context.validation.neededEntity}`;
+    return `.${context.validation.neededEntity}.${context.state}.${context.intent}`;
   }
 }
 ```

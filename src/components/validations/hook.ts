@@ -7,6 +7,12 @@ import { COMPONENT_NAME } from "./private-interfaces";
 import { ConfirmationResult, confirmationResultIdentifier, DecoratorOptions, InitializerOptions } from "./public-interfaces";
 import { ValidationsInitializer } from "./validations-initializer";
 
+/**
+ * This class executes a hook before every intent to check, if a decorator has been used for the state or intent.
+ * If a @needsEntity decorator has been used, it initializes the promptState and interrupts the state machine.
+ * If a @needsConfirmation decorator has been used, it initializes a confirmationState and interrupts the state machine.
+ * If no one of these decorators has been used, the state machine continues.
+ */
 @injectable()
 export class BeforeIntentHook {
   private logger: Logger;
