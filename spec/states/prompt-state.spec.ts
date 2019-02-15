@@ -1,7 +1,17 @@
 // tslint:disable-next-line:no-implicit-dependencies
 import { GoogleSpecificHandable, GoogleSpecificTypes } from "assistant-google";
-import { CurrentSessionFactory, EntityDictionary, GenericIntent, injectionNames, intent as Intent, Session, Transitionable } from "assistant-source";
-import { ThisContext } from "./this-context";
+import {
+  CurrentSessionFactory,
+  EntityDictionary,
+  GenericIntent,
+  injectionNames,
+  intent as Intent,
+  Session,
+  Transitionable,
+  TranslateValuesFor,
+} from "assistant-source";
+import { HookContext, sessionKeys, ValidationStrategy } from "../../src/assistant-validations";
+import { ThisContext } from "../this-context";
 
 interface CurrentThisContext extends ThisContext {
   currentSession: Session;
@@ -9,6 +19,10 @@ interface CurrentThisContext extends ThisContext {
   stateMachine: Transitionable;
   entityDictionary: EntityDictionary;
   responseHandlerResults: Partial<GoogleSpecificTypes>;
+  hookContext: HookContext<ValidationStrategy.Prompt>;
+  defaultEntities: any;
+  translateValuesFor: TranslateValuesFor;
+
   setHookContext(): Promise<void>;
   callIntent(
     intent: Intent,
@@ -21,25 +35,29 @@ interface CurrentThisContext extends ThisContext {
 }
 
 describe("PromptState", function() {
-  const defaultEntities = {
-    myEntity: "myValue",
-    myEntity2: "myValue2",
-  };
-  const hookContext = {
-    intent: "testIntent",
-    state: "MainState",
-    neededEntity: "city",
-    redirectArguments: ["a1", "b2"],
-  };
-
   beforeEach(async function(this: CurrentThisContext) {
+    this.defaultEntities = {
+      myEntity: "myValue",
+      myEntity2: "myValue2",
+    };
+
+    this.hookContext = {
+      intent: "testIntent",
+      state: "MainState",
+      validation: {
+        type: "prompt",
+        neededEntity: "city",
+      },
+      redirectArguments: ["a1", "b2"],
+    };
+
     this.prepareWithStates();
 
-    this.callIntent = async (intent, callMachine = true, setContext = true, state = "PromptState", getResults: boolean = true, entities: any = undefined) => {
-      const currentEntities = typeof entities === "undefined" ? defaultEntities : entities;
-      const responseHandler = await this.googleSpecHelper.pretendIntentCalled(intent, { entities: currentEntities });
+    this.callIntent = async (intent, callMachine = true, setContext = true, state = "PromptState", getResults = true, entities = undefined) => {
+      const currentEntities = typeof entities === "undefined" ? this.defaultEntities : entities;
+      const responseHandler = this.platforms.google.pretendIntentCalled(intent, { entities: currentEntities });
 
-      this.currentSession = this.container.inversifyInstance.get<CurrentSessionFactory>(injectionNames.current.sessionFactory)();
+      this.currentSession = this.inversify.get<CurrentSessionFactory>(injectionNames.current.sessionFactory)();
 
       if (setContext) {
         await this.setHookContext();
@@ -53,38 +71,47 @@ describe("PromptState", function() {
         this.responseHandlerResults = this.specHelper.getResponseResults();
       }
 
+      // Set translateValuesFor helper
+      this.translateValuesFor = this.translateValuesForGetter();
+
       return responseHandler;
     };
 
     this.setHookContext = () => {
-      const session = this.container.inversifyInstance.get<CurrentSessionFactory>(injectionNames.current.sessionFactory)();
-      return session.set("entities:currentPrompt", JSON.stringify(hookContext));
+      const session = this.inversify.get<CurrentSessionFactory>(injectionNames.current.sessionFactory)();
+      return session.set(sessionKeys.context, JSON.stringify(this.hookContext));
     };
   });
 
-  describe("cancelGenericIntent", function() {
+  describe("#cancelGenericIntent", function() {
     beforeEach(async function(this: CurrentThisContext) {
       this.responseHandler = await this.callIntent(GenericIntent.Cancel);
     });
 
     it("returns general cancel text", async function(this: CurrentThisContext) {
-      expect(this.responseHandlerResults.voiceMessage!.text).toEqual("See you!");
+      expect(this.responseHandlerResults.voiceMessage!.text).toEqual((await this.translateValuesFor("root.cancelGenericIntent"))[0]);
+    });
+
+    it("ends the session", async function(this: CurrentThisContext) {
       expect(this.responseHandlerResults.shouldSessionEnd).toBeTruthy();
     });
   });
 
-  describe("stopGenericIntent", function() {
+  describe("#stopGenericIntent", function() {
     beforeEach(async function(this: CurrentThisContext) {
       this.responseHandler = await this.callIntent(GenericIntent.Stop);
     });
 
     it("returns general cancel text", async function(this: CurrentThisContext) {
-      expect(this.responseHandlerResults.voiceMessage!.text).toEqual("See you!");
+      expect(this.responseHandlerResults.voiceMessage!.text).toEqual((await this.translateValuesFor("root.cancelGenericIntent"))[0]);
+    });
+
+    it("ends the session", async function(this: CurrentThisContext) {
       expect(this.responseHandlerResults.shouldSessionEnd).toBeTruthy();
     });
   });
 
-  describe("unansweredGenericIntent", async function(this: CurrentThisContext) {
+  describe("#unansweredGenericIntent", async function(this: CurrentThisContext) {
     beforeEach(async function(this: CurrentThisContext) {
       this.responseHandler = await this.callIntent(GenericIntent.Unanswered);
     });
@@ -92,34 +119,36 @@ describe("PromptState", function() {
     it("returns an empty response", async function(this: CurrentThisContext) {
       expect(this.responseHandlerResults.voiceMessage).not.toBeUndefined();
       expect(this.responseHandlerResults.voiceMessage!.text).toBe("");
+    });
+
+    it("ends the session", async function(this: CurrentThisContext) {
       expect(this.responseHandlerResults.shouldSessionEnd).toBeTruthy();
     });
   });
 
-  describe("helpGenericIntent", async function(this: CurrentThisContext) {
+  describe("#helpGenericIntent", async function(this: CurrentThisContext) {
     beforeEach(async function(this: CurrentThisContext) {
       this.responseHandler = await this.callIntent(GenericIntent.Help);
     });
 
     it("returns specific help text", async function(this: CurrentThisContext) {
-      expect(this.responseHandlerResults.voiceMessage!.text).toEqual("Help for city");
+      expect(this.responseHandlerResults.voiceMessage!.text).toEqual((await this.translateValuesFor("promptState.helpGenericIntent.city"))[0]);
+    });
+
+    it("doesn't end the session", async function(this: CurrentThisContext) {
       expect(this.responseHandlerResults.shouldSessionEnd).toBeFalsy();
     });
   });
 
-  describe("unhandledIntent", function() {
+  describe("#unhandledIntent", function() {
     answerPromptBehaviour("notExisting");
   });
 
-  describe("invokeGenericIntent", function() {
+  describe("#invokeGenericIntent", function() {
     describe("without suggestion chips", function() {
       beforeEach(async function(this: CurrentThisContext) {
-        hookContext.neededEntity = "country";
+        this.hookContext.validation.neededEntity = "country";
         this.responseHandler = await this.callIntent(GenericIntent.Invoke, true, true, "PromptState");
-      });
-
-      afterEach(function() {
-        hookContext.neededEntity = "city";
       });
 
       it("does not add any suggestionchips", async function(this: CurrentThisContext) {
@@ -133,7 +162,10 @@ describe("PromptState", function() {
       });
 
       it("returns the invoke text as prompt", async function(this: CurrentThisContext) {
-        expect(this.responseHandlerResults.voiceMessage!.text).toEqual("Prompt for city");
+        expect(this.responseHandlerResults.voiceMessage!.text).toEqual((await this.translateValuesFor("promptState.invokeGenericIntent.city"))[0]);
+      });
+
+      it("doesn't end the session", async function(this: CurrentThisContext) {
         expect(this.responseHandlerResults.shouldSessionEnd).toBeFalsy();
       });
 
@@ -142,7 +174,7 @@ describe("PromptState", function() {
       });
 
       it("stores current entities to session", async function(this: CurrentThisContext) {
-        const storedEntities = await this.currentSession.get("entities:currentPrompt:previousEntities");
+        const storedEntities = await this.currentSession.get(sessionKeys.prompt.previousEntities);
         expect(JSON.parse(storedEntities!).myEntity).toEqual("myValue");
       });
     });
@@ -157,9 +189,19 @@ describe("PromptState", function() {
         }
       });
     });
+
+    describe("on a different state (MyPromptState) that overrides the translationConvention", async function() {
+      beforeEach(async function(this: CurrentThisContext) {
+        this.responseHandler = await this.callIntent(GenericIntent.Invoke, true, true, "MyPromptState");
+      });
+
+      it("returns the invoke text found under a different translationConvention as prompt", async function(this: CurrentThisContext) {
+        expect(this.responseHandlerResults.voiceMessage!.text).toEqual((await this.translateValuesFor("myPromptState.city.MainState.testIntent"))[0]);
+      });
+    });
   });
 
-  describe("answerPromptIntent", function() {
+  describe("#answerPromptIntent", function() {
     answerPromptBehaviour("answerPrompt");
   });
 
@@ -167,10 +209,10 @@ describe("PromptState", function() {
     describe("with the prompted entity given", function() {
       beforeEach(async function(this: CurrentThisContext) {
         this.responseHandler = await this.callIntent(intentName, false, true, "PromptState", false, { myEntityType: "Münster" });
-        await this.currentSession.set("entities:currentPrompt:previousEntities", JSON.stringify(defaultEntities));
+        await this.currentSession.set(sessionKeys.prompt.previousEntities, JSON.stringify(this.defaultEntities));
 
-        this.entityDictionary = this.container.inversifyInstance.get(injectionNames.current.entityDictionary);
-        this.stateMachine = this.container.inversifyInstance.get(injectionNames.current.stateMachine);
+        this.entityDictionary = this.inversify.get(injectionNames.current.entityDictionary);
+        this.stateMachine = this.inversify.get(injectionNames.current.stateMachine);
 
         spyOn(this.stateMachine, "handleIntent").and.callThrough();
 
@@ -188,7 +230,7 @@ describe("PromptState", function() {
       });
 
       it("redirects to state/intent stored in hook context", async function(this: CurrentThisContext) {
-        expect(this.stateMachine.handleIntent).toHaveBeenCalledWith("test", ...hookContext.redirectArguments);
+        expect(this.stateMachine.handleIntent).toHaveBeenCalledWith("test", ...this.hookContext.redirectArguments);
       });
     });
 
@@ -199,7 +241,10 @@ describe("PromptState", function() {
 
       it("returns unhandledIntent result", async function(this: CurrentThisContext) {
         expect(this.responseHandlerResults.voiceMessage).not.toBeUndefined();
-        expect(this.responseHandlerResults.voiceMessage!.text).toEqual("Prompt for city");
+        expect(this.responseHandlerResults.voiceMessage!.text).toEqual((await this.translateValuesFor("promptState.city"))[0]);
+      });
+
+      it("doesn't end the session", async function(this: CurrentThisContext) {
         expect(this.responseHandlerResults.shouldSessionEnd).toBeFalsy();
       });
     });

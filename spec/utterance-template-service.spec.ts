@@ -20,7 +20,7 @@ describe("UtteranceTemplateService", function() {
     const componentInterface = (this.assistantJs as AssistantJSSetup).container.componentRegistry
       .lookup("core:unifier")
       .getInterface("utteranceTemplateService");
-    templateService = this.container.inversifyInstance.get(componentInterface);
+    templateService = this.inversify.get(componentInterface);
   });
 
   describe("getUtteranceFor", function() {

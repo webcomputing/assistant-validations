@@ -4,12 +4,14 @@ import { Component, ComponentDescriptor, getMetaInjectionName, Hooks } from "inv
 import { BeforeIntentHook } from "./hook";
 import { validationsInjectionNames } from "./injection-names";
 import { COMPONENT_NAME, Configuration } from "./private-interfaces";
-import { Prompt } from "./prompt";
-import { PromptFactory } from "./public-interfaces";
+import { ConfirmationTransition } from "./transitions/confirmation-transition";
+import { PromptTransition } from "./transitions/prompt-transition";
 import { UtteranceTemplateService } from "./utterance-template-service";
+import { ValidationsInitializer } from "./validations-initializer";
 
 export const defaultConfiguration: Configuration.Defaults = {
   defaultPromptState: "PromptState",
+  defaultConfirmationState: "ConfirmationState",
 };
 
 export const descriptor: ComponentDescriptor<Configuration.Defaults> = {
@@ -24,25 +26,12 @@ export const descriptor: ComponentDescriptor<Configuration.Defaults> = {
     },
 
     request: (bindService, lookupService) => {
-      // Make prompt service accessible via factory
-      bindService.bindGlobalService<PromptFactory>("current-prompt-factory").toFactory(context => {
-        return (intent: string, stateName: string, machine: Transitionable, promptStateName?: string, additionalArguments: any[] = []) => {
-          // Grab default promptState by Configuration
-          const currentpromptStateName =
-            typeof promptStateName === "undefined"
-              ? context.container.get<Component<Configuration.Runtime>>(getMetaInjectionName(COMPONENT_NAME)).configuration.defaultPromptState
-              : promptStateName;
+      // Make all validation services available out of states or other classes
+      bindService.bindGlobalService("validations-initializer").to(ValidationsInitializer);
 
-          return new Prompt(
-            machine,
-            context.container.get<any>(injectionNames.current.sessionFactory)(),
-            intent,
-            stateName,
-            currentpromptStateName,
-            additionalArguments
-          );
-        };
-      });
+      // Bind local transition classes
+      bindService.bindLocalServiceToSelf(PromptTransition);
+      bindService.bindLocalServiceToSelf(ConfirmationTransition);
 
       // Register hook function as method of a class
       bindService.bindLocalServiceToSelf(BeforeIntentHook);

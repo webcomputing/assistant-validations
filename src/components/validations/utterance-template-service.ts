@@ -11,7 +11,7 @@ export class UtteranceTemplateService implements PlatformGenerator.UtteranceTemp
 
   public getUtterancesFor(langauge: string) {
     return {
-      answerPromptIntent: this.getUniqueMappingValues().map(type => "{{" + type + "}}"),
+      answerPromptIntent: this.getUniqueMappingValues().map(type => `{{${type}}}`),
     };
   }
 

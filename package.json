@@ -1,7 +1,7 @@
 {
   "name": "assistant-validations",
   "version": "0.4.0",
-  "description": "Supports entity validations with the @needs decorator",
+  "description": "Supports validations of entities and confirmations of actions with decorators",
   "scripts": {
     "test": "gulp test",
     "coverage": "gulp test-coverage"
@@ -49,7 +49,7 @@
     "tslint": "^5.4.0",
     "tslint-config-airbnb": "^5.9.2",
     "tslint-config-prettier": "^1.13.0",
-    "typescript": "~2.9.2"
+    "typescript": "^3.2.0"
   },
   "main": "./lib/assistant-validations.js",
   "typings": "./dts/assistant-validations.d.ts",
