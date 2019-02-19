@@ -155,7 +155,7 @@ assistant-validations gives you the `@needsConfirmation` decorator to ask a user
 ```typescript
 import { ApplicationState } from "./application";
 import { injectionNames, State } from "assistant-source";
-import { needsConfirmation } from "assistant-validations";
+import { needsConfirmation, ConfirmationResult } from "assistant-validations";
 import { injectable, inject } from "inversify";
 import { MergedSetupSet } from "../../config/handler";
 
@@ -166,13 +166,13 @@ export class MainState extends ApplicationState {
   }
 
   @needsConfirmation()
-  async busRouteIntent(machine: Transitionable) {
+  async busRouteIntent(machine: Transitionable, confirmationResult: ConfirmationResult) {
     // ...
   }
 }
 ```
 
-Now, everytime the `busRouteIntent` of the `MainState` is called, assistant-validations forces AssistantJS to ask the user for his confirmation and only transitions to the `busRouteIntent` after an answer was given.
+Now, everytime the `busRouteIntent` of the `MainState` is called, assistant-validations forces AssistantJS to ask the user for his confirmation and  transitions back to the `busRouteIntent` after an answer was given. AssistantJS will give you the result of the confirmation as last argument of your intent method.
 
 #### I18N integration [](#i18n-integration)
 
@@ -288,7 +288,6 @@ export class PromptState extends PromptStateMixin(PromptStateRequirements) {
 
   /** Override the translation convention */
   public async getTranslationConvention() {
-
     const context = await this.unserializeHookContext<ValidationStrategy.Prompt>();
     return `.${context.validation.neededEntity}.${context.state}.${context.intent}`;
   }

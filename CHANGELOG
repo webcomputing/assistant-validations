@@ -1,4 +1,5 @@
 version 0.4.0
+- adds option to override translation conventions used in prompt state or confirmation state
 - realigns internal structure to be more extendable for other validations (such as confirmation, in this case)
 - removes prompt factory in favor of validations initializer
 - renames `@needs` to `@needsEntities`
