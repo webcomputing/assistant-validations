@@ -1,89 +1,170 @@
-import { Prompt } from "../src/components/validations/prompt";
+import { injectionNames, Transitionable } from "assistant-source";
+import { ConfirmationResult, confirmationResultIdentifier, ValidationsInitializer, validationsInjectionNames } from "../src/assistant-validations";
 import { BeforeIntentHook } from "../src/components/validations/hook";
+import { ThisContext } from "./this-context";
 
-describe("hook", function() {
-  beforeEach(function() {
+interface CurrentThisContext extends ThisContext {
+  stateMachine: Transitionable;
+  hook: BeforeIntentHook;
+  validationsInitializer: ValidationsInitializer;
+
+  /** Additional extraction containing entities to be used to test prompting when entities are already present */
+  additionalExtraction: any;
+
+  /**
+   * Prepares spies, BeforeIntentHook etc.
+   * @param {boolean} runMachine If set to true, runMachine() will be called after preparation
+   * @param {any[]} args Additional args to pass to runMachine() call
+   */
+  prepareMock: (runMachine?: boolean, ...args: any[]) => Promise<void>;
+}
+
+describe("BeforeIntentHook", function() {
+  beforeEach(async function(this: CurrentThisContext) {
+    this.additionalExtraction = { entities: { city: "Münster" } };
+
     this.prepareWithStates();
+
+    this.prepareMock = async (runMachine = true, ...args: any[]) => {
+      // Rebind mocks in singleton scope
+      this.inversify
+        .rebind(BeforeIntentHook)
+        .to(BeforeIntentHook)
+        .inSingletonScope();
+      this.inversify
+        .rebind(validationsInjectionNames.current.validationsInitializer)
+        .to(ValidationsInitializer)
+        .inSingletonScope();
+
+      // Get relevant instances
+      this.hook = this.inversify.get(BeforeIntentHook);
+      this.validationsInitializer = this.inversify.get(validationsInjectionNames.current.validationsInitializer);
+      this.stateMachine = this.inversify.get(injectionNames.current.stateMachine);
+
+      // Register relevant spies
+      spyOn(this.validationsInitializer, "initializePrompt").and.callThrough();
+      spyOn(this.validationsInitializer, "initializeConfirmation").and.callThrough();
+
+      if (runMachine) {
+        await this.specHelper.runMachine("MainState", ...args);
+      }
+    };
   });
 
-  const prepareMock = (instance, runMachine = true) => {
-    instance.container.inversifyInstance.rebind(BeforeIntentHook).to(BeforeIntentHook).inSingletonScope();
-    
-    instance.hook = instance.container.inversifyInstance.get(BeforeIntentHook);
-    instance.promptedParam = null;
-    spyOn(instance.hook, "promptFactory").and.returnValue({
-      prompt: (p) => new Promise((resolve, reject) => { instance.promptedParam = p; resolve(); })
-    });
-
-    if (runMachine) {
-      return instance.alexaHelper.specSetup.runMachine() as Promise<void>;
-    } else {
-      return Promise.resolve();
-    }
-  }
-
-  describe("with multiple entities configured", function() {
-    let additionalExtraction = { entities: { city: "Münster" } };
-
-    describe("with all entities present", function() {
-      beforeEach(async function(done) {
-        await this.alexaHelper.pretendIntentCalled("test", false, additionalExtraction);
-        await prepareMock(this);
-        done();
-      })
-
-      it("does nothing", function() {
-        expect(this.hook.promptFactory).not.toHaveBeenCalled();
-      });
-    })
-
-    describe("with one entity missing", function() {
-      beforeEach(async function(done) {
-        await this.alexaHelper.pretendIntentCalled("testMany", false, additionalExtraction);
-        done();
-      })
-
-      describe("as platform intent call", function() {
-        beforeEach(async function(done) {
-          await prepareMock(this);
-          done();
+  describe("regarding prompting", function() {
+    describe("with multiple entities configured", function() {
+      describe("with all entities present", function() {
+        beforeEach(async function(this: CurrentThisContext) {
+          await this.specHelper.prepareIntentCall(this.platforms.google, "test", this.additionalExtraction);
+          await this.prepareMock();
         });
 
-        it("calls prompt factory with given arguments", function() {
-          this.stateMachine = this.container.inversifyInstance.get("core:state-machine:current-state-machine");
-          expect(this.hook.promptFactory).toHaveBeenCalledWith("testManyIntent", "MainState", this.stateMachine, undefined, []);
-        });
-
-        it("prompts the needed entity", function() {
-          expect(this.promptedParam).toEqual("amount");
+        it("does nothing", async function(this: CurrentThisContext) {
+          expect(this.validationsInitializer.initializePrompt).not.toHaveBeenCalled();
         });
       });
 
-      describe("as state machine transition with additional arguments", function() {
-        beforeEach(async function(done) {
-          await prepareMock(this, false);
-          this.stateMachine = this.container.inversifyInstance.get("core:state-machine:current-state-machine");
-          await this.stateMachine.handleIntent("testMany", "arg1", "arg2");
-          done();
+      describe("with one entity missing", function() {
+        beforeEach(async function(this: CurrentThisContext) {
+          await this.specHelper.prepareIntentCall(this.platforms.google, "testMany", this.additionalExtraction);
         });
 
-        it("passes the additional arguments to promptFactory", function() {
-          expect(this.hook.promptFactory).toHaveBeenCalledWith("testManyIntent", "MainState", this.stateMachine, undefined, ["arg1", "arg2"]);
+        describe("as platform intent call", function() {
+          beforeEach(async function(this: CurrentThisContext) {
+            await this.prepareMock();
+          });
+
+          it("calls validationsInitializer#initializePrompt with given arguments", async function(this: CurrentThisContext) {
+            expect(this.validationsInitializer.initializePrompt).toHaveBeenCalledWith("MainState", "testManyIntent", "amount", {
+              redirectArguments: [],
+            });
+          });
+        });
+
+        describe("as state machine transition with additional arguments", function() {
+          beforeEach(async function(this: CurrentThisContext) {
+            await this.prepareMock(false);
+            await this.stateMachine.handleIntent("testMany", "arg1", "arg2");
+          });
+
+          it("passes the additional arguments to validationsInitializer", async function(this: CurrentThisContext) {
+            expect(this.validationsInitializer.initializePrompt).toHaveBeenCalledWith(jasmine.any(String), jasmine.any(String), jasmine.any(String), {
+              redirectArguments: ["arg1", "arg2"],
+            });
+          });
+        });
+      });
+
+      describe("with custom prompt state given via decorator", function() {
+        beforeEach(async function(this: CurrentThisContext) {
+          await this.specHelper.prepareIntentCall(this.platforms.google, "testCustomPromptState", this.additionalExtraction);
+          await this.prepareMock();
+        });
+
+        it("calls validations initializer with custom prompt state name", async function(this: CurrentThisContext) {
+          expect(this.validationsInitializer.initializePrompt).toHaveBeenCalledWith("MainState", "testCustomPromptStateIntent", jasmine.any(String), {
+            redirectArguments: [],
+            promptStateName: "MyPromptState",
+          });
         });
       });
     });
   });
 
-  describe("with no entities configured", function() {
-    beforeEach(async function(done) {
-      await this.alexaHelper.pretendIntentCalled("noEntities", false);
-      await prepareMock(this);
-      done();
-    })
-    
+  describe("regarding confirmation", function() {
+    describe("with intent not yet confirmed", function() {
+      describe("with custom confirmation state given in @needsConfirmation decorator", function() {
+        beforeEach(async function(this: CurrentThisContext) {
+          await this.specHelper.prepareIntentCall(this.platforms.google, "needsConfirmationCustomState");
+          await this.prepareMock();
+        });
 
-    it("does nothing", function() {
-      expect(this.hook.promptFactory).not.toHaveBeenCalled();
-    })
+        it("calls ValidationsInitializer#initializeConfirmation with given confirmation state", async function(this: CurrentThisContext) {
+          expect(this.validationsInitializer.initializeConfirmation).toHaveBeenCalledWith("MainState", "needsConfirmationCustomStateIntent", {
+            confirmationStateName: "MyConfirmationState",
+            redirectArguments: [],
+          });
+        });
+      });
+
+      describe("with no custom confirmation state given in @needsConfirmation decorator", function() {
+        beforeEach(async function(this: CurrentThisContext) {
+          await this.specHelper.prepareIntentCall(this.platforms.google, "needsConfirmation");
+          await this.prepareMock();
+        });
+
+        it("calls ValidationsInitializer#initializeConfirmation with no custom confirmation state", async function(this: CurrentThisContext) {
+          expect(this.validationsInitializer.initializeConfirmation).toHaveBeenCalledWith("MainState", "needsConfirmationIntent", { redirectArguments: [] });
+        });
+      });
+    });
+
+    describe("with intent already being confirmed", function() {
+      beforeEach(async function(this: CurrentThisContext) {
+        await this.specHelper.prepareIntentCall(this.platforms.google, "needsConfirmation");
+
+        const confirmationResult: ConfirmationResult = { returnIdentifier: confirmationResultIdentifier, confirmed: true };
+        await this.prepareMock(true, confirmationResult);
+      });
+
+      it("does not call ValidationsInitializer#initializeConfirmation", async function(this: CurrentThisContext) {
+        expect(this.validationsInitializer.initializeConfirmation).not.toHaveBeenCalled();
+      });
+    });
+  });
+
+  describe("with no decorators used at all", function() {
+    beforeEach(async function(this: CurrentThisContext) {
+      await this.specHelper.prepareIntentCall(this.platforms.google, "noDecorators");
+      await this.prepareMock();
+    });
+
+    it("does not call #initializePrompt", async function(this: CurrentThisContext) {
+      expect(this.validationsInitializer.initializePrompt).not.toHaveBeenCalled();
+    });
+
+    it("does not call #initializeConfirmation", async function(this: CurrentThisContext) {
+      expect(this.validationsInitializer.initializeConfirmation).not.toHaveBeenCalled();
+    });
   });
 });

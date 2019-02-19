@@ -5,13 +5,69 @@
     "helpGenericIntent": "Help"
   },
   "promptState": {
-    "city": "Prompt for city",
+    "invokeGenericIntent": {
+      "city": "invoke for entity city",
+      "amount": "invoke for entity amount",
+      "country": "invoke for entity country"
+    },
     "helpGenericIntent": {
-      "city": "Help for city",
-      "amount": "Help for amount"
+      "city": "help for entity city",
+      "amount": "help for entity amount"
+    },
+    "city": "fallback for entity city",
+    "amount": "fallback for entity amount",
+    "suggestionChips": {
+      "city": [
+        "Münster",
+        "München"
+      ]
     }
   },
   "myPromptState": {
-    "city": "My prompt state prompt for city"
+    "city": {
+      "MainState": {
+        "testIntent": "Invoke for MainState#testIntent and entity city"
+      }
+    },
+    "amount": {
+      "MainState": {
+        "testIntent": "Invoke for MainState#testIntent and entity amount",
+        "testCustomPromptStateIntent": "Invoke for MainState#testCustomPromptStateIntent and entity amount",
+        "invokeGenericIntent": "Invoke for MainState#invokeGenericIntent and entity amount"
+      }
+    }
+  },
+  "confirmationState": {
+    "suggestionChips": [
+      "Yes",
+      "No"
+    ],
+    "unhandledGenericIntent": {
+      "MainState": {
+        "testIntent": "unhandledGenericIntent for MainState and testIntent"
+      }
+    },
+    "invokeGenericIntent": {
+      "MainState": {
+        "needsConfirmationIntent": "invokeGenericIntent for MainState needsConfirmationIntent",
+        "invokeGenericIntent": "invokeGenericIntent for Mainstate invokeGenericIntent",
+        "testIntent": "invokeGenericIntent for MainState testIntent"
+      }
+    },
+    "helpGenericIntent": {
+      "MainState": {
+        "testIntent": "Help for MainState and testIntent"
+      }
+    },
+    "MainState2": {
+      "testIntent2": "Fallback message for MainState2 and testIntent2"
+    }
+  },
+  "myConfirmationState": {
+    "invokeGenericIntent": {
+      "MainState": {
+        "needsConfirmationCustomStateIntent": "invokeGenericIntent for MainState needsConfirmationCustomStateIntent"
+      }
+    }
   }
 }

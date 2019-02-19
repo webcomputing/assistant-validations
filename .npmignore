@@ -1,3 +1,4 @@
+js
 node_modules
 src
 spec
@@ -6,3 +7,4 @@ gulpfile.js
 tsconfig.json
 .gitignore
 *.tgz
+.nyc_output

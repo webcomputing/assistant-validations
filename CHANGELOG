@@ -1,3 +1,15 @@
+version 0.4.0
+- adds option to override translation conventions used in prompt state or confirmation state
+- realigns internal structure to be more extendable for other validations (such as confirmation, in this case)
+- removes prompt factory in favor of validations initializer
+- renames `@needs` to `@needsEntities`
+- adds `@needsConfirmation` decorator to force confirmation for specific states or intents
+- enables setting the used prompt state via decorator
+- enables setting of suggestion chips via convention
+- changes for new ResponseHandler with assistant-source 0.4.0
+  - `PromptStateRequirements` now uses `ApplicationState` instead of `BaseState`.
+  - `State.SetupSet` is replaced by `MergedSetupSet` introduced in assistant-source 0.4.0 (see changelog or new scaffolded project)
+
 version 0.3.0
 - makes assistant-validations compatible to assistant-source 0.3.0
 - changes configuration interface structure
