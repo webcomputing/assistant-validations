@@ -174,7 +174,10 @@ export interface PromptStateMixinInstance {
   applyStoredEntities(): Promise<void>;
 
   /** Get the translation convention which represents the lookup string under which the translations for the prompt state are found. */
-  getTranslationConvention(): Promise<string>;
+  getPromptTranslationConvention(): Promise<string>;
+
+  /** Get the translation convention which represents the lookup string under which the translations for the suggestion chips are found. */
+  getSuggestionChipsTranslationConvention(): Promise<string>;
 }
 
 /**
@@ -212,7 +215,10 @@ export interface ConfirmationStateMixinInstance {
   unhandledGenericIntent(machine: Transitionable, ...additionalArgs: any[]): Promise<void>;
 
   /** Get the translation convention which represents the lookup string under which the translations for the confirmation state are found. */
-  getTranslationConvention(): Promise<string>;
+  getPromptTranslationConvention(): Promise<string>;
+
+  /** Get the translation convention which represents the lookup string under which the translations for the suggestion chips are found. */
+  getSuggestionChipsTranslationConvention(): Promise<string>;
 }
 
 /**

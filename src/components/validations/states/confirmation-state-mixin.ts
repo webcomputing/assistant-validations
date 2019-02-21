@@ -19,7 +19,11 @@ export function ConfirmationStateMixin<T extends Constructor<ConfirmationStateIn
   return class extends CommonFunctionsMixin(superState) {
     public async invokeGenericIntent(machine: Transitionable, tellInvokeMessage = true, ...additionalArgs: any[]) {
       if (tellInvokeMessage) {
-        this.handleInvokeMessage("Sending initial confirmation message", ".suggestionChips", await this.getTranslationConvention());
+        this.handleInvokeMessage(
+          "Sending initial confirmation message",
+          await this.getSuggestionChipsTranslationConvention(),
+          await this.getPromptTranslationConvention()
+        );
       }
     }
 
@@ -44,9 +48,14 @@ export function ConfirmationStateMixin<T extends Constructor<ConfirmationStateIn
     }
 
     /** Get the translation convention which represents the lookup string under which the translations for the confirmation state are found. */
-    public async getTranslationConvention() {
+    public async getPromptTranslationConvention() {
       const context = await this.unserializeHookContext<ValidationStrategy.Confirmation>();
       return `.${context.state}.${context.intent}`;
+    }
+
+    /** Get the translation convention which represents the lookup string under which the translations for the suggestion chips are found. */
+    public async getSuggestionChipsTranslationConvention() {
+      return ".suggestionChips";
     }
 
     /**
@@ -72,7 +81,7 @@ export function ConfirmationStateMixin<T extends Constructor<ConfirmationStateIn
      * @param machine Transitionable interface
      */
     private async handleGenericAnswer(machine: Transitionable) {
-      this.responseHandler.prompt(this.t(await this.getTranslationConvention()));
+      this.responseHandler.prompt(this.t(await this.getPromptTranslationConvention()));
     }
   };
 }

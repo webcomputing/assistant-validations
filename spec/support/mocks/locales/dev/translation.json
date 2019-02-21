@@ -24,6 +24,16 @@
     }
   },
   "myPromptState": {
+    "suggestionChips": {
+      "city":{
+        "MainState": {
+          "testIntent": [
+            "Absolutely!",
+            "Never ever!"
+          ]
+        }
+      }
+    },
     "city": {
       "MainState": {
         "testIntent": "Invoke for MainState#testIntent and entity city"
