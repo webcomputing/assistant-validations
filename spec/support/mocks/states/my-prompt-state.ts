@@ -12,8 +12,14 @@ export class MyPromptState<MergedAnswerTypes extends BasicAnswerTypes, MergedHan
   }
 
   /** Override the translation convention */
-  public async getTranslationConvention() {
+  public async getPromptTranslationConvention() {
     const context = await this.unserializeHookContext<ValidationStrategy.Prompt>();
     return `.${context.validation.neededEntity}.${context.state}.${context.intent}`;
+  }
+
+  /** Override the translation convention */
+  public async getSuggestionChipsTranslationConvention() {
+    const context = await this.unserializeHookContext<ValidationStrategy.Prompt>();
+    return `.suggestionChips.${context.validation.neededEntity}.${context.state}.${context.intent}`;
   }
 }

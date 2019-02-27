@@ -211,7 +211,7 @@ If you want to use suggestion chips with your confirmations, use the "confirmati
 
 ##### Using a custom translation convention
 
-If you don't want to use the default translation conventions, you can override the function `getTranslationConvention` in your own validation state. For an example see [Using a custom state](#using-a-custom-state).
+If you don't want to use the default translation conventions, you can override the function `getPromptTranslationConvention` and `getSuggestionChipsTranslationConvention` in your own validation state. For an example see [Using a custom state](#using-a-custom-state).
 
 #### Initialize validations dynamically
 
@@ -287,9 +287,15 @@ export class PromptState extends PromptStateMixin(PromptStateRequirements) {
   }
 
   /** Override the translation convention */
-  public async getTranslationConvention() {
+  public async getPromptTranslationConvention() {
     const context = await this.unserializeHookContext<ValidationStrategy.Prompt>();
     return `.${context.validation.neededEntity}.${context.state}.${context.intent}`;
+  }
+
+  /** Override the suggestion chips translation convention */
+  public async getSuggestionChipsTranslationConvention() {
+    const context = await this.unserializeHookContext<ValidationStrategy.Prompt>();
+    return `.suggestionChips.${context.validation.neededEntity}.${context.state}.${context.intent}`;
   }
 }
 ```

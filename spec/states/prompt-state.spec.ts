@@ -198,6 +198,10 @@ describe("PromptState", function() {
       it("returns the invoke text found under a different translationConvention as prompt", async function(this: CurrentThisContext) {
         expect(this.responseHandlerResults.voiceMessage!.text).toEqual((await this.translateValuesFor("myPromptState.city.MainState.testIntent"))[0]);
       });
+
+      it("returns the suggestion chips found under a different translationConvention", async function(this: CurrentThisContext) {
+        expect(this.responseHandlerResults.suggestionChips).toEqual(await this.translateValuesFor("myPromptState.suggestionChips.city.MainState.testIntent"));
+      });
     });
   });
 

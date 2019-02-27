@@ -28,8 +28,8 @@ export function PromptStateMixin<T extends Constructor<PromptStateInstanceRequir
       if (tellInvokeMessage) {
         await this.handleInvokeMessage(
           "Sending initial prompt message",
-          `.suggestionChips.${context.validation.neededEntity}`,
-          await this.getTranslationConvention()
+          await this.getSuggestionChipsTranslationConvention(),
+          await this.getPromptTranslationConvention()
         );
       }
     }
@@ -112,8 +112,8 @@ export function PromptStateMixin<T extends Constructor<PromptStateInstanceRequir
     public async unserializeAndPrompt() {
       try {
         const context = await this.unserializeHookContext<ValidationStrategy.Prompt>();
-        this.responseHandler.prompt(this.t(await this.getTranslationConvention()));
-        await this.setSuggestionChips(`.suggestionChips.${context.validation.neededEntity}`);
+        this.responseHandler.prompt(this.t(await this.getPromptTranslationConvention()));
+        await this.setSuggestionChips(await this.getSuggestionChipsTranslationConvention());
       } catch (reason) {
         this.responseHandler.prompt(this.t());
         await this.setSuggestionChips();
@@ -145,9 +145,16 @@ export function PromptStateMixin<T extends Constructor<PromptStateInstanceRequir
     }
 
     /** Get the translation convention which represents the lookup string under which the translations for the confirmation state are found. */
-    public async getTranslationConvention() {
+    public async getPromptTranslationConvention() {
       const context = await this.unserializeHookContext<ValidationStrategy.Prompt>();
       return `.${context.validation.neededEntity}`;
+    }
+
+    /** Get the translation convention which represents the lookup string under which the translations for the suggestion chips are found. */
+    public async getSuggestionChipsTranslationConvention() {
+      const context = await this.unserializeHookContext<ValidationStrategy.Prompt>();
+
+      return `.suggestionChips.${context.validation.neededEntity}`;
     }
   };
 }
