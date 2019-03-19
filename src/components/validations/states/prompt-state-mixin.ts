@@ -12,9 +12,7 @@ import {
 // Defines the public members requirements to an instance of a prompt state
 type PromptStateInstanceRequirements = CommonFunctionsInstanceRequirements & PromptStateMixinRequirements;
 
-export function PromptStateMixin<T extends Constructor<PromptStateInstanceRequirements>>(
-  superState: T
-): Constructor<PromptStateMixinInstance & PromptStateInstanceRequirements & CommonFunctionsMixinInstance> {
+export function PromptStateMixin<T extends Constructor<PromptStateInstanceRequirements>>(superState: T) {
   return class extends CommonFunctionsMixin(superState) {
     public async invokeGenericIntent(machine: Transitionable, tellInvokeMessage = true, ...additionalArgs: any[]) {
       const promises = await Promise.all([this.unserializeHookContext<ValidationStrategy.Prompt>(), this.storeCurrentEntitiesToSession()]);

@@ -13,9 +13,7 @@ import {
 // Defines the public members requirements to an instance of a confirmation state
 type ConfirmationStateInstanceRequirements = CommonFunctionsInstanceRequirements & ConfirmationStateMixinRequirements;
 
-export function ConfirmationStateMixin<T extends Constructor<ConfirmationStateInstanceRequirements>>(
-  superState: T
-): Constructor<ConfirmationStateMixinInstance & ConfirmationStateMixinRequirements & CommonFunctionsMixinInstance> {
+export function ConfirmationStateMixin<T extends Constructor<ConfirmationStateInstanceRequirements>>(superState: T) {
   return class extends CommonFunctionsMixin(superState) {
     public async invokeGenericIntent(machine: Transitionable, tellInvokeMessage = true, ...additionalArgs: any[]) {
       if (tellInvokeMessage) {

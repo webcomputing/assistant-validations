@@ -4,9 +4,7 @@ import { CommonFunctionsInstanceRequirements, CommonFunctionsMixinInstance, Hook
 /**
  * Add common functions that are used in the different validation states through this mixin
  */
-export function CommonFunctionsMixin<T extends CommonFunctionsInstanceRequirements>(
-  superState: Constructor<T>
-): Constructor<CommonFunctionsMixinInstance & CommonFunctionsInstanceRequirements & T> {
+export function CommonFunctionsMixin<T extends CommonFunctionsInstanceRequirements>(superState: Constructor<T>) {
   // prettier-ignore
   return class extends (superState as any) {
 
