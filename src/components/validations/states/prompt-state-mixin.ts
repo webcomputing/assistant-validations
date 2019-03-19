@@ -9,13 +9,22 @@ import {
   ValidationStrategy,
 } from "../public-interfaces";
 
-// Defines the public members requirements to an instance of a prompt state
-type PromptStateInstanceRequirements = CommonFunctionsInstanceRequirements & PromptStateMixinRequirements;
-
-export function PromptStateMixin<T extends Constructor<PromptStateInstanceRequirements>>(
+/**
+ * Defines the public members requirements to an instance of a prompt state.
+ */
+export function PromptStateMixin<T extends Constructor<PromptStateMixinRequirements>>(
   superState: T
-): Constructor<PromptStateMixinInstance & PromptStateInstanceRequirements & CommonFunctionsMixinInstance> {
-  return class extends CommonFunctionsMixin(superState) {
+): T & Constructor<CommonFunctionsMixinInstance & PromptStateMixinRequirements & PromptStateMixinInstance> {
+  return promptStateMixin(CommonFunctionsMixin(superState));
+}
+
+/**
+ * The actual mixin function for prompt state. Because this mixin requires another one, `CommonFunctionsMixin`, we have to
+ * delegate this to a helper function to bypass some issues with TypeScript's mixin classes pattern. Those should always
+ * strictly look as follows without extra mixins.
+ */
+function promptStateMixin<T extends Constructor<PromptStateMixinRequirements> & ReturnType<typeof CommonFunctionsMixin>>(superState: T) {
+  return class extends superState {
     public async invokeGenericIntent(machine: Transitionable, tellInvokeMessage = true, ...additionalArgs: any[]) {
       const promises = await Promise.all([this.unserializeHookContext<ValidationStrategy.Prompt>(), this.storeCurrentEntitiesToSession()]);
       const context = promises[0];

@@ -103,16 +103,14 @@ export const sessionKeys = {
  * In your class using the PromptState mixin, just inject all of these requirements.
  * You find an example in the assistant-validations README.
  */
-export interface PromptStateMixinRequirements extends State.Required {
-  /** The current entitiy dictionary, injectable via {@link injectionNames.current.entityDictionary} */
-  entities: EntityDictionary;
+export type PromptStateMixinRequirements = CommonFunctionsInstanceRequirements &
+  State.Required & {
+    /** The current entitiy dictionary, injectable via {@link injectionNames.current.entityDictionary} */
+    entities: EntityDictionary;
 
-  /** The current session factory, injectable via {@link injectionNames.current.sessionFactory} */
-  sessionFactory: CurrentSessionFactory;
-
-  /** Your entity mappings, injectable via {@link injectionNames.userEntityMappings} */
-  mappings: PlatformGenerator.EntityMapping;
-}
+    /** Your entity mappings, injectable via {@link injectionNames.userEntityMappings} */
+    mappings: PlatformGenerator.EntityMapping;
+  };
 
 /**
  * Interface describing what you get when applying PromptMixin to one of your states
@@ -186,10 +184,7 @@ export interface PromptStateMixinInstance {
  * In your class using the ConfirmationState mixin, just inject all of these requirements.
  * You find an example in the assistant-validations README.
  */
-export interface ConfirmationStateMixinRequirements extends State.Required {
-  /** The current session factory, injectable via {@link injectionNames.current.sessionFactory} */
-  sessionFactory: CurrentSessionFactory;
-}
+export type ConfirmationStateMixinRequirements = CommonFunctionsInstanceRequirements & State.Required & {};
 
 /**
  * Interface describing what you get when applying ConfirmationMixin to one of your states

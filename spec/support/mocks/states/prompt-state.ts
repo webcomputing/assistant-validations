@@ -9,7 +9,7 @@ import {
   PlatformGenerator,
   State,
 } from "assistant-source";
-import { inject, injectable } from "inversify";
+import { inject, injectable, unmanaged } from "inversify";
 import { PromptStateMixin, PromptStateMixinRequirements } from "../../../../src/assistant-validations";
 
 class PromptStateRequirements<MergedAnswerTypes extends BasicAnswerTypes, MergedHandler extends BasicHandable<MergedAnswerTypes>> extends BaseState<
@@ -17,10 +17,10 @@ class PromptStateRequirements<MergedAnswerTypes extends BasicAnswerTypes, Merged
   MergedHandler
 > implements PromptStateMixinRequirements {
   constructor(
-    stateSetupSet: State.SetupSet<MergedAnswerTypes, MergedHandler>,
-    public entities: EntityDictionary,
-    public sessionFactory: CurrentSessionFactory,
-    public mappings: PlatformGenerator.EntityMapping
+    @unmanaged() stateSetupSet: State.SetupSet<MergedAnswerTypes, MergedHandler>,
+    @unmanaged() public entities: EntityDictionary,
+    @unmanaged() public sessionFactory: CurrentSessionFactory,
+    @unmanaged() public mappings: PlatformGenerator.EntityMapping
   ) {
     super(stateSetupSet);
   }
@@ -29,7 +29,7 @@ class PromptStateRequirements<MergedAnswerTypes extends BasicAnswerTypes, Merged
 @injectable()
 export class PromptState<MergedAnswerTypes extends BasicAnswerTypes, MergedHandler extends BasicHandable<MergedAnswerTypes>> extends PromptStateMixin(
   PromptStateRequirements
-) {
+)<MergedAnswerTypes, MergedHandler> {
   constructor(
     @inject(injectionNames.current.stateSetupSet) setupSet: State.SetupSet<MergedAnswerTypes, MergedHandler>,
     @inject(injectionNames.current.entityDictionary) entities: EntityDictionary,
