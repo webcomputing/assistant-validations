@@ -49,9 +49,7 @@ export function CommonFunctionsMixin<T extends Constructor<CommonFunctionsMixinR
     public async setSuggestionChips(lookupString: string = ".suggestionChips") {
       try {
         if (featureIsAvailable(this.responseHandler, OptionalHandlerFeatures.FeatureChecker.SuggestionChips)) {
-          ((this.responseHandler as unknown) as SuggestionChipsMixin<BasicAnswerTypes>).setSuggestionChips(
-            await this.translateHelper.getAllAlternatives(lookupString)
-          );
+          ((this.responseHandler as unknown) as SuggestionChipsMixin<BasicAnswerTypes>).setSuggestionChips(await this.translateHelper.getAllAlternatives(lookupString));
         } else {
           this.logger.debug(`Current response handler doesn't support suggestion chips, so not setting any. Lookupstring = ${lookupString}`);
         }
