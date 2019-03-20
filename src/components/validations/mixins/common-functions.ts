@@ -1,6 +1,6 @@
 import { BasicAnswerTypes, Constructor, featureIsAvailable, OptionalHandlerFeatures, SuggestionChipsMixin } from "assistant-source";
 import { COMPONENT_NAME } from "../private-interfaces";
-import { CommonFunctionsInstanceRequirements, CommonFunctionsMixinInstance, HookContext, sessionKeys, ValidationStrategy } from "../public-interfaces";
+import { CommonFunctionsMixinInstance, CommonFunctionsMixinRequirements, HookContext, sessionKeys, ValidationStrategy } from "../public-interfaces";
 /**
  * Add common functions that are used in the different validation states through this mixin.
  *
@@ -8,7 +8,7 @@ import { CommonFunctionsInstanceRequirements, CommonFunctionsMixinInstance, Hook
  * in `BaseState` and TypeScript does not allow to mixin with other than public. Moreover, I cannot just extend `BaseState` due to an
  * issue with type definition for `logger`.
  */
-export function CommonFunctionsMixin<T extends Constructor<CommonFunctionsInstanceRequirements>>(superState: T): T & Constructor<CommonFunctionsMixinInstance> {
+export function CommonFunctionsMixin<T extends Constructor<CommonFunctionsMixinRequirements>>(superState: T): T & Constructor<CommonFunctionsMixinInstance> {
   return class extends superState implements CommonFunctionsMixinInstance {
     /**
      * Unserializes hook context

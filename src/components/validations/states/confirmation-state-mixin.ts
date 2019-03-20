@@ -1,7 +1,6 @@
 import { Constructor, Transitionable } from "assistant-source";
 import { CommonFunctionsMixin } from "../mixins/common-functions";
 import {
-  CommonFunctionsInstanceRequirements,
   CommonFunctionsMixinInstance,
   ConfirmationResult,
   confirmationResultIdentifier,
@@ -13,9 +12,10 @@ import {
 /**
  * Defines the public members requirements to an instance of a confirmation state.
  */
+export type ConfirmationStateMixin = ReturnType<typeof ConfirmationStateMixin>;
 export function ConfirmationStateMixin<T extends Constructor<ConfirmationStateMixinRequirements>>(
   superState: T
-): T & Constructor<CommonFunctionsMixinInstance & ConfirmationStateMixinRequirements & ConfirmationStateMixinInstance> {
+): T & Constructor<ConfirmationStateMixinInstance> {
   return confirmationStateMixin(CommonFunctionsMixin(superState));
 }
 
@@ -24,7 +24,7 @@ export function ConfirmationStateMixin<T extends Constructor<ConfirmationStateMi
  * delegate this to a helper function to bypass some issues with TypeScript's mixin classes pattern. Those should always
  * strictly look as follows without extra mixins.
  */
-function confirmationStateMixin<T extends Constructor<ConfirmationStateMixinRequirements> & ReturnType<typeof CommonFunctionsMixin>>(superState: T) {
+function confirmationStateMixin<T extends Constructor<CommonFunctionsMixinInstance & ConfirmationStateMixinRequirements>>(superState: T) {
   return class extends superState {
     public async invokeGenericIntent(machine: Transitionable, tellInvokeMessage = true, ...additionalArgs: any[]) {
       if (tellInvokeMessage) {
