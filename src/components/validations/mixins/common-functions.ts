@@ -1,18 +1,18 @@
 import { BasicAnswerTypes, Constructor, featureIsAvailable, OptionalHandlerFeatures, SuggestionChipsMixin } from "assistant-source";
 import { COMPONENT_NAME } from "../private-interfaces";
-import { CommonFunctionsInstanceRequirements, CommonFunctionsMixinInstance, HookContext, sessionKeys, ValidationStrategy } from "../public-interfaces";
+import { CommonFunctionsMixinInstance, CommonFunctionsMixinRequirements, HookContext, sessionKeys, ValidationStrategy } from "../public-interfaces";
 /**
- * Add common functions that are used in the different validation states through this mixin
+ * Add common functions that are used in the different validation states through this mixin.
+ *
+ * Note: I'd like to just infer the return type to get all the super classes' properties and modifiers. However, there's a private member
+ * in `BaseState` and TypeScript does not allow to mixin with other than public. Moreover, I cannot just extend `BaseState` due to an
+ * issue with type definition for `logger`.
  */
-export function CommonFunctionsMixin<T extends CommonFunctionsInstanceRequirements>(
-  superState: Constructor<T>
-): Constructor<CommonFunctionsMixinInstance & CommonFunctionsInstanceRequirements & T> {
-  // prettier-ignore
-  return class extends (superState as any) {
-
-     /**
-      * Unserializes hook context
-      */
+export function CommonFunctionsMixin<T extends Constructor<CommonFunctionsMixinRequirements>>(superState: T): T & Constructor<CommonFunctionsMixinInstance> {
+  return class extends superState implements CommonFunctionsMixinInstance {
+    /**
+     * Unserializes hook context
+     */
     public async unserializeHookContext<Strategy extends ValidationStrategy.Confirmation | ValidationStrategy.Prompt>() {
       const serializedHook = await this.sessionFactory().get(sessionKeys.context);
 
@@ -57,8 +57,5 @@ export function CommonFunctionsMixin<T extends CommonFunctionsInstanceRequiremen
         this.logger.debug(`Didn't find any suggestion chips for Lookupstring = ${lookupString}, so not setting any`);
       }
     }
-
-    // Without this the usage of this mixin for other mixins fail as return isn't properly typed with T - possible typescript error
-  } as Constructor<CommonFunctionsMixinInstance & CommonFunctionsInstanceRequirements & T>
-  // Warning: Typing of this function is therefore no more correct, e.g. removing unserializeHook doesn't give an error
+  };
 }

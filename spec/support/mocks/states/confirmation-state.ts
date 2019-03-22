@@ -17,7 +17,7 @@ class ConfirmationStateRequirements<MergedAnswerTypes extends BasicAnswerTypes, 
 export class ConfirmationState<
   MergedAnswerTypes extends BasicAnswerTypes,
   MergedHandler extends BasicHandable<MergedAnswerTypes>
-> extends ConfirmationStateMixin(ConfirmationStateRequirements) {
+> extends ConfirmationStateMixin(ConfirmationStateRequirements)<MergedAnswerTypes, MergedHandler> {
   constructor(
     @inject(injectionNames.current.stateSetupSet) setupSet: State.SetupSet<MergedAnswerTypes, MergedHandler>,
     @inject(injectionNames.current.sessionFactory) sessionFactory: CurrentSessionFactory

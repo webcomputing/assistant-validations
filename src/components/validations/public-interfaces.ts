@@ -103,21 +103,19 @@ export const sessionKeys = {
  * In your class using the PromptState mixin, just inject all of these requirements.
  * You find an example in the assistant-validations README.
  */
-export interface PromptStateMixinRequirements extends State.Required {
-  /** The current entitiy dictionary, injectable via {@link injectionNames.current.entityDictionary} */
-  entities: EntityDictionary;
+export type PromptStateMixinRequirements = CommonFunctionsMixinRequirements &
+  BaseState<BasicAnswerTypes, BasicHandable<BasicAnswerTypes>> & {
+    /** The current entitiy dictionary, injectable via {@link injectionNames.current.entityDictionary} */
+    entities: EntityDictionary;
 
-  /** The current session factory, injectable via {@link injectionNames.current.sessionFactory} */
-  sessionFactory: CurrentSessionFactory;
-
-  /** Your entity mappings, injectable via {@link injectionNames.userEntityMappings} */
-  mappings: PlatformGenerator.EntityMapping;
-}
+    /** Your entity mappings, injectable via {@link injectionNames.userEntityMappings} */
+    mappings: PlatformGenerator.EntityMapping;
+  };
 
 /**
  * Interface describing what you get when applying PromptMixin to one of your states
  */
-export interface PromptStateMixinInstance {
+export interface PromptStateMixinInstance extends CommonFunctionsMixinInstance, PromptStateMixinRequirements {
   /**
    * Called as an state entrance from promptFactory.
    * @param machine Transitionable interface
@@ -186,15 +184,12 @@ export interface PromptStateMixinInstance {
  * In your class using the ConfirmationState mixin, just inject all of these requirements.
  * You find an example in the assistant-validations README.
  */
-export interface ConfirmationStateMixinRequirements extends State.Required {
-  /** The current session factory, injectable via {@link injectionNames.current.sessionFactory} */
-  sessionFactory: CurrentSessionFactory;
-}
+export type ConfirmationStateMixinRequirements = CommonFunctionsMixinRequirements & BaseState<BasicAnswerTypes, BasicHandable<BasicAnswerTypes>> & {};
 
 /**
  * Interface describing what you get when applying ConfirmationMixin to one of your states
  */
-export interface ConfirmationStateMixinInstance {
+export interface ConfirmationStateMixinInstance extends CommonFunctionsMixinInstance, ConfirmationStateMixinRequirements {
   /**
    * Entrance point of the confirmationState, called from validations-initializer
    * @param machine Transitionable interface
@@ -225,7 +220,7 @@ export interface ConfirmationStateMixinInstance {
  * Requirements needed to be able to use the CommonFunctionsMixin. Use this mixin inside of another mixin to get availability
  * to several useful functions, e.g. unserializeHook.
  */
-export interface CommonFunctionsInstanceRequirements extends BaseState<BasicAnswerTypes, BasicHandable<BasicAnswerTypes>> {
+export interface CommonFunctionsMixinRequirements extends BaseState<BasicAnswerTypes, BasicHandable<BasicAnswerTypes>> {
   /** The current session factory, injectable via {@link injectionNames.current.sessionFactory} */
   sessionFactory: CurrentSessionFactory;
 }
@@ -233,7 +228,7 @@ export interface CommonFunctionsInstanceRequirements extends BaseState<BasicAnsw
 /**
  * Interface of the CommonFunctionsMixin describing the available functions from this mixin
  */
-export interface CommonFunctionsMixinInstance {
+export interface CommonFunctionsMixinInstance extends CommonFunctionsMixinRequirements {
   /**
    * Unserializes hook context
    */
