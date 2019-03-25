@@ -36,10 +36,10 @@ import { MergedSetupSet } from "../../config/handler";
 @injectable()
 class PromptStateRequirements extends ApplicationState implements PromptStateMixinRequirements {
   constructor(
-    stateSetupSet: MergedSetupSet,
-    public entities: EntityDictionary,
-    public sessionFactory: CurrentSessionFactory,
-    public mappings: PlatformGenerator.EntityMapping
+    @unmanaged() stateSetupSet: MergedSetupSet,
+    @unmanaged() public entities: EntityDictionary,
+    @unmanaged() public sessionFactory: CurrentSessionFactory,
+    @unmanaged() public mappings: PlatformGenerator.EntityMapping
   ) {
     super(stateSetupSet);
   }
@@ -81,8 +81,8 @@ import { MergedSetupSet } from "../../config/handler";
 @injectable()
 class ConfirmationStateRequirements extends ApplicationState implements ConfirmationStateMixinRequirements {
   constructor(
-    stateSetupSet: MergedSetupSet,
-    public sessionFactory: CurrentSessionFactory,
+    @unmanaged() stateSetupSet: MergedSetupSet,
+    @unmanaged() public sessionFactory: CurrentSessionFactory
   ) {
     super(stateSetupSet);
   }
