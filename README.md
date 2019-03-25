@@ -81,8 +81,8 @@ import { MergedSetupSet } from "../../config/handler";
 @injectable()
 class ConfirmationStateRequirements extends ApplicationState implements ConfirmationStateMixinRequirements {
   constructor(
-    stateSetupSet: MergedSetupSet,
-    public sessionFactory: CurrentSessionFactory,
+    @unmanaged() stateSetupSet: MergedSetupSet,
+    @unmanaged() public sessionFactory: CurrentSessionFactory
   ) {
     super(stateSetupSet);
   }
